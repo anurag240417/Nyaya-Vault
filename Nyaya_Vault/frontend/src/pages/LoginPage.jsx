@@ -56,7 +56,7 @@ export default function LoginPage() {
       </div>
       <form className="auth-card" onSubmit={submit}>
         <h2>
-          {mode === "signin" ? "Sign in to CaseVault" : "Create an account"}
+          {mode === "signin" ? "Sign in to Nyaya Vault" : "Create an account"}
         </h2>
         <p className="muted">
           New users start as CLERK / PUBLIC until an administrator changes
