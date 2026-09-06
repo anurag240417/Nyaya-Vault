@@ -121,6 +121,7 @@ export default function CasePage() {
             element={
               <CollaboratorsTab
                 caseId={caseId}
+                documents={documents}
                 collaborators={collaborators}
                 canManage={canManage}
                 reload={reload}
@@ -331,8 +332,10 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
     </section>
   );
 }
+const CLEARANCE_RANK = { PUBLIC: 1, RESTRICTED: 2, CONFIDENTIAL: 3, SECRET: 4 };
 function CollaboratorsTab({
   caseId,
+  documents,
   collaborators,
   canManage,
   reload,
@@ -346,6 +349,18 @@ function CollaboratorsTab({
     () => new Set(collaborators.map((c) => c.user_id)),
     [collaborators],
   );
+  const maxDocClearance = useMemo(
+    () =>
+      documents.reduce(
+        (max, d) => Math.max(max, CLEARANCE_RANK[d.clearance_level] || 1),
+        1,
+      ),
+    [documents],
+  );
+  const selectedCandidate = candidates.find((c) => c.id === selected);
+  const clearanceWarning =
+    selectedCandidate &&
+    CLEARANCE_RANK[selectedCandidate.clearance_level] < maxDocClearance;
   async function picker() {
     try {
       setCandidates(
@@ -458,6 +473,20 @@ function CollaboratorsTab({
               ))}
             </select>
           </label>
+          {clearanceWarning ? (
+            <p
+              style={{
+                color: "#b45309",
+                fontSize: "0.85rem",
+                marginTop: "0.5rem",
+              }}
+            >
+              ⚠ {selectedCandidate.username}'s clearance (
+              {selectedCandidate.clearance_level}) is below this case's
+              highest-clearance evidence. They'll be able to open the case but
+              won't see all documents until an admin raises their clearance.
+            </p>
+          ) : null}
         </Modal>
       ) : null}
     </section>
