@@ -14,6 +14,27 @@ from app.services.authorization import AuthorizationService
 _ALLOWED_MIME = {"application/pdf", "image/jpeg", "image/png", "image/tiff"}
 _SAFE_NAME = re.compile(r"[^a-zA-Z0-9._-]")
 
+# Document types where a case should have exactly one PRIMARY document -
+# a second upload of the same type is almost always meant to be an update
+# to the existing one (a corrected FIR, a revised chargesheet), not a
+# genuinely separate piece of evidence. Matched after stripping everything
+# but letters and uppercasing, so "FIR", "F.I.R.", "First Information
+# Report" and "Charge Sheet" / "Charge-Sheet" / "ChargeSheet" all resolve
+# to the same canonical key regardless of how an officer happens to type it.
+_SINGLETON_TYPE_ALIASES: dict[str, str] = {
+    "FIR": "FIR",
+    "FIRSTINFORMATIONREPORT": "FIR",
+    "CHARGESHEET": "CHARGESHEET",
+    "CHARGE SHEET".replace(" ", ""): "CHARGESHEET",
+}
+
+
+def _singleton_type_key(document_type: str | None) -> str | None:
+    if not document_type:
+        return None
+    normalized = re.sub(r"[^A-Za-z]", "", document_type).upper()
+    return _SINGLETON_TYPE_ALIASES.get(normalized)
+
 
 class CaseVaultService:
     def __init__(self, gateway: SupabaseGateway, settings: Settings) -> None:
@@ -488,6 +509,27 @@ class CaseVaultService:
         if CLEARANCE_RANK[user.clearance_level] < CLEARANCE_RANK[clearance_level]:
             raise AuthorizationError("You cannot create evidence above your own clearance level.")
         self.validate_file(content_type=content_type, data=data)
+
+        singleton_key = _singleton_type_key(document_type)
+        if singleton_key is not None:
+            existing_rows = await self.gateway.service_table(
+                "GET", "documents",
+                params={"case_id": f"eq.{case_id}", "select": "id,title,document_type"},
+            ) or []
+            for row in existing_rows:
+                if _singleton_type_key(row.get("document_type")) == singleton_key:
+                    raise ConflictError(
+                        f"This case already has a primary {singleton_key} "
+                        f"(\"{row['title']}\"). Add this file as a new version of "
+                        f"that document instead of creating a second one.",
+                        details={
+                            "reason": "SINGLETON_DOCUMENT_TYPE_EXISTS",
+                            "singleton_type": singleton_key,
+                            "existing_document_id": row["id"],
+                            "existing_document_title": row["title"],
+                        },
+                    )
+
         document_id = str(uuid.uuid4())
         storage_key = f"{case_id}/{document_id}/uploads/{uuid.uuid4()}-{self._safe_name(filename)}"
         digest = hashlib.sha256(data).hexdigest()

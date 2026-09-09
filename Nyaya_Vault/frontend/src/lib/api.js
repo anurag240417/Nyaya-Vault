@@ -34,7 +34,12 @@ export async function apiFetchRaw(path, options = {}, retry = true) {
     const text = await response.text();
     let body = text;
     try { body = text ? JSON.parse(text) : null; } catch { /* keep text */ }
-    throw new Error(messageFrom(body, response.status));
+    const err = new Error(messageFrom(body, response.status));
+    if (body && typeof body === 'object') {
+      err.code = body.code;
+      err.details = body.details;
+    }
+    throw err;
   }
   return response;
 }
@@ -145,4 +150,13 @@ export async function addTimelineStatement(caseId, payload) {
 export async function listTimelineConflicts(caseId) { return apiJson(`/api/v1/cases/${caseId}/timeline/conflicts`); }
 export async function setTimelineTravelMinutes(caseId, payload) {
   return apiJson(`/api/v1/cases/${caseId}/timeline/travel-times`, { method: 'POST', body: JSON.stringify(payload) });
+}
+export async function generateTimelineSuggestions(caseId) {
+  return apiJson(`/api/v1/cases/${caseId}/timeline/suggestions/generate`, { method: 'POST' });
+}
+export async function confirmTimelineSuggestion(caseId, statementId) {
+  return apiJson(`/api/v1/cases/${caseId}/timeline/statements/${statementId}/confirm`, { method: 'POST' });
+}
+export async function rejectTimelineSuggestion(caseId, statementId) {
+  return apiJson(`/api/v1/cases/${caseId}/timeline/statements/${statementId}`, { method: 'DELETE' });
 }

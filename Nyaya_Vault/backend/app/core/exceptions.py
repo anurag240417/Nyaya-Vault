@@ -33,5 +33,5 @@ class NotFoundError(AppError):
 
 
 class ConflictError(AppError):
-    def __init__(self, message: str):
-        super().__init__(message, status_code=409, code="CONFLICT")
+    def __init__(self, message: str, *, details: Any = None):
+        super().__init__(message, status_code=409, code="CONFLICT", details=details)

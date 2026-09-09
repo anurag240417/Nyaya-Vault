@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime
+import re
+from datetime import datetime, timezone
 from typing import Any
 
 from ortools.sat.python import cp_model
 
 from app.core.config import Settings
-from app.core.exceptions import AuthorizationError
+from app.core.exceptions import AuthorizationError, ConflictError, NotFoundError
 from app.core.models import CurrentUser
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
@@ -18,6 +19,30 @@ from app.services.authorization import AuthorizationService
 # default buffer avoids flagging back-to-back statements that are only
 # adjacent by a minute due to rounding, which isn't a real contradiction.
 _DEFAULT_TRAVEL_MINUTES = 0
+
+# Suggestion generation caps - a page with an unusually large number of one
+# entity type (e.g. a witness list) should not explode into a combinatorial
+# number of suggested statements.
+_MAX_ENTITIES_PER_TYPE_PER_PAGE = 3
+
+_DATE_RE = re.compile(r"\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b")
+
+
+def _parse_date_entity(value: str) -> datetime | None:
+    """Parses ner.py's DATE pattern (dd/mm/yyyy or dd-mm-yyyy, day-first per
+    Indian convention, matching how this project's other date handling
+    assumes dd/mm). Returns None rather than raising - a date we can't
+    confidently parse should be skipped, not guessed at."""
+    m = _DATE_RE.search(value)
+    if not m:
+        return None
+    day, month, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    if year < 100:
+        year += 2000
+    try:
+        return datetime(year, month, day, tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
 
 def _to_minutes(dt: datetime, epoch: datetime) -> int:
@@ -93,6 +118,7 @@ class TimelineService:
             "duration_minutes": payload.get("duration_minutes", 30),
             "source_excerpt": (payload.get("source_excerpt") or "").strip() or None,
             "created_by": user.id,
+            "status": "CONFIRMED",
         }
         created = await self.gateway.service_table(
             "POST", "case_timeline_statements", body=row, prefer="return=representation",
@@ -122,6 +148,169 @@ class TimelineService:
             params={"case_id": f"eq.{case_id}", "select": "*", "order": "detected_at.desc"},
         ) or []
 
+    async def generate_suggestions_from_documents(self, user: CurrentUser, case_id: str) -> list[dict[str, Any]]:
+        """Proposes candidate timeline statements from entities already
+        confirmed on this case's documents (never from unconfirmed/raw
+        extractions - a human has already vetted these as accurate text).
+
+        Heuristic: a PERSON, a LOCATION, and a DATE entity that all appear
+        on the SAME PAGE of the SAME document version are proposed as one
+        candidate statement. This is a co-occurrence heuristic, not real
+        relation extraction - it does not know these three facts are
+        actually about the same event, only that they're physically close
+        together in the source text. That's exactly why the result lands
+        as status=SUGGESTED, never CONFIRMED: a human must look at the
+        source excerpt and confirm the pairing actually makes sense before
+        it can ever contribute to a contradiction finding.
+
+        Since only a DATE (not a time) is extracted, the window defaults to
+        the entire day - maximally uncertain on purpose, rather than
+        fabricating a specific time the source document never stated.
+        """
+        await self.authz.require_case_access(user, case_id)
+
+        documents = await self.gateway.service_table(
+            "GET", "documents",
+            params={"case_id": f"eq.{case_id}", "select": "id,title,current_version_number"},
+        ) or []
+        if not documents:
+            return []
+
+        doc_ids = [d["id"] for d in documents]
+        versions = await self.gateway.service_table(
+            "GET", "document_versions",
+            params={"document_id": f"in.({','.join(doc_ids)})", "select": "id,document_id,version_number"},
+        ) or []
+        current_version_by_doc = {d["id"]: d["current_version_number"] for d in documents}
+        title_by_doc = {d["id"]: d["title"] for d in documents}
+        version_id_to_doc_title: dict[str, str] = {}
+        version_ids: list[str] = []
+        for v in versions:
+            if v["version_number"] == current_version_by_doc.get(v["document_id"]):
+                version_ids.append(v["id"])
+                version_id_to_doc_title[v["id"]] = title_by_doc.get(v["document_id"], "Untitled document")
+        if not version_ids:
+            return []
+
+        entities = await self.gateway.service_table(
+            "GET", "document_entities",
+            params={
+                "document_version_id": f"in.({','.join(version_ids)})",
+                "confirmed": "eq.true", "select": "*",
+            },
+        ) or []
+
+        groups: dict[tuple[str, int | None], dict[str, list[str]]] = {}
+        for e in entities:
+            if e["entity_type"] not in ("PERSON", "LOCATION", "DATE"):
+                continue
+            key = (e["document_version_id"], e.get("page_number"))
+            groups.setdefault(key, {"PERSON": [], "LOCATION": [], "DATE": []})
+            bucket = groups[key][e["entity_type"]]
+            if e["value"] not in bucket and len(bucket) < _MAX_ENTITIES_PER_TYPE_PER_PAGE:
+                bucket.append(e["value"])
+
+        existing = await self.gateway.service_table(
+            "GET", "case_timeline_statements",
+            params={"case_id": f"eq.{case_id}", "select": "person_name,location_name,window_start,document_version_id"},
+        ) or []
+        already_seen = {
+            (s["person_name"], s["location_name"], s["window_start"][:10], s["document_version_id"])
+            for s in existing
+        }
+
+        created: list[dict[str, Any]] = []
+        for (version_id, page_number), bucket in groups.items():
+            for person in bucket["PERSON"]:
+                for location in bucket["LOCATION"]:
+                    for date_value in bucket["DATE"]:
+                        parsed = _parse_date_entity(date_value)
+                        if parsed is None:
+                            continue
+                        window_start = parsed
+                        window_end = parsed.replace(hour=23, minute=59, second=0)
+                        dedupe_key = (person, location, window_start.date().isoformat(), version_id)
+                        if dedupe_key in already_seen:
+                            continue
+                        already_seen.add(dedupe_key)
+                        doc_title = version_id_to_doc_title.get(version_id, "Untitled document")
+                        page_note = f", page {page_number}" if page_number else ""
+                        row = {
+                            "case_id": case_id,
+                            "document_version_id": version_id,
+                            "person_name": person,
+                            "location_name": location,
+                            "window_start": window_start.isoformat(),
+                            "window_end": window_end.isoformat(),
+                            "duration_minutes": 60,
+                            "source_excerpt": (
+                                f"Auto-suggested: \"{person}\" + \"{location}\" + \"{date_value}\" "
+                                f"found on the same page of \"{doc_title}\"{page_note}. Unverified pairing - "
+                                f"confirm this reflects what the document actually says."
+                            ),
+                            "created_by": user.id,
+                            "status": "SUGGESTED",
+                            "page_number": page_number,
+                        }
+                        result = await self.gateway.service_table(
+                            "POST", "case_timeline_statements", body=row, prefer="return=representation",
+                        )
+                        created.append(result[0])
+
+        if created:
+            await self.gateway.append_audit_service(
+                actor_user_id=user.id, case_id=case_id, document_id=None,
+                action="TIMELINE_SUGGESTIONS_GENERATED",
+                metadata={"count": len(created)},
+            )
+        return created
+
+    async def confirm_suggestion(self, user: CurrentUser, case_id: str, statement_id: str) -> dict[str, Any]:
+        await self.authz.require_case_access(user, case_id)
+        rows = await self.gateway.service_table(
+            "GET", "case_timeline_statements",
+            params={"id": f"eq.{statement_id}", "case_id": f"eq.{case_id}", "select": "*"},
+        ) or []
+        if not rows:
+            raise NotFoundError("Timeline statement not found.")
+        statement = rows[0]
+        if statement["status"] != "SUGGESTED":
+            raise ConflictError("Only a suggested statement can be confirmed.")
+
+        updated = await self.gateway.service_table(
+            "PATCH", "case_timeline_statements",
+            params={"id": f"eq.{statement_id}"},
+            body={"status": "CONFIRMED"},
+            prefer="return=representation",
+        )
+        statement = updated[0]
+        conflict = await self._recheck_person(user, case_id, statement["person_name"])
+        await self.gateway.append_audit_service(
+            actor_user_id=user.id, case_id=case_id, document_id=statement.get("document_version_id"),
+            action="TIMELINE_SUGGESTION_CONFIRMED",
+            metadata={"person_name": statement["person_name"], "location_name": statement["location_name"]},
+        )
+        return {"statement": statement, "contradiction_detected": conflict is not None, "conflict": conflict}
+
+    async def reject_suggestion(self, user: CurrentUser, case_id: str, statement_id: str) -> None:
+        await self.authz.require_case_access(user, case_id)
+        rows = await self.gateway.service_table(
+            "GET", "case_timeline_statements",
+            params={"id": f"eq.{statement_id}", "case_id": f"eq.{case_id}", "select": "*"},
+        ) or []
+        if not rows:
+            raise NotFoundError("Timeline statement not found.")
+        if rows[0]["status"] != "SUGGESTED":
+            raise ConflictError("Only a suggested statement can be rejected.")
+        await self.gateway.service_table(
+            "DELETE", "case_timeline_statements", params={"id": f"eq.{statement_id}"},
+        )
+        await self.gateway.append_audit_service(
+            actor_user_id=user.id, case_id=case_id, document_id=rows[0].get("document_version_id"),
+            action="TIMELINE_SUGGESTION_REJECTED",
+            metadata={"person_name": rows[0]["person_name"], "location_name": rows[0]["location_name"]},
+        )
+
     async def set_travel_minutes(self, user: CurrentUser, case_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         await self.authz.require_case_editor(user, case_id)
         location_a, location_b = payload["location_a"].strip(), payload["location_b"].strip()
@@ -150,7 +339,10 @@ class TimelineService:
     async def _recheck_person(self, user: CurrentUser, case_id: str, person_name: str) -> dict[str, Any] | None:
         rows = await self.gateway.service_table(
             "GET", "case_timeline_statements",
-            params={"case_id": f"eq.{case_id}", "person_name": f"eq.{person_name}", "select": "*"},
+            params={
+                "case_id": f"eq.{case_id}", "person_name": f"eq.{person_name}",
+                "status": "eq.CONFIRMED", "select": "*",
+            },
         ) or []
         statements = [
             {

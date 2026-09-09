@@ -96,7 +96,116 @@ def test_document_upload_version_download_and_search(client, gateway):
     assert [v["version_number"] for v in versions] == [2, 1]
 
 
-def test_processing_entity_review_redaction_and_true_redacted_export(client, gateway):
+def test_second_fir_upload_is_blocked_in_favor_of_versioning(client, gateway):
+    case = create_case(client)
+    pdf1 = make_pdf("Original FIR narrative with enough text for native extraction to be used here.")
+    first = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "FIR 214/2026", "document_type": "FIR", "clearance_level": "RESTRICTED"},
+        files={"file": ("fir.pdf", pdf1, "application/pdf")},
+    )
+    assert first.status_code == 200, first.text
+    fir_id = first.json()["documentId"]
+
+    pdf2 = make_pdf("A second, unrelated FIR narrative that should not be allowed as a separate document.")
+    second = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "FIR 214/2026 (corrected)", "document_type": "FIR", "clearance_level": "RESTRICTED"},
+        files={"file": ("fir2.pdf", pdf2, "application/pdf")},
+    )
+    assert second.status_code == 409, second.text
+    body = second.json()
+    assert body["code"] == "CONFLICT"
+    assert body["details"]["singleton_type"] == "FIR"
+    assert body["details"]["existing_document_id"] == fir_id
+
+    # The correct path: add it as a new version of the existing FIR instead.
+    version = client.post(
+        f"/api/v1/documents/{fir_id}/versions", headers=auth("admin-token"),
+        data={"change_summary": "Corrected FIR narrative"},
+        files={"file": ("fir-v2.pdf", pdf2, "application/pdf")},
+    )
+    assert version.status_code == 200, version.text
+    assert version.json()["versionNumber"] == 2
+    doc = client.get(f"/api/v1/documents/{fir_id}", headers=auth("admin-token")).json()
+    assert doc["current_version_number"] == 2
+
+    # Officers can still see the earlier version, not just the latest.
+    versions = client.get(f"/api/v1/documents/{fir_id}/versions", headers=auth("admin-token")).json()
+    assert [v["version_number"] for v in versions] == [2, 1]
+
+
+def test_fir_singleton_check_is_punctuation_and_case_insensitive(client, gateway):
+    case = create_case(client)
+    pdf = make_pdf("FIR narrative text long enough for native extraction to succeed cleanly.")
+    first = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "First Information Report", "document_type": "First Information Report", "clearance_level": "RESTRICTED"},
+        files={"file": ("fir.pdf", pdf, "application/pdf")},
+    )
+    assert first.status_code == 200, first.text
+
+    second = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "FIR again", "document_type": "F.I.R.", "clearance_level": "RESTRICTED"},
+        files={"file": ("fir2.pdf", pdf, "application/pdf")},
+    )
+    assert second.status_code == 409, second.text
+
+
+def test_chargesheet_singleton_is_independent_of_fir(client, gateway):
+    case = create_case(client)
+    pdf = make_pdf("Some evidence narrative with enough text for native extraction to be used.")
+    fir = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "FIR 88/2026", "document_type": "FIR", "clearance_level": "RESTRICTED"},
+        files={"file": ("fir.pdf", pdf, "application/pdf")},
+    )
+    assert fir.status_code == 200, fir.text
+
+    # A chargesheet is a different singleton type - having a primary FIR
+    # must not block the first chargesheet.
+    chargesheet = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Chargesheet 88/2026", "document_type": "Charge Sheet", "clearance_level": "RESTRICTED"},
+        files={"file": ("cs.pdf", pdf, "application/pdf")},
+    )
+    assert chargesheet.status_code == 200, chargesheet.text
+
+    second_chargesheet = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Chargesheet 88/2026 v2", "document_type": "CHARGESHEET", "clearance_level": "RESTRICTED"},
+        files={"file": ("cs2.pdf", pdf, "application/pdf")},
+    )
+    assert second_chargesheet.status_code == 409, second_chargesheet.text
+
+
+def test_singleton_type_is_scoped_per_case_not_global(client, gateway):
+    case_a = create_case(client)
+    case_b = create_case(client)
+    pdf = make_pdf("FIR narrative text long enough for native extraction to succeed cleanly.")
+    for case in (case_a, case_b):
+        r = client.post(
+            f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+            data={"title": "FIR", "document_type": "FIR", "clearance_level": "RESTRICTED"},
+            files={"file": ("fir.pdf", pdf, "application/pdf")},
+        )
+        assert r.status_code == 200, r.text
+
+
+def test_non_singleton_document_types_are_unaffected(client, gateway):
+    case = create_case(client)
+    pdf = make_pdf("Witness statement narrative with enough text for native extraction to be used.")
+    for i in range(2):
+        r = client.post(
+            f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+            data={"title": f"Statement {i}", "document_type": "STATEMENT", "clearance_level": "RESTRICTED"},
+            files={"file": (f"statement{i}.pdf", pdf, "application/pdf")},
+        )
+        assert r.status_code == 200, r.text
+
+
+
     case = create_case(client)
     phone = "9876543210"
     text = f"Witness Ravi Sharma provided a statement. Contact phone {phone}. This document contains enough additional narrative to ensure native PDF text extraction is used instead of OCR."

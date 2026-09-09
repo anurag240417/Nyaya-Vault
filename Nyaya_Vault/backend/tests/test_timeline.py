@@ -111,3 +111,146 @@ def test_timeline_statement_requires_case_access(client):
         },
     )
     assert denied.status_code == 403
+
+
+def _seed_document_with_entities(gateway, case_id, *, entities, page_number=1, confirmed=True):
+    """Seeds a document/version/entities directly in the fake gateway - a
+    real upload would go through OCR/NER, which is unnecessary weight for
+    testing the suggestion-grouping logic itself."""
+    from tests.fake_gateway import uid, now_iso
+
+    doc_id = uid()
+    version_id = uid()
+    gateway.tables["documents"].append({
+        "id": doc_id, "case_id": case_id, "title": "FIR Annexure Statement",
+        "document_type": "STATEMENT", "clearance_level": "RESTRICTED",
+        "current_version_number": 1, "created_by": gateway.tokens["admin-token"],
+        "created_at": now_iso(),
+    })
+    gateway.tables["document_versions"].append({
+        "id": version_id, "document_id": doc_id, "version_number": 1,
+        "storage_key": "x", "sha256": "x", "size_bytes": 1, "mime_type": "application/pdf",
+        "change_summary": None, "processing_status": "COMPLETED", "processing_error": None,
+        "extracted_text": None, "ocr_used": False, "created_by": gateway.tokens["admin-token"],
+        "created_at": now_iso(),
+    })
+    for entity_type, value in entities:
+        gateway.tables["document_entities"].append({
+            "id": uid(), "document_version_id": version_id, "entity_type": entity_type,
+            "value": value, "confidence": 0.9, "page_number": page_number,
+            "start_offset": 0, "end_offset": len(value), "confirmed": confirmed,
+            "created_at": now_iso(),
+        })
+    return doc_id, version_id
+
+
+def test_suggestions_generated_from_confirmed_entities_are_not_confirmed(client, gateway):
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ])
+
+    r = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    assert r.status_code == 201, r.text
+    suggestions = r.json()
+    assert len(suggestions) == 1
+    s = suggestions[0]
+    assert s["status"] == "SUGGESTED"
+    assert s["person_name"] == "Ramesh Kumar"
+    assert s["location_name"] == "Nagpur"
+    assert s["window_start"].startswith("2026-03-12")
+
+    # A suggestion must never show up as a conflict on its own - it hasn't
+    # been confirmed by a human yet.
+    assert client.get(f"/api/v1/cases/{case['id']}/timeline/conflicts", headers=auth("admin-token")).json() == []
+
+
+def test_suggestions_ignore_unconfirmed_entities(client, gateway):
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ], confirmed=False)
+
+    r = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    assert r.status_code == 201
+    assert r.json() == []
+
+
+def test_confirming_a_suggestion_feeds_the_solver(client, gateway):
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ], page_number=1)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Pune"), ("DATE", "12/03/2026"),
+    ], page_number=1)
+
+    r = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    suggestions = r.json()
+    assert len(suggestions) == 2
+
+    # Still nothing confirmed - no conflict yet even though the underlying
+    # facts (same person, same day, two different cities) would contradict.
+    assert client.get(f"/api/v1/cases/{case['id']}/timeline/conflicts", headers=auth("admin-token")).json() == []
+
+    for s in suggestions:
+        confirm = client.post(
+            f"/api/v1/cases/{case['id']}/timeline/statements/{s['id']}/confirm",
+            headers=auth("admin-token"),
+        )
+        assert confirm.status_code == 200, confirm.text
+
+    # Full-day windows alone (only a DATE was extracted, no time-of-day) are
+    # deliberately weak evidence - the solver can fit "somewhere in Nagpur"
+    # and "somewhere in Pune" into the same 24 hours with zero known travel
+    # time, so no conflict yet. Recording that the two are genuinely far
+    # apart (Nagpur-Pune is ~720km, no real trip is a few minutes) is what
+    # sharpens this into an actual contradiction - the realistic workflow.
+    assert client.get(f"/api/v1/cases/{case['id']}/timeline/conflicts", headers=auth("admin-token")).json() == []
+
+    travel_ab = client.post(
+        f"/api/v1/cases/{case['id']}/timeline/travel-times",
+        headers=auth("admin-token"),
+        json={"location_a": "Nagpur", "location_b": "Pune", "minutes": 1500},
+    )
+    assert travel_ab.status_code == 201, travel_ab.text
+    travel_ba = client.post(
+        f"/api/v1/cases/{case['id']}/timeline/travel-times",
+        headers=auth("admin-token"),
+        json={"location_a": "Pune", "location_b": "Nagpur", "minutes": 1500},
+    )
+    assert travel_ba.status_code == 201, travel_ba.text
+
+    conflicts = client.get(f"/api/v1/cases/{case['id']}/timeline/conflicts", headers=auth("admin-token")).json()
+    assert len(conflicts) == 1
+    assert conflicts[0]["person_name"] == "Ramesh Kumar"
+
+
+def test_rejecting_a_suggestion_removes_it(client, gateway):
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ])
+    suggestions = client.post(
+        f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"),
+    ).json()
+    statement_id = suggestions[0]["id"]
+
+    reject = client.delete(
+        f"/api/v1/cases/{case['id']}/timeline/statements/{statement_id}", headers=auth("admin-token"),
+    )
+    assert reject.status_code == 204
+
+    remaining = client.get(f"/api/v1/cases/{case['id']}/timeline/statements", headers=auth("admin-token")).json()
+    assert remaining == []
+
+
+def test_regenerating_suggestions_does_not_duplicate(client, gateway):
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ])
+    first = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    assert len(first.json()) == 1
+    second = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    assert second.json() == []
