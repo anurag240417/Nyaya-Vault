@@ -69,11 +69,18 @@ export async function listDocumentVersions(documentId) { return apiJson(`/api/v1
 export async function getLatestVersionData(doc) { return apiJson(`/api/v1/documents/${doc.id}/versions/latest`); }
 
 function validateUpload(file) {
-  const allowed = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/tiff']);
+  const allowed = new Set([
+    'application/pdf', 'image/jpeg', 'image/png', 'image/tiff',
+    'video/mp4', 'video/quicktime', 'video/webm',
+  ]);
   if (!file) throw new Error('Choose a file.');
   if (!allowed.has(file.type)) throw new Error(`Unsupported file type: ${file.type || 'unknown'}`);
   if (file.size <= 0) throw new Error('Empty files cannot be uploaded.');
-  if (file.size > 25 * 1024 * 1024) throw new Error('File exceeds the 25 MB limit.');
+  // This is a fast client-side check only - the backend's own MAX_UPLOAD_BYTES
+  // setting is what's actually enforced (currently 25MB by default; raise it
+  // there via env var if you need larger video files, remembering the whole
+  // file is read into server memory per upload before storage).
+  if (file.size > 200 * 1024 * 1024) throw new Error('File exceeds the 200 MB limit.');
 }
 
 export async function uploadNewDocument({ caseId, title, documentType, clearanceLevel, file }) {
@@ -94,10 +101,14 @@ export async function uploadDocumentVersion({ document, file, changeSummary }) {
   return apiJson(`/api/v1/documents/${document.id}/versions`, { method: 'POST', body });
 }
 
-export async function downloadDocumentVersion(documentId, version) {
+export async function getVersionObjectUrl(documentId, version) {
   const response = await apiFetchRaw(`/api/v1/documents/${documentId}/versions/${version.id}/download`);
   const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
+  return URL.createObjectURL(blob);
+}
+
+export async function downloadDocumentVersion(documentId, version) {
+  const url = await getVersionObjectUrl(documentId, version);
   const anchor = window.document.createElement('a');
   anchor.href = url;
   anchor.download = (version.storage_key || `document-v${version.version_number}`).split('/').pop();

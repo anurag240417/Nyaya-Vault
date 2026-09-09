@@ -6,12 +6,13 @@ from urllib.parse import quote
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
-from app.api.deps import get_casevault_service, get_processor
+from app.api.deps import get_casevault_service, get_processor, get_timeline_service
 from app.core.models import ClearanceLevel, CurrentUser
 from app.schemas.documents import EntityReview, ProcessRequest, RedactionReview
 from app.security.auth import get_current_user
 from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
+from app.services.timeline import TimelineService
 
 router = APIRouter(tags=["documents"])
 
@@ -117,8 +118,21 @@ async def review_entities(
     payload: EntityReview,
     user: CurrentUser = Depends(get_current_user),
     service: CaseVaultService = Depends(get_casevault_service),
+    timeline_service: TimelineService = Depends(get_timeline_service),
 ) -> dict:
-    return await service.review_entities(user, document_id, payload.confirmed_ids, payload.rejected_ids)
+    result = await service.review_entities(user, document_id, payload.confirmed_ids, payload.rejected_ids)
+    if result.get("confirmed_count"):
+        # New confirmed facts may complete a PERSON+LOCATION+DATE triple
+        # somewhere in the case - re-scan automatically so a candidate
+        # timeline statement can appear without anyone having to remember
+        # to click "Scan documents for candidates" themselves. This never
+        # confirms anything on its own - it only ever produces more
+        # SUGGESTED rows for a human to accept or dismiss.
+        try:
+            await timeline_service.generate_suggestions_from_documents(user, result["case_id"])
+        except Exception:
+            pass
+    return result
 
 
 @router.get("/document-versions/{version_id}/redactions")

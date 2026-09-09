@@ -154,14 +154,22 @@ class TimelineService:
         extractions - a human has already vetted these as accurate text).
 
         Heuristic: a PERSON, a LOCATION, and a DATE entity that all appear
-        on the SAME PAGE of the SAME document version are proposed as one
+        confirmed ANYWHERE in the SAME document version - not necessarily
+        the same page, so a multi-page FIR that names someone on page 1 and
+        a location on page 3 is still caught - are proposed as one
         candidate statement. This is a co-occurrence heuristic, not real
         relation extraction - it does not know these three facts are
-        actually about the same event, only that they're physically close
-        together in the source text. That's exactly why the result lands
+        actually about the same event, only that they're confirmed facts
+        within the same document. That's exactly why the result lands
         as status=SUGGESTED, never CONFIRMED: a human must look at the
-        source excerpt and confirm the pairing actually makes sense before
-        it can ever contribute to a contradiction finding.
+        source excerpt (which cites the exact page each fact came from)
+        and confirm the pairing actually makes sense before it can ever
+        contribute to a contradiction finding.
+
+        Runs automatically whenever entities are confirmed on a document
+        (see review_entities in casevault.py) as well as on-demand via the
+        "Scan documents for candidates" button - either way, generation
+        itself is not a trust boundary, confirming a suggestion is.
 
         Since only a DATE (not a time) is extracted, the window defaults to
         the entire day - maximally uncertain on purpose, rather than
@@ -200,15 +208,20 @@ class TimelineService:
             },
         ) or []
 
-        groups: dict[tuple[str, int | None], dict[str, list[str]]] = {}
+        # Group by document only (not page). Track each value's own page
+        # number so the excerpt can honestly cite where each fact actually
+        # came from, even when they're on different pages of the same doc.
+        groups: dict[str, dict[str, list[str]]] = {}
+        entity_page: dict[tuple[str, str, str], int | None] = {}
         for e in entities:
             if e["entity_type"] not in ("PERSON", "LOCATION", "DATE"):
                 continue
-            key = (e["document_version_id"], e.get("page_number"))
-            groups.setdefault(key, {"PERSON": [], "LOCATION": [], "DATE": []})
-            bucket = groups[key][e["entity_type"]]
+            version_id = e["document_version_id"]
+            groups.setdefault(version_id, {"PERSON": [], "LOCATION": [], "DATE": []})
+            bucket = groups[version_id][e["entity_type"]]
             if e["value"] not in bucket and len(bucket) < _MAX_ENTITIES_PER_TYPE_PER_PAGE:
                 bucket.append(e["value"])
+            entity_page.setdefault((version_id, e["entity_type"], e["value"]), e.get("page_number"))
 
         existing = await self.gateway.service_table(
             "GET", "case_timeline_statements",
@@ -220,7 +233,8 @@ class TimelineService:
         }
 
         created: list[dict[str, Any]] = []
-        for (version_id, page_number), bucket in groups.items():
+        for version_id, bucket in groups.items():
+            doc_title = version_id_to_doc_title.get(version_id, "Untitled document")
             for person in bucket["PERSON"]:
                 for location in bucket["LOCATION"]:
                     for date_value in bucket["DATE"]:
@@ -233,8 +247,16 @@ class TimelineService:
                         if dedupe_key in already_seen:
                             continue
                         already_seen.add(dedupe_key)
-                        doc_title = version_id_to_doc_title.get(version_id, "Untitled document")
-                        page_note = f", page {page_number}" if page_number else ""
+
+                        person_page = entity_page.get((version_id, "PERSON", person))
+                        location_page = entity_page.get((version_id, "LOCATION", location))
+                        date_page = entity_page.get((version_id, "DATE", date_value))
+                        pages = {p for p in (person_page, location_page, date_page) if p is not None}
+                        page_note = (
+                            f", page {pages.pop()}" if len(pages) == 1
+                            else f", pages {', '.join(str(p) for p in sorted(pages))}" if pages
+                            else ""
+                        )
                         row = {
                             "case_id": case_id,
                             "document_version_id": version_id,
@@ -244,13 +266,14 @@ class TimelineService:
                             "window_end": window_end.isoformat(),
                             "duration_minutes": 60,
                             "source_excerpt": (
-                                f"Auto-suggested: \"{person}\" + \"{location}\" + \"{date_value}\" "
-                                f"found on the same page of \"{doc_title}\"{page_note}. Unverified pairing - "
+                                f"Auto-suggested: \"{person}\" (p.{person_page or '?'}) + "
+                                f"\"{location}\" (p.{location_page or '?'}) + \"{date_value}\" (p.{date_page or '?'}) "
+                                f"confirmed in \"{doc_title}\"{page_note}. Unverified pairing - "
                                 f"confirm this reflects what the document actually says."
                             ),
                             "created_by": user.id,
                             "status": "SUGGESTED",
-                            "page_number": page_number,
+                            "page_number": person_page or location_page or date_page,
                         }
                         result = await self.gateway.service_table(
                             "POST", "case_timeline_statements", body=row, prefer="return=representation",

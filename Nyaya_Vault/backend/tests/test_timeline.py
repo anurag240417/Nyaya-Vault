@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tests.conftest import auth
-from tests.test_api_end_to_end import create_case
+from tests.test_api_end_to_end import create_case, make_pdf
 
 
 def add_statement(client, case_id, **kwargs):
@@ -254,3 +254,63 @@ def test_regenerating_suggestions_does_not_duplicate(client, gateway):
     assert len(first.json()) == 1
     second = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
     assert second.json() == []
+
+
+def test_confirming_entities_automatically_generates_suggestions_no_manual_scan(client, gateway):
+    """The whole point of the auto-trigger: an officer reviewing extracted
+    entities on the normal Documents > Entities screen should never need to
+    know a separate 'scan for candidates' step exists. Confirming entities
+    through the real /entities/review endpoint (not seeding + calling
+    generate directly) must produce a suggestion on its own."""
+    case = create_case(client)
+    doc_id, version_id = _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"), ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ], confirmed=False)
+    entity_ids = [e["id"] for e in gateway.tables["document_entities"] if e["document_version_id"] == version_id]
+
+    # Zero suggestions before confirmation - entities are still unconfirmed.
+    assert client.get(f"/api/v1/cases/{case['id']}/timeline/statements", headers=auth("admin-token")).json() == []
+
+    review = client.post(
+        f"/api/v1/documents/{doc_id}/entities/review", headers=auth("admin-token"),
+        json={"confirmed_ids": entity_ids, "rejected_ids": []},
+    )
+    assert review.status_code == 200, review.text
+
+    # No call to /timeline/suggestions/generate was made - this must have
+    # happened automatically as a side effect of the confirmation itself.
+    statements = client.get(f"/api/v1/cases/{case['id']}/timeline/statements", headers=auth("admin-token")).json()
+    assert len(statements) == 1
+    assert statements[0]["status"] == "SUGGESTED"
+    assert statements[0]["person_name"] == "Ramesh Kumar"
+
+    # Still just a suggestion - it must not have auto-confirmed itself.
+    assert client.get(f"/api/v1/cases/{case['id']}/timeline/conflicts", headers=auth("admin-token")).json() == []
+
+
+def test_multi_page_document_entities_are_grouped_across_pages(client, gateway):
+    """A person named on page 1 and a location named on page 3 of the same
+    document must still be paired - the co-occurrence heuristic is per
+    document, not per page, precisely so a real multi-page FIR isn't missed."""
+    case = create_case(client)
+    _seed_document_with_entities(gateway, case["id"], entities=[
+        ("PERSON", "Ramesh Kumar"),
+    ], page_number=1)
+    doc_id, version_id = _seed_document_with_entities(gateway, case["id"], entities=[
+        ("LOCATION", "Nagpur"), ("DATE", "12/03/2026"),
+    ], page_number=3)
+    # Move the first seeded document's entity onto the SAME document as the
+    # second seed, so this genuinely tests one multi-page document rather
+    # than two separate documents (which the earlier cross-document test
+    # already covers).
+    for row in gateway.tables["document_entities"]:
+        if row["value"] == "Ramesh Kumar":
+            row["document_version_id"] = version_id
+            row["page_number"] = 1
+
+    r = client.post(f"/api/v1/cases/{case['id']}/timeline/suggestions/generate", headers=auth("admin-token"))
+    assert r.status_code == 201, r.text
+    suggestions = r.json()
+    assert len(suggestions) == 1
+    assert "p.1" in suggestions[0]["source_excerpt"]
+    assert "p.3" in suggestions[0]["source_excerpt"]

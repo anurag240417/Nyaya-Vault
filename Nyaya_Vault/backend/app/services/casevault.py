@@ -11,7 +11,10 @@ from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, UserRol
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
 
-_ALLOWED_MIME = {"application/pdf", "image/jpeg", "image/png", "image/tiff"}
+_ALLOWED_MIME = {
+    "application/pdf", "image/jpeg", "image/png", "image/tiff",
+    "video/mp4", "video/quicktime", "video/webm",
+}
 _SAFE_NAME = re.compile(r"[^a-zA-Z0-9._-]")
 
 # Document types where a case should have exactly one PRIMARY document -
@@ -439,6 +442,11 @@ class CaseVaultService:
             "image/png": lambda b: b.startswith(b"\x89PNG\r\n\x1a\n"),
             "image/jpeg": lambda b: b.startswith(b"\xff\xd8\xff"),
             "image/tiff": lambda b: b.startswith(b"II*\x00") or b.startswith(b"MM\x00*"),
+            # MP4 and QuickTime (.mov) are both ISO base media containers -
+            # the identifying "ftyp" box sits at byte offset 4, not 0.
+            "video/mp4": lambda b: b[4:8] == b"ftyp",
+            "video/quicktime": lambda b: b[4:8] == b"ftyp",
+            "video/webm": lambda b: b.startswith(b"\x1a\x45\xdf\xa3"),
         }
         if not signatures[content_type](data[:16]):
             raise SupabaseError("File contents do not match the declared MIME type.", status_code=422)
@@ -672,7 +680,7 @@ class CaseVaultService:
             action="METADATA_CONFIRMED",
             metadata={"confirmed_count": len(confirmed_ids), "rejected_count": len(rejected_ids), "version_id": latest["id"]},
         )
-        return {"ok": True}
+        return {"ok": True, "case_id": str(access.document["case_id"]), "confirmed_count": len(confirmed_ids)}
 
     async def list_redactions(self, user: CurrentUser, version_id: str) -> list[dict[str, Any]]:
         await self.authz.require_version_access(user, version_id)

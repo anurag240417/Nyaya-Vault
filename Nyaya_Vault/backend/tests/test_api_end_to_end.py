@@ -16,6 +16,14 @@ def make_pdf(text: str) -> bytes:
     return data
 
 
+def make_mp4() -> bytes:
+    """Minimal bytes with a valid 'ftyp' box signature - enough to pass
+    validate_file's magic-byte check. Not a real playable video; these
+    tests only exercise upload/storage/versioning/processing-fallback,
+    none of which require actually decodable video content."""
+    return b"\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2" + b"\x00" * 32
+
+
 def profile(gateway, username): return next(r for r in gateway.tables["profiles"] if r["username"] == username)
 
 
@@ -55,7 +63,66 @@ def test_case_collaborator_authorization_and_denied_audit(client, gateway):
     assert {c["username"] for c in collabs.json()} >= {"admin", "io", "clerk"}
 
 
-def test_document_clearance_is_separate_from_case_access(client, gateway):
+def test_video_evidence_uploads_downloads_and_versions_like_any_document(client, gateway):
+    case = create_case(client)
+    video1 = make_mp4()
+    up = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "CCTV Footage - Main Gate", "document_type": "CCTV", "clearance_level": "RESTRICTED"},
+        files={"file": ("cctv.mp4", video1, "video/mp4")},
+    )
+    assert up.status_code == 200, up.text
+    doc_id, version_id = up.json()["documentId"], up.json()["versionId"]
+
+    download = client.get(f"/api/v1/documents/{doc_id}/versions/{version_id}/download", headers=auth("admin-token"))
+    assert download.status_code == 200
+    assert download.content == video1
+    assert download.headers["content-type"] == "video/mp4"
+
+    video2 = make_mp4()
+    v2 = client.post(
+        f"/api/v1/documents/{doc_id}/versions", headers=auth("admin-token"),
+        data={"change_summary": "Higher resolution re-export"},
+        files={"file": ("cctv-v2.mp4", video2, "video/mp4")},
+    )
+    assert v2.status_code == 200, v2.text
+    assert v2.json()["versionNumber"] == 2
+
+
+def test_video_with_wrong_signature_is_rejected(client, gateway):
+    case = create_case(client)
+    fake = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Not actually a video", "document_type": "CCTV", "clearance_level": "RESTRICTED"},
+        files={"file": ("fake.mp4", b"this is just plain text, not an mp4 container", "video/mp4")},
+    )
+    assert fake.status_code == 422
+    assert "do not match" in fake.json()["detail"]
+
+
+def test_video_processing_gracefully_finds_no_text_instead_of_crashing(client, gateway):
+    """Video has no text to extract - processing must complete cleanly with
+    zero entities, not crash trying to run PDF/image extraction on it."""
+    case = create_case(client)
+    up = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Suspect Interview Recording", "document_type": "RECORDING", "clearance_level": "RESTRICTED"},
+        files={"file": ("interview.mp4", make_mp4(), "video/mp4")},
+    ).json()
+    doc_id, version_id = up["documentId"], up["versionId"]
+
+    processed = client.post(f"/api/v1/documents/{doc_id}/process", headers=auth("admin-token"), json={"version_id": version_id})
+    assert processed.status_code == 200, processed.text
+    body = processed.json()
+    assert body["status"] == "READY"
+    assert body["entities_created"] == 0
+    assert body["ocr_used"] is False
+
+    entities = client.get(f"/api/v1/document-versions/{version_id}/entities", headers=auth("admin-token")).json()
+    assert entities == []
+
+
+
     case = create_case(client)
     clerk = profile(gateway, "clerk")
     client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("admin-token"), json={"user_id": clerk["id"]})

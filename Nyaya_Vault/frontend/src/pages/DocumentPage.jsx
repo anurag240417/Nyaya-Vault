@@ -28,6 +28,7 @@ import {
   getRedactions,
   listDocumentVersions,
   uploadDocumentVersion,
+  getVersionObjectUrl,
 } from "../lib/api";
 import { formatBytes, formatDate, shortHash } from "../lib/format";
 import {
@@ -162,6 +163,7 @@ export default function DocumentPage() {
       </nav>
       {tab === "overview" ? (
         <Overview
+          documentId={documentId}
           doc={doc}
           latest={latest}
           runProcessor={runProcessor}
@@ -233,7 +235,7 @@ export default function DocumentPage() {
               <input
                 required
                 type="file"
-                accept="application/pdf,image/jpeg,image/png,image/tiff"
+                accept="application/pdf,image/jpeg,image/png,image/tiff,video/mp4,video/quicktime,video/webm"
                 onChange={(e) =>
                   setVersionForm({
                     ...versionForm,
@@ -249,8 +251,35 @@ export default function DocumentPage() {
     </div>
   );
 }
-function Overview({ doc, latest, runProcessor, busy }) {
+function Overview({ documentId, doc, latest, runProcessor, busy }) {
   const configured = isProcessorConfigured();
+  const isVideo = (latest?.mime_type || "").startsWith("video/");
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [videoError, setVideoError] = useState(null);
+  useEffect(() => {
+    if (!isVideo || !latest) {
+      setVideoUrl(null);
+      return;
+    }
+    let cancelled = false,
+      objectUrl = null;
+    getVersionObjectUrl(documentId, latest)
+      .then((url) => {
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        objectUrl = url;
+        setVideoUrl(url);
+      })
+      .catch((e) => {
+        if (!cancelled) setVideoError(e.message);
+      });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [isVideo, documentId, latest]);
   return (
     <div className="two-column">
       <section className="panel">
@@ -260,6 +289,28 @@ function Overview({ doc, latest, runProcessor, busy }) {
             <p>SHA-256 is computed from exact uploaded bytes.</p>
           </div>
         </div>
+        {isVideo ? (
+          <div style={{ marginBottom: "1rem" }}>
+            {videoUrl ? (
+              <video
+                controls
+                preload="metadata"
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  background: "#000",
+                }}
+                src={videoUrl}
+              />
+            ) : videoError ? (
+              <p className="form-error">
+                Could not load video for playback: {videoError}
+              </p>
+            ) : (
+              <LoadingState label="Loading video…" />
+            )}
+          </div>
+        ) : null}
         <dl className="definition-grid">
           <dt>Document ID</dt>
           <dd>
@@ -315,14 +366,24 @@ function Overview({ doc, latest, runProcessor, busy }) {
           {latest?.processing_error ? (
             <p className="form-error">{latest.processing_error}</p>
           ) : null}
-          <button
-            className="button button-block"
-            disabled={!configured || busy}
-            onClick={runProcessor}
-          >
-            <Bot size={16} />{" "}
-            {busy ? "Requesting…" : "Run OCR / NER processing"}
-          </button>
+          {isVideo ? (
+            <p className="muted small" style={{ marginTop: "0.5rem" }}>
+              Video is stored and hash-verified like any other evidence, but its
+              visual/audio content is not automatically analyzed - there's no
+              text for OCR or NER to extract. Reference what's seen or heard in
+              this video manually via a Conflicts tab timeline statement if it's
+              relevant to a contradiction check.
+            </p>
+          ) : (
+            <button
+              className="button button-block"
+              disabled={!configured || busy}
+              onClick={runProcessor}
+            >
+              <Bot size={16} />{" "}
+              {busy ? "Requesting…" : "Run OCR / NER processing"}
+            </button>
+          )}
         </section>
         <section className="panel compact-panel">
           <h3>Human confirmation</h3>

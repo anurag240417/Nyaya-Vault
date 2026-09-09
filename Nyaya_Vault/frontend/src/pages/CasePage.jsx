@@ -446,11 +446,11 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </select>
             </label>
             <label className="field">
-              <span>File · max 25 MB</span>
+              <span>File · max 200 MB</span>
               <input
                 required
                 type="file"
-                accept="application/pdf,image/jpeg,image/png,image/tiff"
+                accept="application/pdf,image/jpeg,image/png,image/tiff,video/mp4,video/quicktime,video/webm"
                 onChange={(e) =>
                   setForm({ ...form, file: e.target.files?.[0] || null })
                 }
