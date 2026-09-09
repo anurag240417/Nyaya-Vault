@@ -19,6 +19,7 @@ import {
   listCollaboratorCandidates,
   removeCollaborator,
   uploadNewDocument,
+  uploadDocumentVersion,
 } from "../lib/api";
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
