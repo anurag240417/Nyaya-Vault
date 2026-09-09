@@ -1,1 +1,8 @@
-export default function LoadingState({fullPage=false,label='Loading…'}){return <div className={fullPage?'loading-state full-page':'loading-state'}><span className="spinner"/><span>{label}</span></div>}
+export default function LoadingState({ fullPage = false, label = "Loading…" }) {
+  return (
+    <div className={fullPage ? "loading-state full-page" : "loading-state"}>
+      <span className="spinner" />
+      <span>{label}</span>
+    </div>
+  );
+}

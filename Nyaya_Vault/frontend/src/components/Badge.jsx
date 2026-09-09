@@ -1,1 +1,9 @@
-export default function Badge({children,tone='neutral'}){return <span className={`badge badge-${tone}`}>{children}</span>}export function clearanceTone(c){if(c==='SECRET')return'danger';if(c==='CONFIDENTIAL')return'warning';if(c==='RESTRICTED')return'info';return'success'}
+export default function Badge({ children, tone = "neutral" }) {
+  return <span className={`badge badge-${tone}`}>{children}</span>;
+}
+export function clearanceTone(c) {
+  if (c === "SECRET") return "danger";
+  if (c === "CONFIDENTIAL") return "warning";
+  if (c === "RESTRICTED") return "info";
+  return "success";
+}

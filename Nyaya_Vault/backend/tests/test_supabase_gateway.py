@@ -58,6 +58,7 @@ def test_legacy_service_role_jwt_still_uses_bearer_for_compatibility() -> None:
             Settings(
                 supabase_url="https://example.supabase.co",
                 supabase_anon_key="legacy-anon",
+                supabase_secret_key=None,
                 supabase_service_role_key="legacy-service-role-jwt",
             ),
             client=client,

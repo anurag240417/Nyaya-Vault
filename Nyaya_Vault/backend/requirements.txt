@@ -11,4 +11,5 @@ pdf2image==1.17.0
 pytesseract==0.3.13
 PyMuPDF==1.24.11
 spacy==3.8.16
+ortools==9.15.6755
 pytest==8.3.3

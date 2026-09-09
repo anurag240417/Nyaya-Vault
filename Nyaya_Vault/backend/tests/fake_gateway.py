@@ -22,6 +22,7 @@ class FakeGateway:
             "document_versions": [], "document_entities": [], "document_chunks": [],
             "document_embeddings": [], "redaction_suggestions": [], "audit_logs": [],
             "integrity_anchors": [], "document_processing_jobs": [],
+            "case_timeline_statements": [], "case_location_travel_minutes": [], "case_timeline_conflicts": [],
         }
         self.storage: dict[str, bytes] = {}
         self.tokens: dict[str, str] = {}

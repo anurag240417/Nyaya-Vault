@@ -4,6 +4,7 @@ from fastapi import Request
 
 from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
+from app.services.timeline import TimelineService
 
 
 def get_casevault_service(request: Request) -> CaseVaultService:
@@ -12,3 +13,7 @@ def get_casevault_service(request: Request) -> CaseVaultService:
 
 def get_processor(request: Request) -> DocumentProcessor:
     return request.app.state.processor
+
+
+def get_timeline_service(request: Request) -> TimelineService:
+    return request.app.state.timeline

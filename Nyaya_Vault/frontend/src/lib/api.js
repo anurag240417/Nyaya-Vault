@@ -137,3 +137,12 @@ export async function adminCreateCase(payload) {
 export async function adminReplaceCaseAssignments(caseId, payload) {
   return apiJson(`/api/v1/admin/cases/${caseId}/assignments`, { method: 'PATCH', body: JSON.stringify(payload) });
 }
+
+export async function listTimelineStatements(caseId) { return apiJson(`/api/v1/cases/${caseId}/timeline/statements`); }
+export async function addTimelineStatement(caseId, payload) {
+  return apiJson(`/api/v1/cases/${caseId}/timeline/statements`, { method: 'POST', body: JSON.stringify(payload) });
+}
+export async function listTimelineConflicts(caseId) { return apiJson(`/api/v1/cases/${caseId}/timeline/conflicts`); }
+export async function setTimelineTravelMinutes(caseId, payload) {
+  return apiJson(`/api/v1/cases/${caseId}/timeline/travel-times`, { method: 'POST', body: JSON.stringify(payload) });
+}
