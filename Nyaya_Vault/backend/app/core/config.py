@@ -59,6 +59,21 @@ class Settings(BaseSettings):
     tesseract_cmd: str | None = None
     temp_dir: Path = Path("./.tmp")
 
+    # AI case assistant (ask/summary/legal-section-suggestion features).
+    # Both providers can be configured; OpenAI is used if its key is set,
+    # otherwise Anthropic, otherwise the feature returns a clear "not
+    # configured" error naming OPENAI_API_KEY - see _default_llm_client in
+    # app/services/assistant.py.
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4o"
+    # Override for OpenAI-COMPATIBLE providers (Groq, OpenRouter, a local
+    # vLLM/Ollama server, etc.) that use OpenAI's request format at their
+    # own URL - e.g. Groq: https://api.groq.com/openai/v1,
+    # OpenRouter: https://openrouter.ai/api/v1. Leave as-is for real OpenAI.
+    openai_base_url: str = "https://api.openai.com/v1"
+    anthropic_api_key: str | None = None
+    anthropic_model: str = "claude-sonnet-5"
+
     @property
     def normalized_supabase_url(self) -> str:
         return self.supabase_url.rstrip("/")

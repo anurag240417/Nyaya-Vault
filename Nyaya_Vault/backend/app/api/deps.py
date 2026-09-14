@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import Request
 
+from app.services.assistant import AssistantService
 from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
 from app.services.timeline import TimelineService
@@ -17,3 +18,7 @@ def get_processor(request: Request) -> DocumentProcessor:
 
 def get_timeline_service(request: Request) -> TimelineService:
     return request.app.state.timeline
+
+
+def get_assistant_service(request: Request) -> AssistantService:
+    return request.app.state.assistant

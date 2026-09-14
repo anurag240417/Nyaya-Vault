@@ -39,6 +39,12 @@ import {
   confirmTimelineSuggestion,
   rejectTimelineSuggestion,
 } from "../lib/api";
+import {
+  askCaseAssistant,
+  getCaseSummary,
+  getLegalSectionSuggestions,
+  getCaseGaps,
+} from "../lib/api";
 export default function CasePage() {
   const { caseId } = useParams();
   const { profile } = useAuth();
@@ -157,6 +163,7 @@ export default function CasePage() {
               />
             }
           />
+          <Route path="assistant" element={<AssistantTab caseId={caseId} />} />
           <Route path="audit" element={<AuditTab audit={audit} />} />
         </Routes>
       </div>
@@ -976,6 +983,216 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
         </Modal>
       ) : null}
     </section>
+  );
+}
+function AssistantTab({ caseId }) {
+  const [gaps, setGaps] = useState(null),
+    [gapsError, setGapsError] = useState(null);
+  const [messages, setMessages] = useState([]),
+    [question, setQuestion] = useState(""),
+    [asking, setAsking] = useState(false);
+  const [summary, setSummary] = useState(null),
+    [summarizing, setSummarizing] = useState(false);
+  const [legal, setLegal] = useState(null),
+    [suggestingLegal, setSuggestingLegal] = useState(false);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    getCaseGaps(caseId)
+      .then(setGaps)
+      .catch((e) => setGapsError(e.message));
+  }, [caseId]);
+  function severityTone(s) {
+    return s === "HIGH" ? "danger" : s === "MEDIUM" ? "warning" : "info";
+  }
+  async function ask(e) {
+    e.preventDefault();
+    if (!question.trim() || asking) return;
+    const q = question.trim();
+    setQuestion("");
+    setError(null);
+    setMessages((m) => [...m, { role: "user", text: q }]);
+    setAsking(true);
+    try {
+      const r = await askCaseAssistant(caseId, q);
+      setMessages((m) => [...m, { role: "assistant", text: r.answer }]);
+    } catch (err) {
+      setError(err.message);
+      setMessages((m) => m.slice(0, -1));
+      setQuestion(q);
+    } finally {
+      setAsking(false);
+    }
+  }
+  async function generateSummary() {
+    setSummarizing(true);
+    setError(null);
+    try {
+      const r = await getCaseSummary(caseId);
+      setSummary(r.summary);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSummarizing(false);
+    }
+  }
+  async function generateLegal() {
+    setSuggestingLegal(true);
+    setError(null);
+    try {
+      const r = await getLegalSectionSuggestions(caseId);
+      setLegal(r.suggestion);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSuggestingLegal(false);
+    }
+  }
+  return (
+    <div className="two-column">
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <h2>Ask about this case</h2>
+            <p>
+              Answers are grounded only in this case's own confirmed evidence
+              and cite their source. Not a legal or factual authority - verify
+              anything important yourself.
+            </p>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.75rem",
+            minHeight: "120px",
+            marginBottom: "1rem",
+          }}
+        >
+          {messages.length === 0 ? (
+            <p className="muted small">
+              No questions asked yet this session. Try: "Who has been placed at
+              more than one location?" or "What evidence do we have so far?"
+            </p>
+          ) : null}
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              style={{
+                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "85%",
+                background: m.role === "user" ? "#0969da" : "#f0f3f6",
+                color: m.role === "user" ? "#fff" : "#1f2328",
+                borderRadius: "10px",
+                padding: "0.6rem 0.85rem",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {m.text}
+            </div>
+          ))}
+          {asking ? <div className="muted small">Thinking…</div> : null}
+        </div>
+        <form onSubmit={ask} style={{ display: "flex", gap: "0.5rem" }}>
+          <div className="field" style={{ flex: 1, margin: 0 }}>
+            <input
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Ask a question about this case…"
+              disabled={asking}
+            />
+          </div>
+          <button
+            className="button button-primary"
+            disabled={asking || !question.trim()}
+          >
+            Ask
+          </button>
+        </form>
+        {error ? (
+          <p className="form-error" style={{ marginTop: "0.5rem" }}>
+            {error}
+          </p>
+        ) : null}
+      </section>
+      <aside className="stack">
+        <section className="panel compact-panel">
+          <h3>Case gap check</h3>
+          <p className="muted small" style={{ marginTop: 0 }}>
+            Computed directly from case data - not AI-generated, always exact.
+          </p>
+          {gapsError ? (
+            <p className="form-error">{gapsError}</p>
+          ) : gaps === null ? (
+            <LoadingState label="Checking…" />
+          ) : gaps.length === 0 ? (
+            <p className="muted small">No gaps found.</p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+              }}
+            >
+              {gaps.map((g, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <Badge tone={severityTone(g.severity)}>{g.severity}</Badge>
+                  <span className="small">{g.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+        <section className="panel compact-panel">
+          <h3>Investigative briefing</h3>
+          <button
+            className="button button-block"
+            disabled={summarizing}
+            onClick={generateSummary}
+          >
+            {summarizing ? "Generating…" : "Generate summary"}
+          </button>
+          {summary ? (
+            <div
+              className="small"
+              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+            >
+              {summary}
+            </div>
+          ) : null}
+        </section>
+        <section className="panel compact-panel">
+          <h3>Possible legal sections</h3>
+          <p className="muted small" style={{ marginTop: 0, color: "#b45309" }}>
+            ⚠ Preliminary and non-authoritative. A qualified legal officer must
+            independently verify before relying on this.
+          </p>
+          <button
+            className="button button-block"
+            disabled={suggestingLegal}
+            onClick={generateLegal}
+          >
+            {suggestingLegal ? "Analyzing…" : "Suggest sections to review"}
+          </button>
+          {legal ? (
+            <div
+              className="small"
+              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+            >
+              {legal}
+            </div>
+          ) : null}
+        </section>
+      </aside>
+    </div>
   );
 }
 function AuditTab({ audit }) {

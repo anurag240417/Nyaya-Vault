@@ -24,7 +24,7 @@ def gateway() -> FakeGateway:
 def client(gateway: FakeGateway):
     settings = Settings(
         supabase_url="http://fake.invalid", supabase_anon_key="anon", supabase_service_role_key="service",
-        expose_docs=True, enable_semantic_embeddings=False,
+        expose_docs=True, enable_semantic_embeddings=False, anthropic_api_key=None, openai_api_key=None,
     )
     app = create_app(settings=settings, gateway=gateway)
     with TestClient(app) as c:
