@@ -5,6 +5,7 @@ export default function RepoTabs({ caseId, counts = {} }) {
     ["documents", "Documents", counts.documents],
     ["collaborators", "Collaborators", counts.collaborators],
     ["timeline", "Conflicts", counts.timeline],
+    ["assistant", "Assistant"],
     ["audit", "Audit trail", counts.audit],
   ];
   return (

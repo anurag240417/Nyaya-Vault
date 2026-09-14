@@ -171,3 +171,16 @@ export async function confirmTimelineSuggestion(caseId, statementId) {
 export async function rejectTimelineSuggestion(caseId, statementId) {
   return apiJson(`/api/v1/cases/${caseId}/timeline/statements/${statementId}`, { method: 'DELETE' });
 }
+
+export async function askCaseAssistant(caseId, question) {
+  return apiJson(`/api/v1/cases/${caseId}/assistant/ask`, { method: 'POST', body: JSON.stringify({ question }) });
+}
+export async function getCaseSummary(caseId) {
+  return apiJson(`/api/v1/cases/${caseId}/assistant/summary`, { method: 'POST' });
+}
+export async function getLegalSectionSuggestions(caseId) {
+  return apiJson(`/api/v1/cases/${caseId}/assistant/legal-sections`, { method: 'POST' });
+}
+export async function getCaseGaps(caseId) {
+  return apiJson(`/api/v1/cases/${caseId}/assistant/gaps`);
+}

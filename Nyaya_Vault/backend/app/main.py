@@ -6,10 +6,11 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import admin, auth, cases, documents, system, timeline, users
+from app.api.routes import admin, assistant, auth, cases, documents, system, timeline, users
 from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.integrations.supabase import SupabaseGateway
+from app.services.assistant import AssistantService
 from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
 from app.services.timeline import TimelineService
@@ -25,6 +26,7 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
         app.state.casevault = CaseVaultService(app.state.supabase, settings)
         app.state.processor = DocumentProcessor(app.state.supabase, settings)
         app.state.timeline = TimelineService(app.state.supabase, settings)
+        app.state.assistant = AssistantService(app.state.supabase, settings, app.state.casevault, app.state.timeline)
         yield
         if supplied_gateway is None:
             await app.state.supabase.close()
@@ -63,6 +65,7 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
     app.include_router(documents.router, prefix=prefix)
     app.include_router(system.router, prefix=prefix)
     app.include_router(timeline.router, prefix=prefix)
+    app.include_router(assistant.router, prefix=prefix)
     return app
 
 
