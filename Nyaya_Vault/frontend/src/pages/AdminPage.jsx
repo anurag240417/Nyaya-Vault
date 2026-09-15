@@ -72,6 +72,7 @@ export default function AdminPage() {
           {
             role: user.role,
             clearance_level: user.clearance_level,
+            department: user.department || '',
             is_active: user.is_active,
           },
         ]),
