@@ -272,7 +272,101 @@ def test_non_singleton_document_types_are_unaffected(client, gateway):
         assert r.status_code == 200, r.text
 
 
+def test_department_gates_document_visibility_independent_of_clearance_and_case_access(client, gateway):
+    """Department is a third access axis: same case, same clearance, but a
+    document tagged for a different department must still be invisible - and
+    the list endpoint must silently omit it rather than error."""
+    case = create_case(client)
+    forensic_officer = gateway.add_user(
+        email="forensic@example.com", username="forensic_officer", role="INVESTIGATING_OFFICER",
+        clearance="SECRET", department="FORENSICS", token="forensic-token",
+    )
+    prosecutor = gateway.add_user(
+        email="pros2@example.com", username="prosecutor2", role="PROSECUTOR",
+        clearance="SECRET", department="PROSECUTION", token="pros2-token",
+    )
+    for user in (forensic_officer, prosecutor):
+        r = client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("admin-token"), json={"user_id": user["id"]})
+        assert r.status_code == 200, r.text
 
+    up = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("forensic-token"),
+        data={"title": "DNA analysis report", "clearance_level": "SECRET", "department": "FORENSICS"},
+        files={"file": ("report.pdf", make_pdf("DNA match found"), "application/pdf")},
+    )
+    assert up.status_code == 200, up.text
+    doc_id = up.json()["documentId"]
+
+    # Same case, same (higher) clearance, wrong department -> still denied.
+    denied = client.get(f"/api/v1/documents/{doc_id}", headers=auth("pros2-token"))
+    assert denied.status_code == 403
+
+    listed = client.get(f"/api/v1/cases/{case['id']}/documents", headers=auth("pros2-token"))
+    assert listed.status_code == 200
+    assert doc_id not in {d["id"] for d in listed.json()}
+
+    # The owning department, and admin, can both still open it.
+    assert client.get(f"/api/v1/documents/{doc_id}", headers=auth("forensic-token")).status_code == 200
+    assert client.get(f"/api/v1/documents/{doc_id}", headers=auth("admin-token")).status_code == 200
+
+
+def test_general_department_documents_stay_visible_to_everyone(client, gateway):
+    """Backward compatibility: documents uploaded without picking a
+    department (or explicitly GENERAL) must remain visible to any case
+    member with sufficient clearance, same as before this feature existed."""
+    case = create_case(client)
+    io = profile(gateway, "io")
+    client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("admin-token"), json={"user_id": io["id"]})
+    up = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "General case notes", "clearance_level": "PUBLIC"},
+        files={"file": ("notes.pdf", make_pdf("notes"), "application/pdf")},
+    )
+    assert up.status_code == 200, up.text
+    assert client.get(f"/api/v1/documents/{up.json()['documentId']}", headers=auth("io-token")).status_code == 200
+
+
+def test_uploader_cannot_tag_evidence_for_another_department(client, gateway):
+    case = create_case(client)
+    forensic_officer = gateway.add_user(
+        email="forensic3@example.com", username="forensic_three", role="INVESTIGATING_OFFICER",
+        clearance="SECRET", department="FORENSICS", token="forensic3-token",
+    )
+    client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("admin-token"), json={"user_id": forensic_officer["id"]})
+
+    denied = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("forensic3-token"),
+        data={"title": "Charge sheet", "clearance_level": "RESTRICTED", "department": "PROSECUTION"},
+        files={"file": ("cs.pdf", make_pdf("charges"), "application/pdf")},
+    )
+    assert denied.status_code == 403
+
+    # GENERAL is always allowed regardless of the uploader's own department.
+    ok = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("forensic3-token"),
+        data={"title": "Case notes", "clearance_level": "RESTRICTED", "department": "GENERAL"},
+        files={"file": ("notes.pdf", make_pdf("notes"), "application/pdf")},
+    )
+    assert ok.status_code == 200, ok.text
+
+
+def test_admin_can_set_a_users_department_but_a_user_cannot_self_assign(client, gateway):
+    clerk = profile(gateway, "clerk")
+    r = client.patch(
+        f"/api/v1/users/{clerk['id']}", headers=auth("admin-token"),
+        json={"role": "CLERK", "clearance_level": "PUBLIC", "department": "POLICE", "is_active": True},
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["department"] == "POLICE"
+
+    denied = client.patch(
+        f"/api/v1/users/{clerk['id']}", headers=auth("clerk-token"),
+        json={"role": "CLERK", "clearance_level": "PUBLIC", "department": "JUDICIARY", "is_active": True},
+    )
+    assert denied.status_code == 403
+
+
+def test_processing_entity_review_redaction_and_true_redacted_export(client, gateway):
     case = create_case(client)
     phone = "9876543210"
     text = f"Witness Ravi Sharma provided a statement. Contact phone {phone}. This document contains enough additional narrative to ensure native PDF text extraction is used instead of OCR."

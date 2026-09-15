@@ -29,6 +29,25 @@ CLEARANCE_RANK: dict[ClearanceLevel, int] = {
 }
 
 
+class Department(StrEnum):
+    """Which real-world department a user belongs to, or a document
+    originates from. This is a separate axis from ClearanceLevel (need-to-know
+    depth) and from case_assignments (case membership) - a user can be
+    assigned to a case and hold sufficient clearance, yet still be unable to
+    open a document tagged for a department they are not part of.
+
+    GENERAL is the deliberate "visible to every department" tag - case-wide
+    notes, admin-created records, and anything pre-dating this feature all
+    default here so nothing existing silently becomes invisible.
+    """
+
+    POLICE = "POLICE"
+    FORENSICS = "FORENSICS"
+    PROSECUTION = "PROSECUTION"
+    JUDICIARY = "JUDICIARY"
+    GENERAL = "GENERAL"
+
+
 class CurrentUser(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -37,6 +56,10 @@ class CurrentUser(BaseModel):
     username: str
     role: UserRole
     clearance_level: ClearanceLevel
+    # None means "unassigned" - deliberately not defaulted to GENERAL, so a
+    # freshly signed-up user sees no department-restricted documents until an
+    # admin explicitly assigns them one (mirrors role/clearance defaults).
+    department: Department | None = None
     is_active: bool
     token: str
     auth_user: dict[str, Any]

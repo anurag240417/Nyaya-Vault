@@ -28,11 +28,14 @@ class FakeGateway:
         self.tokens: dict[str, str] = {}
         self.audit_sequence = 0
 
-    def add_user(self, *, email: str, username: str, role: str, clearance: str, active: bool = True, token: str | None = None) -> dict[str, Any]:
+    def add_user(
+        self, *, email: str, username: str, role: str, clearance: str,
+        department: str | None = None, active: bool = True, token: str | None = None,
+    ) -> dict[str, Any]:
         user_id = uid()
         row = {
             "id": user_id, "email": email, "username": username, "role": role,
-            "clearance_level": clearance, "is_active": active,
+            "clearance_level": clearance, "department": department, "is_active": active,
             "created_at": now_iso(), "updated_at": now_iso(),
         }
         self.tables["profiles"].append(row)
@@ -217,7 +220,8 @@ class FakeGateway:
         if function == "backend_register_document_upload":
             doc = {
                 "id": p["p_document_id"], "case_id": p["p_case_id"], "title": p["p_title"], "document_type": p.get("p_document_type"),
-                "clearance_level": p["p_clearance"], "current_version_number": 1, "created_by": p["p_actor_user_id"], "created_at": now_iso(),
+                "clearance_level": p["p_clearance"], "department": p.get("p_department") or "GENERAL",
+                "current_version_number": 1, "created_by": p["p_actor_user_id"], "created_at": now_iso(),
             }
             version_id = uid()
             ver = {

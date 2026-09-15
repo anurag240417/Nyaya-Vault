@@ -22,7 +22,7 @@ import {
 } from '../lib/api';
 import { formatDate } from '../lib/format';
 import Avatar from '../components/Avatar';
-import Badge, { clearanceTone } from '../components/Badge';
+import Badge, { clearanceTone, departmentTone } from '../components/Badge';
 import EmptyState from '../components/EmptyState';
 import LoadingState from '../components/LoadingState';
 import Modal from '../components/Modal';
@@ -30,6 +30,8 @@ import Toast from '../components/Toast';
 
 const ROLES = ['ADMIN', 'INVESTIGATING_OFFICER', 'PROSECUTOR', 'JUDGE', 'CLERK'];
 const CLEARANCES = ['PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET'];
+const DEPARTMENTS = ['', 'GENERAL', 'POLICE', 'FORENSICS', 'PROSECUTION', 'JUDICIARY'];
+function departmentLabel(d) { return d || 'Unassigned'; }
 
 function cleanRole(role) {
   return role?.replaceAll('_', ' ') || 'Unknown role';
@@ -117,7 +119,7 @@ export default function AdminPage() {
   async function saveUser(id) {
     const draft = drafts[id];
     try {
-      await adminUpdateProfile(id, draft.role, draft.clearance_level, draft.is_active);
+      await adminUpdateProfile(id, draft.role, draft.clearance_level, draft.is_active, draft.department || null);
       await reloadUsers();
       setToast({ message: 'User permissions updated.' });
     } catch (error) {
@@ -287,6 +289,16 @@ export default function AdminPage() {
                   >
                     {CLEARANCES.map((clearance) => <option key={clearance}>{clearance}</option>)}
                   </select>
+                  <select
+                    value={draft.department ?? (user.department || '')}
+                    onChange={(event) => setDrafts({
+                      ...drafts,
+                      [user.id]: { ...draft, department: event.target.value },
+                    })}
+                    title="Only an admin can set a user's department; a document tagged for a department is only visible to matching users."
+                  >
+                    {DEPARTMENTS.map((d) => <option key={d || 'unassigned'} value={d}>{departmentLabel(d)}</option>)}
+                  </select>
                   <label className="switch-label">
                     <input
                       type="checkbox"
@@ -299,6 +311,7 @@ export default function AdminPage() {
                     {draft.is_active ? 'Active' : 'Disabled'}
                   </label>
                   <Badge tone={clearanceTone(draft.clearance_level)}>{draft.clearance_level}</Badge>
+                  <Badge tone={departmentTone(draft.department)}>{departmentLabel(draft.department)}</Badge>
                   <button className="button button-sm" onClick={() => saveUser(user.id)}>
                     <Save size={14} /> Save
                   </button>

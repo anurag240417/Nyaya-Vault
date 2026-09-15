@@ -34,7 +34,7 @@ async def get_current_user(
     rows = await gateway.service_table(
         "GET",
         "profiles",
-        params={"id": f"eq.{user_id}", "select": "id,email,username,role,clearance_level,is_active,created_at"},
+        params={"id": f"eq.{user_id}", "select": "id,email,username,role,clearance_level,department,is_active,created_at"},
     )
     if not rows:
         raise NotFoundError("User profile is missing. Run the Supabase migrations.")

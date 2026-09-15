@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
 from app.api.deps import get_casevault_service, get_processor, get_timeline_service
-from app.core.models import ClearanceLevel, CurrentUser
+from app.core.models import ClearanceLevel, CurrentUser, Department
 from app.schemas.documents import EntityReview, ProcessRequest, RedactionReview
 from app.security.auth import get_current_user
 from app.services.casevault import CaseVaultService
@@ -23,6 +23,7 @@ async def upload_document(
     title: str = Form(...),
     document_type: str | None = Form(default=None),
     clearance_level: ClearanceLevel = Form(default=ClearanceLevel.RESTRICTED),
+    department: Department = Form(default=Department.GENERAL),
     file: UploadFile = File(...),
     user: CurrentUser = Depends(get_current_user),
     service: CaseVaultService = Depends(get_casevault_service),
@@ -37,6 +38,7 @@ async def upload_document(
         filename=file.filename or "evidence",
         content_type=file.content_type or "application/octet-stream",
         data=data,
+        department=department,
     )
     return result
 

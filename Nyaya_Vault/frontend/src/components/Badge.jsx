@@ -7,3 +7,10 @@ export function clearanceTone(c) {
   if (c === "RESTRICTED") return "info";
   return "success";
 }
+export function departmentTone(d) {
+  if (d === "POLICE") return "info";
+  if (d === "FORENSICS") return "warning";
+  if (d === "PROSECUTION") return "danger";
+  if (d === "JUDICIARY") return "success";
+  return "neutral";
+}

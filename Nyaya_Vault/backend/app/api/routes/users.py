@@ -31,5 +31,6 @@ async def update_user(
         user_id,
         role=payload.role.value,
         clearance_level=payload.clearance_level.value,
+        department=payload.department.value if payload.department else None,
         is_active=payload.is_active,
     )

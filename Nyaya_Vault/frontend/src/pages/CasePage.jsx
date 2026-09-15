@@ -24,7 +24,7 @@ import {
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
 import RepoTabs from "../components/RepoTabs";
-import Badge, { clearanceTone } from "../components/Badge";
+import Badge, { clearanceTone, departmentTone } from "../components/Badge";
 import Avatar from "../components/Avatar";
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
@@ -242,6 +242,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
       title: "",
       documentType: "",
       clearanceLevel: "RESTRICTED",
+      department: "GENERAL",
       file: null,
     });
   const nav = useNavigate();
@@ -281,6 +282,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           title: "",
           documentType: "",
           clearanceLevel: "RESTRICTED",
+          department: "GENERAL",
           file: null,
         });
         setUpdateExisting(false);
@@ -296,6 +298,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           title: "",
           documentType: "",
           clearanceLevel: "RESTRICTED",
+          department: "GENERAL",
           file: null,
         });
         await reload();
@@ -335,6 +338,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           <div className="data-header">
             <span>Name</span>
             <span>Clearance</span>
+            <span>Department</span>
             <span>Version</span>
             <span>Created</span>
           </div>
@@ -349,6 +353,9 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </span>
               <Badge tone={clearanceTone(doc.clearance_level)}>
                 {doc.clearance_level}
+              </Badge>
+              <Badge tone={departmentTone(doc.department)}>
+                {doc.department || "GENERAL"}
               </Badge>
               <span>v{doc.current_version_number}</span>
               <span className="small muted">{formatDate(doc.created_at)}</span>
@@ -448,6 +455,25 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 }
               >
                 {["PUBLIC", "RESTRICTED", "CONFIDENTIAL", "SECRET"].map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Department</span>
+              <select
+                value={form.department}
+                onChange={(e) =>
+                  setForm({ ...form, department: e.target.value })
+                }
+              >
+                {[
+                  "GENERAL",
+                  "POLICE",
+                  "FORENSICS",
+                  "PROSECUTION",
+                  "JUDICIARY",
+                ].map((v) => (
                   <option key={v}>{v}</option>
                 ))}
               </select>

@@ -83,12 +83,13 @@ function validateUpload(file) {
   if (file.size > 200 * 1024 * 1024) throw new Error('File exceeds the 200 MB limit.');
 }
 
-export async function uploadNewDocument({ caseId, title, documentType, clearanceLevel, file }) {
+export async function uploadNewDocument({ caseId, title, documentType, clearanceLevel, file, department }) {
   validateUpload(file);
   const body = new FormData();
   body.append('title', title);
   body.append('document_type', documentType || '');
   body.append('clearance_level', clearanceLevel);
+  body.append('department', department || 'GENERAL');
   body.append('file', file);
   return apiJson(`/api/v1/cases/${caseId}/documents`, { method: 'POST', body });
 }
@@ -140,9 +141,9 @@ export async function searchCaseVault(query, caseId = null) {
 export async function verifyIntegrity() { return apiJson('/api/v1/integrity/verify'); }
 
 export async function listProfiles() { return apiJson('/api/v1/users'); }
-export async function adminUpdateProfile(userId, role, clearanceLevel, isActive) {
+export async function adminUpdateProfile(userId, role, clearanceLevel, isActive, department) {
   return apiJson(`/api/v1/users/${userId}`, {
-    method: 'PATCH', body: JSON.stringify({ role, clearance_level: clearanceLevel, is_active: isActive }),
+    method: 'PATCH', body: JSON.stringify({ role, clearance_level: clearanceLevel, department: department || null, is_active: isActive }),
   });
 }
 

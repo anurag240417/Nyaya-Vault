@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.core.exceptions import AuthorizationError, NotFoundError
-from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, UserRole
+from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, Department, UserRole
 from app.integrations.supabase import SupabaseGateway
 
 
@@ -101,7 +101,43 @@ class AuthorizationService:
         required = ClearanceLevel(str(document["clearance_level"]))
         if CLEARANCE_RANK[user.clearance_level] < CLEARANCE_RANK[required]:
             raise AuthorizationError("Your evidence clearance is insufficient for this document.")
+        self.check_department_access(user, document)
         return DocumentAccess(document=document, case=case)
+
+    def check_department_access(self, user: CurrentUser, document: dict[str, Any]) -> None:
+        """Department is a third, independent access axis on top of case
+        membership and clearance level: a document tagged for a specific
+        department is invisible to everyone outside that department, even an
+        assigned collaborator with sufficient clearance. GENERAL-tagged
+        documents (the default) are exempt, as is ADMIN - mirroring how ADMIN
+        already bypasses case membership in require_case_access.
+        """
+        if user.role == UserRole.ADMIN:
+            return
+        doc_department = document.get("department")
+        if not doc_department or doc_department == Department.GENERAL.value:
+            return
+        if user.department is None or user.department.value != doc_department:
+            raise AuthorizationError(
+                "This document belongs to another department. Ask an admin to grant you access."
+            )
+
+    def visible_documents(self, user: CurrentUser, documents: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Clearance + department filter for list endpoints, where raising on
+        the first denial would be wrong - a list should just omit what the
+        caller cannot open, the same way clearance filtering already works.
+        """
+        user_rank = CLEARANCE_RANK[user.clearance_level]
+        visible = []
+        for row in documents:
+            if user_rank < CLEARANCE_RANK[ClearanceLevel(str(row["clearance_level"]))]:
+                continue
+            try:
+                self.check_department_access(user, row)
+            except AuthorizationError:
+                continue
+            visible.append(row)
+        return visible
 
     async def require_version_access(self, user: CurrentUser, version_id: str) -> tuple[DocumentAccess, dict[str, Any]]:
         version = await self._one(

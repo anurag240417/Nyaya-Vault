@@ -7,7 +7,7 @@ from typing import Any
 
 from app.core.config import Settings
 from app.core.exceptions import AuthorizationError, ConflictError, NotFoundError, SupabaseError
-from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, UserRole
+from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, Department, UserRole
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
 
@@ -394,6 +394,7 @@ class CaseVaultService:
         role: str,
         clearance_level: str,
         is_active: bool,
+        department: str | None = None,
     ) -> dict[str, Any]:
         await self.authz.require_role(user, UserRole.ADMIN)
         target = await self.authz.get_profile(target_user_id)
@@ -409,7 +410,12 @@ class CaseVaultService:
             "PATCH",
             "profiles",
             params={"id": f"eq.{target_user_id}"},
-            body={"role": role, "clearance_level": clearance_level, "is_active": is_active},
+            body={
+                "role": role,
+                "clearance_level": clearance_level,
+                "department": department,
+                "is_active": is_active,
+            },
             prefer="return=representation",
         )
         if not rows:
@@ -423,6 +429,7 @@ class CaseVaultService:
                 "target_user_id": target_user_id,
                 "role": role,
                 "clearance": clearance_level,
+                "department": department,
                 "active": is_active,
             },
         )
@@ -458,12 +465,7 @@ class CaseVaultService:
             "documents",
             params={"case_id": f"eq.{case_id}", "select": "*", "order": "created_at.desc"},
         ) or []
-        user_rank = CLEARANCE_RANK[user.clearance_level]
-        return [
-            row
-            for row in rows
-            if user_rank >= CLEARANCE_RANK[ClearanceLevel(str(row["clearance_level"]))]
-        ]
+        return self.authz.visible_documents(user, rows)
 
     async def get_document(self, user: CurrentUser, document_id: str, *, record_view: bool = True) -> dict[str, Any]:
         access = await self.authz.require_document_access(user, document_id)
@@ -512,10 +514,22 @@ class CaseVaultService:
         filename: str,
         content_type: str,
         data: bytes,
+        department: Department = Department.GENERAL,
     ) -> dict[str, Any]:
         await self.authz.require_case_access(user, case_id)
         if CLEARANCE_RANK[user.clearance_level] < CLEARANCE_RANK[clearance_level]:
             raise AuthorizationError("You cannot create evidence above your own clearance level.")
+        # Mirrors the clearance check above: an uploader may only tag a
+        # document for their own department, or leave it GENERAL (visible to
+        # everyone). This stops a CLERK in one department from quietly
+        # locking evidence away from the department that actually owns it,
+        # or claiming evidence on behalf of a department they are not in.
+        # ADMIN is exempt, same as everywhere else department is checked.
+        if user.role != UserRole.ADMIN and department != Department.GENERAL:
+            if user.department is None or user.department != department:
+                raise AuthorizationError(
+                    "You can only tag evidence for your own department, or leave it General."
+                )
         self.validate_file(content_type=content_type, data=data)
 
         singleton_key = _singleton_type_key(document_type)
@@ -556,6 +570,7 @@ class CaseVaultService:
                     "p_sha256": digest,
                     "p_size_bytes": len(data),
                     "p_mime_type": content_type,
+                    "p_department": department.value,
                 },
             )
         except Exception:
