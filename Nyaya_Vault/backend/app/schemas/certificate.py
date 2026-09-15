@@ -1,8 +1,4 @@
-"""
-Schema for the Section 63 (BSA 2023) electronic evidence certificate.
 
-Drop this file at: backend/app/schemas/certificate.py
-"""
 from pydantic import BaseModel, Field
 
 

@@ -3,13 +3,9 @@ Builds a Section 63 (Bharatiya Sakshya Adhiniyam, 2023) electronic evidence
 certificate PDF, styled to look like a formal legal/government certificate
 (double-ruled border, serif typography, certificate number, seal-placeholder
 box) - WITHOUT reproducing the State Emblem of India or any government
-department's name or letterhead. That emblem's use is legally restricted
-under the State Emblem of India (Prohibition of Improper Use) Act, and this
-system is not a government body, so it must not appear to issue documents
-on a government's behalf. Everything here is generic formal-document styling
+department's name or letterhead.Everything here is generic formal-document styling
 built from the case's own data.
 
-Drop this file at: backend/app/services/certificate_builder.py
 """
 from __future__ import annotations
 

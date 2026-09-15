@@ -1,25 +1,3 @@
-// Drop this file at: frontend/src/components/CertificateModal.jsx
-//
-// Usage (inside DocumentPage.jsx, wherever the "Download" / "New version"
-// buttons already are):
-//
-//   import CertificateModal from "../components/CertificateModal";
-//   const [certOpen, setCertOpen] = useState(false);
-//   ...
-//   <button className="button" onClick={() => setCertOpen(true)}>
-//     Generate Section 63 certificate
-//   </button>
-//   {certOpen ? (
-//     <CertificateModal
-//       documentId={doc.id}
-//       versionId={currentVersionId}
-//       onClose={() => setCertOpen(false)}
-//     />
-//   ) : null}
-//
-// Depends on generateCertificate() being added to lib/api.js - see
-// integration_notes.md.
-
 import { useState } from "react";
 import Modal from "./Modal";
 import { generateCertificate } from "../lib/api";
