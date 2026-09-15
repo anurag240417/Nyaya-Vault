@@ -17,6 +17,7 @@ import {
 import Badge, { clearanceTone } from "../components/Badge";
 import LoadingState from "../components/LoadingState";
 import Modal from "../components/Modal";
+import CertificateModal from "../components/CertificateModal";
 import Toast from "../components/Toast";
 import {
   confirmEntities,
@@ -47,6 +48,7 @@ export default function DocumentPage() {
     [loading, setLoading] = useState(true),
     [toast, setToast] = useState(null),
     [versionModal, setVersionModal] = useState(false),
+    [certModal, setCertModal] = useState(false),
     [versionForm, setVersionForm] = useState({ file: null, changeSummary: "" }),
     [busy, setBusy] = useState(false);
   const reload = useCallback(async () => {
@@ -140,6 +142,11 @@ export default function DocumentPage() {
             }
           >
             <Download size={16} /> Download
+          </button>
+        ) : null}
+        {latest ? (
+          <button className="button" onClick={() => setCertModal(true)}>
+            <FileOutput size={16} /> Section 63 certificate
           </button>
         ) : null}
       </div>
@@ -246,6 +253,13 @@ export default function DocumentPage() {
             </label>
           </form>
         </Modal>
+      ) : null}
+      {certModal && latest ? (
+        <CertificateModal
+          documentId={documentId}
+          versionId={latest.id}
+          onClose={() => setCertModal(false)}
+        />
       ) : null}
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
