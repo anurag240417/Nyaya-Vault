@@ -15,6 +15,8 @@ from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
 from app.services.timeline import TimelineService
 
+from app.api.routes import certificate
+
 
 def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | None = None) -> FastAPI:
     settings = settings or get_settings()
@@ -66,6 +68,7 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
     app.include_router(system.router, prefix=prefix)
     app.include_router(timeline.router, prefix=prefix)
     app.include_router(assistant.router, prefix=prefix)
+    app.include_router(certificate.router, prefix=prefix)
     return app
 
 

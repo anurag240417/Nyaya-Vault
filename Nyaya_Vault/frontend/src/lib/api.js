@@ -185,3 +185,25 @@ export async function getLegalSectionSuggestions(caseId) {
 export async function getCaseGaps(caseId) {
   return apiJson(`/api/v1/cases/${caseId}/assistant/gaps`);
 }
+
+export async function generateCertificate(documentId, versionId, expertForm) {
+  const response = await apiFetchRaw(
+    `/api/v1/documents/${documentId}/versions/${versionId}/certificate`,
+    {
+     method: "POST",
+     body: JSON.stringify({
+     expert_name: expertForm.expertName,
+     expert_designation: expertForm.expertDesignation,
+     expert_qualification: expertForm.expertQualification,
+     place: expertForm.place,
+     }),
+   },
+  );
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = window.document.createElement("a");
+  anchor.href = url;
+  anchor.download = `section63-certificate-${documentId.slice(0, 8)}.pdf`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}

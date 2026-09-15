@@ -10,6 +10,7 @@ from app.core.exceptions import AuthorizationError, ConflictError, NotFoundError
 from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, Department, UserRole
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
+from app.services.certificate_builder import build_section63_certificate_pdf
 
 _ALLOWED_MIME = {
     "application/pdf", "image/jpeg", "image/png", "image/tiff",
@@ -814,3 +815,51 @@ class CaseVaultService:
         if isinstance(result, list):
             return result[0] if result else {"valid": True, "total_entries": 0, "first_invalid_sequence": None, "detail": "Audit chain verified."}
         return result
+
+        # ---------- Section 63 (BSA 2023) certificate ----------
+    async def generate_section63_certificate(
+        self, user: CurrentUser, document_id: str, version_id: str, expert: dict[str, Any]
+    ) -> bytes:
+        access, version = await self.authz.require_version_access(user, version_id)
+        if str(version["document_id"]) != document_id:
+            raise NotFoundError("Version does not belong to this document.")
+
+        case_id = str(access.document["case_id"])
+        case_rows = await self.gateway.service_table(
+            "GET", "cases", params={"id": f"eq.{case_id}", "select": "case_number,title", "limit": "1"},
+        )
+        case = case_rows[0] if case_rows else {"case_number": "Unknown", "title": "Unknown"}
+
+        audit_events = await self.case_audit(user, case_id)
+        # Only show events for this specific document in the certificate,
+        # not the whole case's audit trail.
+        doc_events = [e for e in audit_events if str(e.get("document_id")) == document_id]
+
+        pdf_bytes = build_section63_certificate_pdf(
+            case_number=case["case_number"],
+            case_title=case["title"],
+            document_title=access.document["title"],
+            document_type=access.document.get("document_type"),
+            document_id=document_id,
+            version_number=version["version_number"],
+            sha256_hash=version["sha256"],
+            file_size_bytes=version["size_bytes"],
+            mime_type=version["mime_type"],
+            created_at=str(version["created_at"]),
+            device_operator_name=user.username,
+            device_operator_designation=user.role.value if hasattr(user.role, "value") else str(user.role),
+            expert_name=expert["expert_name"],
+            expert_designation=expert["expert_designation"],
+            expert_qualification=expert["expert_qualification"],
+            place=expert["place"],
+            audit_events=doc_events,
+        )
+
+        await self.gateway.append_audit_service(
+            actor_user_id=user.id,
+            case_id=case_id,
+            document_id=document_id,
+            action="CERTIFICATE_GENERATED",
+            metadata={"version_id": version_id, "expert_name": expert["expert_name"]},
+        )
+        return pdf_bytes
