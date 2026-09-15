@@ -17,6 +17,52 @@ def _python_allowed_mimes() -> set[str]:
     return set(re.findall(r'"([a-z]+/[a-z0-9.+-]+)"', match.group(1)))
 
 
+def _document_versions_column_check_mimes() -> set[str] | None:
+    """The document_versions.mime_type CHECK constraint's own allowed list -
+    a FOURTH independent gate, sitting at the actual table insert, after
+    Python, the RPC functions, and Storage have all already let a request
+    through. Scans for the original inline column check (migration 001) and
+    any later `add constraint ... check (mime_type in (...))` that replaces
+    it, taking whichever was declared last in migration order.
+    """
+    last_seen: set[str] | None = None
+    for sql_file in sorted(_MIGRATIONS_DIR.glob("*.sql")):
+        text = sql_file.read_text()
+        for stmt_match in re.finditer(
+            r"mime_type\s+text\s+not\s+null\s+check\s*\(mime_type\s+in\s*\(([^)]*)\)\)|"
+            r"check\s*\(mime_type\s+in\s*\(([^)]*)\)\)",
+            text, re.IGNORECASE,
+        ):
+            group = stmt_match.group(1) or stmt_match.group(2)
+            if group:
+                last_seen = set(_MIME_RE.findall(group))
+    return last_seen
+
+
+def test_document_versions_check_constraint_covers_every_python_allowed_type():
+    """Regression test for a real, reported bug: video upload failed with
+    'new row for relation "document_versions" violates check constraint
+    "document_versions_mime_type_check"' - a fourth independent gate, this
+    one a table-level CHECK constraint, found only after the other three
+    (Python, the RPC functions, the Storage bucket) were already fixed and
+    confirmed working, because this one sits last in the chain.
+    """
+    python_mimes = _python_allowed_mimes()
+    constraint_mimes = _document_versions_column_check_mimes()
+    assert constraint_mimes is not None, (
+        "Could not find the document_versions.mime_type CHECK constraint in any "
+        "migration - the parser may be broken, or the constraint definition moved."
+    )
+    missing = python_mimes - constraint_mimes
+    assert not missing, (
+        f"The document_versions.mime_type CHECK constraint is narrower than "
+        f"Python's _ALLOWED_MIME - an insert would be rejected at the database "
+        f"level even after passing every other check: {sorted(missing)}. Add a "
+        f"migration that drops and recreates document_versions_mime_type_check "
+        f"with the full current list."
+    )
+
+
 def _rpc_whitelisted_mimes_per_function() -> dict[str, set[str]]:
     """Every 'p_mime_type not in (...)' whitelist, keyed by the name of the
     function it appears in, across every migration file - scoped to
