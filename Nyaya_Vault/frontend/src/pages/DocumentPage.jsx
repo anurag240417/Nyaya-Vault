@@ -36,6 +36,9 @@ import {
   isProcessorConfigured,
   requestDocumentProcessing,
 } from "../lib/processor";
+
+import CertificateModal from "../components/CertificateModal";
+
 export default function DocumentPage() {
   const { documentId } = useParams();
   const [doc, setDoc] = useState(null),
@@ -47,6 +50,7 @@ export default function DocumentPage() {
     [loading, setLoading] = useState(true),
     [toast, setToast] = useState(null),
     [versionModal, setVersionModal] = useState(false),
+    [certModal, setCertModal] = useState(false),
     [versionForm, setVersionForm] = useState({ file: null, changeSummary: "" }),
     [busy, setBusy] = useState(false);
   const reload = useCallback(async () => {
@@ -142,6 +146,13 @@ export default function DocumentPage() {
             <Download size={16} /> Download
           </button>
         ) : null}
+
+        {latest ? (
+          <button className="button" onClick={() => setCertModal(true)}>
+            <FileOutput size={16} /> Section 63 certificate
+          </button>
+        ) : null}
+
       </div>
       <nav className="subtabs">
         {["overview", "entities", "redactions", "versions"].map((v) => (
@@ -247,6 +258,15 @@ export default function DocumentPage() {
           </form>
         </Modal>
       ) : null}
+
+      {certModal && latest ? (
+        <CertificateModal
+          documentId={documentId}
+          versionId={latest.id}
+          onClose={() => setCertModal(false)}
+        />
+      ) : null}
+
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
