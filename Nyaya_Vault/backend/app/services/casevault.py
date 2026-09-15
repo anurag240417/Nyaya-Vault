@@ -816,6 +816,7 @@ class CaseVaultService:
             return result[0] if result else {"valid": True, "total_entries": 0, "first_invalid_sequence": None, "detail": "Audit chain verified."}
         return result
 
+        # ---------- Section 63 (BSA 2023) certificate ----------
     async def generate_section63_certificate(
         self, user: CurrentUser, document_id: str, version_id: str, expert: dict[str, Any]
     ) -> bytes:

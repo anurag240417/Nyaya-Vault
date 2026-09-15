@@ -37,6 +37,9 @@ import {
   isProcessorConfigured,
   requestDocumentProcessing,
 } from "../lib/processor";
+
+import CertificateModal from "../components/CertificateModal";
+
 export default function DocumentPage() {
   const { documentId } = useParams();
   const [doc, setDoc] = useState(null),
@@ -144,11 +147,13 @@ export default function DocumentPage() {
             <Download size={16} /> Download
           </button>
         ) : null}
+
         {latest ? (
           <button className="button" onClick={() => setCertModal(true)}>
             <FileOutput size={16} /> Section 63 certificate
           </button>
         ) : null}
+
       </div>
       <nav className="subtabs">
         {["overview", "entities", "redactions", "versions"].map((v) => (
@@ -254,6 +259,7 @@ export default function DocumentPage() {
           </form>
         </Modal>
       ) : null}
+
       {certModal && latest ? (
         <CertificateModal
           documentId={documentId}
@@ -261,6 +267,7 @@ export default function DocumentPage() {
           onClose={() => setCertModal(false)}
         />
       ) : null}
+
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );

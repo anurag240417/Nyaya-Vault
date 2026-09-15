@@ -15,6 +15,8 @@ from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
 from app.services.timeline import TimelineService
 
+from app.api.routes import certificate
+
 
 def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | None = None) -> FastAPI:
     settings = settings or get_settings()
