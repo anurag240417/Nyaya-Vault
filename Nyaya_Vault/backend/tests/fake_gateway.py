@@ -97,6 +97,7 @@ class FakeGateway:
                 if table == "cases":
                     r.setdefault("updated_at", now_iso())
                     r.setdefault("primary_investigator_id", None)
+                    r.setdefault("status", "UNDER_INVESTIGATION")
                 if table == "case_assignments": r.setdefault("assigned_at", now_iso())
                 if table == "documents": r.setdefault("current_version_number", 1)
                 if table == "document_versions":
@@ -174,7 +175,8 @@ class FakeGateway:
             case = {
                 "id": uid(), "case_number": p["p_case_number"], "title": p["p_title"],
                 "description": p.get("p_description"), "created_by": actor["id"],
-                "primary_investigator_id": primary_id, "created_at": now_iso(), "updated_at": now_iso(),
+                "primary_investigator_id": primary_id, "status": "UNDER_INVESTIGATION",
+                "created_at": now_iso(), "updated_at": now_iso(),
             }
             self.tables["cases"].append(case)
             ids = list(dict.fromkeys([actor["id"], primary_id, *collaborator_ids]))

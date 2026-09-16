@@ -123,6 +123,8 @@ class CaseVaultService:
             body["title"] = body["title"].strip()
         if "description" in body:
             body["description"] = body["description"].strip() or None
+        if "status" in body:
+            body["status"] = body["status"].value if hasattr(body["status"], "value") else body["status"]
         if not body:
             return await self.get_case(user, case_id)
         rows = await self.gateway.service_table(
@@ -138,7 +140,7 @@ class CaseVaultService:
             actor_user_id=user.id,
             case_id=case_id,
             document_id=None,
-            action="CASE_UPDATED",
+            action="CASE_STATUS_CHANGED" if set(body.keys()) == {"status"} else "CASE_UPDATED",
             metadata={"fields": sorted(body.keys())},
         )
         return rows[0]
@@ -505,6 +507,52 @@ class CaseVaultService:
             raise NotFoundError("Current document version not found.")
         return rows[0]
 
+    async def _check_cross_case_duplicate(self, case_id: str, digest: str) -> None:
+        """Blocks uploading evidence that already exists, byte-for-byte, in
+        a DIFFERENT case - identified by its SHA-256, the same hash already
+        computed and stored for every version. Deliberately does not block
+        the same file being re-uploaded within the SAME case (that's an
+        existing document's own versioning concern, not a cross-case one).
+
+        This is a real trade-off worth knowing, not hidden: two genuinely
+        separate but related cases (e.g. two linked prosecutions sharing a
+        common FIR) cannot currently both hold the same physical evidence
+        file - it would need to be uploaded as a distinct copy, or this
+        check would need an explicit override path, which does not exist
+        yet.
+        """
+        matching_versions = await self.gateway.service_table(
+            "GET", "document_versions",
+            params={"sha256": f"eq.{digest}", "select": "document_id"},
+        ) or []
+        if not matching_versions:
+            return
+        document_ids = sorted({str(row["document_id"]) for row in matching_versions})
+        documents = await self.gateway.service_table(
+            "GET", "documents",
+            params={"id": f"in.({','.join(document_ids)})", "select": "id,case_id,title"},
+        ) or []
+        other_case_matches = [d for d in documents if str(d["case_id"]) != str(case_id)]
+        if not other_case_matches:
+            return
+        other = other_case_matches[0]
+        other_case_rows = await self.gateway.service_table(
+            "GET", "cases", params={"id": f"eq.{other['case_id']}", "select": "case_number,title", "limit": "1"},
+        ) or []
+        other_case = other_case_rows[0] if other_case_rows else {"case_number": "Unknown", "title": "Unknown"}
+        raise ConflictError(
+            f"This exact file already exists as evidence in another case - "
+            f"{other_case['case_number']} (\"{other_case['title']}\"), as \"{other['title']}\". "
+            f"The same evidence cannot be uploaded to two different cases.",
+            details={
+                "reason": "EVIDENCE_ALREADY_EXISTS_IN_ANOTHER_CASE",
+                "existing_case_id": other["case_id"],
+                "existing_case_number": other_case["case_number"],
+                "existing_document_id": other["id"],
+                "existing_document_title": other["title"],
+            },
+        )
+
     async def upload_new_document(
         self,
         user: CurrentUser,
@@ -557,6 +605,7 @@ class CaseVaultService:
         document_id = str(uuid.uuid4())
         storage_key = f"{case_id}/{document_id}/uploads/{uuid.uuid4()}-{self._safe_name(filename)}"
         digest = hashlib.sha256(data).hexdigest()
+        await self._check_cross_case_duplicate(case_id, digest)
         await self.gateway.upload_service(self.settings.storage_bucket, storage_key, data, content_type)
         try:
             result = await self.gateway.rpc_service(
@@ -603,6 +652,7 @@ class CaseVaultService:
         self.validate_file(content_type=content_type, data=data)
         storage_key = f"{access.document['case_id']}/{document_id}/uploads/{uuid.uuid4()}-{self._safe_name(filename)}"
         digest = hashlib.sha256(data).hexdigest()
+        await self._check_cross_case_duplicate(str(access.document["case_id"]), digest)
         await self.gateway.upload_service(self.settings.storage_bucket, storage_key, data, content_type)
         try:
             result = await self.gateway.rpc_service(
@@ -759,15 +809,34 @@ class CaseVaultService:
             params={"case_id": f"eq.{case_id}", "select": "*", "order": "sequence.desc"},
         ) or []
         actor_ids = sorted({str(row["actor_user_id"]) for row in rows if row.get("actor_user_id")})
-        profile_map: dict[str, str] = {}
+        profile_map: dict[str, dict[str, Any]] = {}
         if actor_ids:
             profiles = await self.gateway.service_table(
                 "GET",
                 "profiles",
-                params={"id": f"in.({','.join(actor_ids)})", "select": "id,username"},
+                params={"id": f"in.({','.join(actor_ids)})", "select": "id,username,department"},
             ) or []
-            profile_map = {str(row["id"]): str(row["username"]) for row in profiles}
-        return [{**row, "actor_username": profile_map.get(str(row.get("actor_user_id")), "system")} for row in rows]
+            profile_map = {str(row["id"]): row for row in profiles}
+
+        document_ids = sorted({str(row["document_id"]) for row in rows if row.get("document_id")})
+        document_department_map: dict[str, str | None] = {}
+        if document_ids:
+            docs = await self.gateway.service_table(
+                "GET",
+                "documents",
+                params={"id": f"in.({','.join(document_ids)})", "select": "id,department"},
+            ) or []
+            document_department_map = {str(row["id"]): row.get("department") for row in docs}
+
+        return [
+            {
+                **row,
+                "actor_username": profile_map.get(str(row.get("actor_user_id")), {}).get("username", "system"),
+                "actor_department": profile_map.get(str(row.get("actor_user_id")), {}).get("department"),
+                "document_department": document_department_map.get(str(row.get("document_id"))) if row.get("document_id") else None,
+            }
+            for row in rows
+        ]
 
     async def recent_activity(self, user: CurrentUser, limit: int) -> list[dict[str, Any]]:
         limit = max(1, min(limit, 100))

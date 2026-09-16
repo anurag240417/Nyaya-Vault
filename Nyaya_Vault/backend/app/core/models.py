@@ -29,6 +29,13 @@ CLEARANCE_RANK: dict[ClearanceLevel, int] = {
 }
 
 
+class CaseStatus(StrEnum):
+    UNDER_INVESTIGATION = "UNDER_INVESTIGATION"
+    SOLVED = "SOLVED"
+    UNSOLVED = "UNSOLVED"
+    CLOSED = "CLOSED"
+
+
 class Department(StrEnum):
     """Which real-world department a user belongs to, or a document
     originates from. This is a separate axis from ClearanceLevel (need-to-know

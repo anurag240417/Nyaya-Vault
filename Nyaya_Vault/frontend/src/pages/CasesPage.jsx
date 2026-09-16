@@ -5,6 +5,7 @@ import { createCase, listCases } from "../lib/api";
 import { formatDate } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
 import Modal from "../components/Modal";
+import Badge, { statusTone } from "../components/Badge";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import Toast from "../components/Toast";
@@ -97,6 +98,9 @@ export default function CasesPage() {
                 <BriefcaseBusiness size={18} />
                 <strong>{item.case_number}</strong>
                 <span className="visibility-pill">Private</span>
+                <Badge tone={statusTone(item.status)}>
+                  {(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
+                </Badge>
               </div>
               <h3>{item.title}</h3>
               <p>{item.description || "No description has been added."}</p>

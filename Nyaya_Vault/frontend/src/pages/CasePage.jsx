@@ -21,11 +21,16 @@ import {
   removeCollaborator,
   uploadNewDocument,
   uploadDocumentVersion,
+  updateCase,
 } from "../lib/api";
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
 import RepoTabs from "../components/RepoTabs";
-import Badge, { clearanceTone, departmentTone } from "../components/Badge";
+import Badge, {
+  clearanceTone,
+  departmentTone,
+  statusTone,
+} from "../components/Badge";
 import Avatar from "../components/Avatar";
 import Modal from "../components/Modal";
 import NoticeModal from "../components/NoticeModal";
@@ -105,6 +110,9 @@ export default function CasePage() {
             <p>{caseItem.description || "No description provided."}</p>
           </div>
           <span className="visibility-pill">Private</span>
+          <Badge tone={statusTone(caseItem.status)}>
+            {(caseItem.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
+          </Badge>
         </div>
         <RepoTabs
           caseId={caseId}
@@ -127,6 +135,8 @@ export default function CasePage() {
                 documents={documents}
                 collaborators={collaborators}
                 audit={audit}
+                canManage={canManage}
+                reload={reload}
                 setToast={setToast}
               />
             }
@@ -175,8 +185,33 @@ export default function CasePage() {
     </div>
   );
 }
-function Overview({ caseId, c, documents, collaborators, audit, setToast }) {
+function Overview({
+  caseId,
+  c,
+  documents,
+  collaborators,
+  audit,
+  canManage,
+  reload,
+  setToast,
+}) {
   const [noticeModal, setNoticeModal] = useState(false);
+  const [statusBusy, setStatusBusy] = useState(false);
+  async function changeStatus(newStatus) {
+    if (newStatus === c.status) return;
+    setStatusBusy(true);
+    try {
+      await updateCase(caseId, { status: newStatus });
+      await reload();
+      setToast({
+        message: `Case status updated to ${newStatus.replaceAll("_", " ")}.`,
+      });
+    } catch (err) {
+      setToast({ type: "error", message: err.message });
+    } finally {
+      setStatusBusy(false);
+    }
+  }
   return (
     <div className="two-column">
       <section className="panel">
@@ -216,6 +251,24 @@ function Overview({ caseId, c, documents, collaborators, audit, setToast }) {
             <History size={16} />
             {audit.length} audit events
           </div>
+          {canManage ? (
+            <label className="field" style={{ marginTop: "0.75rem" }}>
+              <span>Case status</span>
+              <select
+                value={c.status || "UNDER_INVESTIGATION"}
+                disabled={statusBusy}
+                onChange={(e) => changeStatus(e.target.value)}
+              >
+                {["UNDER_INVESTIGATION", "SOLVED", "UNSOLVED", "CLOSED"].map(
+                  (s) => (
+                    <option key={s} value={s}>
+                      {s.replaceAll("_", " ")}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+          ) : null}
           <button
             className="button button-block"
             style={{ marginTop: "0.75rem" }}
@@ -325,7 +378,10 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
         nav(`/documents/${r.documentId}`);
       }
     } catch (err) {
-      if (err.code === "CONFLICT" && err.details?.existing_document_id) {
+      if (
+        err.code === "CONFLICT" &&
+        err.details?.reason === "SINGLETON_DOCUMENT_TYPE_EXISTS"
+      ) {
         setToast({
           type: "error",
           message: `${err.message} Check the "add as new version" box above and try again.`,
@@ -1241,6 +1297,17 @@ function AssistantTab({ caseId }) {
   );
 }
 function AuditTab({ audit }) {
+  const [actorDept, setActorDept] = useState("ALL"),
+    [docDept, setDocDept] = useState("ALL");
+  const deptOptions = (key) => [
+    "ALL",
+    ...new Set(audit.map((e) => e[key]).filter(Boolean)),
+  ];
+  const filtered = audit.filter(
+    (e) =>
+      (actorDept === "ALL" || e.actor_department === actorDept) &&
+      (docDept === "ALL" || e.document_department === docDept),
+  );
   return (
     <section className="panel">
       <div className="panel-header">
@@ -1248,7 +1315,40 @@ function AuditTab({ audit }) {
           <h2>Audit trail</h2>
           <p>Append-only globally hash-chained case events.</p>
         </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <label className="field" style={{ margin: 0 }}>
+            <span className="small muted">Actor dept.</span>
+            <select
+              value={actorDept}
+              onChange={(e) => setActorDept(e.target.value)}
+            >
+              {deptOptions("actor_department").map((d) => (
+                <option key={d} value={d}>
+                  {d === "ALL" ? "All" : d}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field" style={{ margin: 0 }}>
+            <span className="small muted">Evidence dept.</span>
+            <select
+              value={docDept}
+              onChange={(e) => setDocDept(e.target.value)}
+            >
+              {deptOptions("document_department").map((d) => (
+                <option key={d} value={d}>
+                  {d === "ALL" ? "All" : d}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
+      {(actorDept !== "ALL" || docDept !== "ALL") && filtered.length === 0 ? (
+        <div className="panel-empty">
+          No events match this department filter.
+        </div>
+      ) : null}
       <div className="audit-table">
         <div className="audit-head">
           <span>#</span>
@@ -1258,14 +1358,20 @@ function AuditTab({ audit }) {
           <span>Hash</span>
           <span>Time</span>
         </div>
-        {audit.map((e) => (
+        {filtered.map((e) => (
           <div className="audit-row" key={e.sequence}>
             <code>{e.sequence}</code>
             <span>
               <strong>{e.action.replaceAll("_", " ")}</strong>
               {e.reason ? <small>{e.reason}</small> : null}
+              {e.document_department ? (
+                <small>Evidence dept: {e.document_department}</small>
+              ) : null}
             </span>
-            <span>{e.actor_username || "system"}</span>
+            <span>
+              {e.actor_username || "system"}
+              {e.actor_department ? <small>{e.actor_department}</small> : null}
+            </span>
             <Badge
               tone={
                 e.result === "SUCCESS"

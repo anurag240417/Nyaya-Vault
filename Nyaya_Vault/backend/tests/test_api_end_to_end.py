@@ -250,14 +250,114 @@ def test_chargesheet_singleton_is_independent_of_fir(client, gateway):
 def test_singleton_type_is_scoped_per_case_not_global(client, gateway):
     case_a = create_case(client)
     case_b = create_case(client)
-    pdf = make_pdf("FIR narrative text long enough for native extraction to succeed cleanly.")
-    for case in (case_a, case_b):
+    for case, text in (
+        (case_a, "FIR narrative text long enough for native extraction to succeed cleanly, case A."),
+        (case_b, "FIR narrative text long enough for native extraction to succeed cleanly, case B."),
+    ):
         r = client.post(
             f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
             data={"title": "FIR", "document_type": "FIR", "clearance_level": "RESTRICTED"},
-            files={"file": ("fir.pdf", pdf, "application/pdf")},
+            files={"file": ("fir.pdf", make_pdf(text), "application/pdf")},
         )
         assert r.status_code == 200, r.text
+
+
+def test_identical_evidence_cannot_be_uploaded_to_a_different_case(client, gateway):
+    case_a = create_case(client)
+    case_b = create_case(client)
+    pdf = make_pdf("Identical evidence content, byte for byte.")
+
+    first = client.post(
+        f"/api/v1/cases/{case_a['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Original Evidence", "clearance_level": "RESTRICTED"},
+        files={"file": ("evidence.pdf", pdf, "application/pdf")},
+    )
+    assert first.status_code == 200, first.text
+
+    second = client.post(
+        f"/api/v1/cases/{case_b['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Same File Different Case", "clearance_level": "RESTRICTED"},
+        files={"file": ("evidence.pdf", pdf, "application/pdf")},
+    )
+    assert second.status_code == 409, second.text
+    body = second.json()
+    assert body["code"] == "CONFLICT"
+    assert body["details"]["reason"] == "EVIDENCE_ALREADY_EXISTS_IN_ANOTHER_CASE"
+    assert body["details"]["existing_case_id"] == case_a["id"]
+
+    # Case B must not end up with a phantom document from the rejected upload.
+    listed_b = client.get(f"/api/v1/cases/{case_b['id']}/documents", headers=auth("admin-token")).json()
+    assert listed_b == []
+
+
+def test_identical_evidence_is_allowed_within_the_same_case(client, gateway):
+    """The check is specifically cross-case - re-uploading the same bytes as
+    a second, separate document within one case is not what this feature
+    is meant to block (that's a different, not-currently-requested concern:
+    duplicate evidence handling within a single case's own record)."""
+    case = create_case(client)
+    pdf = make_pdf("Same content, same case, two separate document records.")
+
+    first = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Copy One", "clearance_level": "RESTRICTED"},
+        files={"file": ("a.pdf", pdf, "application/pdf")},
+    )
+    assert first.status_code == 200, first.text
+
+    second = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Copy Two", "clearance_level": "RESTRICTED"},
+        files={"file": ("b.pdf", pdf, "application/pdf")},
+    )
+    assert second.status_code == 200, second.text
+
+
+def test_different_evidence_across_cases_is_unaffected(client, gateway):
+    case_a = create_case(client)
+    case_b = create_case(client)
+    r_a = client.post(
+        f"/api/v1/cases/{case_a['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Evidence A", "clearance_level": "RESTRICTED"},
+        files={"file": ("a.pdf", make_pdf("Content for case A only."), "application/pdf")},
+    )
+    r_b = client.post(
+        f"/api/v1/cases/{case_b['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Evidence B", "clearance_level": "RESTRICTED"},
+        files={"file": ("b.pdf", make_pdf("Content for case B only."), "application/pdf")},
+    )
+    assert r_a.status_code == 200, r_a.text
+    assert r_b.status_code == 200, r_b.text
+
+
+def test_new_version_upload_also_blocked_by_cross_case_duplicate(client, gateway):
+    """The check applies to new-version uploads too, not just brand-new
+    documents - the same evidence content shouldn't exist as ANY version
+    of a document in two different cases."""
+    case_a = create_case(client)
+    case_b = create_case(client)
+    pdf_a = make_pdf("Original content for the version-upload duplicate test.")
+
+    up = client.post(
+        f"/api/v1/cases/{case_a['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Evidence in Case A", "clearance_level": "RESTRICTED"},
+        files={"file": ("a.pdf", pdf_a, "application/pdf")},
+    )
+    assert up.status_code == 200, up.text
+
+    doc_b = client.post(
+        f"/api/v1/cases/{case_b['id']}/documents", headers=auth("admin-token"),
+        data={"title": "Evidence in Case B", "clearance_level": "RESTRICTED"},
+        files={"file": ("b.pdf", make_pdf("Different original content for case B."), "application/pdf")},
+    ).json()
+
+    version_attempt = client.post(
+        f"/api/v1/documents/{doc_b['documentId']}/versions", headers=auth("admin-token"),
+        data={"change_summary": "Trying to add case A's file as a new version here"},
+        files={"file": ("a-again.pdf", pdf_a, "application/pdf")},
+    )
+    assert version_attempt.status_code == 409, version_attempt.text
+    assert version_attempt.json()["details"]["reason"] == "EVIDENCE_ALREADY_EXISTS_IN_ANOTHER_CASE"
 
 
 def test_non_singleton_document_types_are_unaffected(client, gateway):
@@ -404,6 +504,34 @@ def test_processing_entity_review_redaction_and_true_redacted_export(client, gat
     assert any(a["action"] == "REPORT_EXPORTED" for a in gateway.tables["audit_logs"])
 
 
+def test_case_audit_is_enriched_with_actor_and_document_department(client, gateway):
+    case = create_case(client)
+    forensic_officer = gateway.add_user(
+        email="audit-forensic@example.com", username="audit_forensic", role="INVESTIGATING_OFFICER",
+        clearance="SECRET", department="FORENSICS", token="audit-forensic-token",
+    )
+    client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("admin-token"), json={"user_id": forensic_officer["id"]})
+
+    up = client.post(
+        f"/api/v1/cases/{case['id']}/documents", headers=auth("audit-forensic-token"),
+        data={"title": "Lab Report", "clearance_level": "RESTRICTED", "department": "FORENSICS"},
+        files={"file": ("report.pdf", make_pdf("lab findings"), "application/pdf")},
+    )
+    assert up.status_code == 200, up.text
+
+    audit = client.get(f"/api/v1/cases/{case['id']}/audit", headers=auth("admin-token")).json()
+    upload_entries = [e for e in audit if e["action"] == "DOCUMENT_UPLOADED"]
+    assert len(upload_entries) == 1
+    assert upload_entries[0]["actor_department"] == "FORENSICS"
+    assert upload_entries[0]["document_department"] == "FORENSICS"
+
+    # An event with no document (e.g. case creation) must not carry a document
+    # department at all, and must not crash on the lookup.
+    case_created = [e for e in audit if e["action"] == "CASE_CREATED"]
+    assert len(case_created) == 1
+    assert case_created[0]["document_department"] is None
+
+
 def test_admin_management_audit_and_integrity(client, gateway):
     case = create_case(client)
     clerk = profile(gateway, "clerk")
@@ -471,6 +599,54 @@ def test_backend_search_respects_assignment_and_clearance(client, gateway):
     assert any(r["document_id"] == up["documentId"] for r in result.json())
     # Unassigned IO has no case scope and receives no result.
     assert client.get("/api/v1/search?q=heliograph", headers=auth("otherio-token")).json() == []
+
+
+def test_case_defaults_to_under_investigation_status(client):
+    case = create_case(client)
+    assert case["status"] == "UNDER_INVESTIGATION"
+
+
+def test_case_status_can_be_updated_and_is_audited_distinctly(client, gateway):
+    case = create_case(client)
+    r = client.patch(f"/api/v1/cases/{case['id']}", headers=auth("admin-token"), json={"status": "SOLVED"})
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "SOLVED"
+
+    fetched = client.get(f"/api/v1/cases/{case['id']}", headers=auth("admin-token")).json()
+    assert fetched["status"] == "SOLVED"
+
+    actions = [a["action"] for a in gateway.tables["audit_logs"] if a["case_id"] == case["id"]]
+    assert "CASE_STATUS_CHANGED" in actions
+    # A status-only update should use the distinct action, not the generic one
+    status_events = [a for a in gateway.tables["audit_logs"] if a["case_id"] == case["id"] and a["action"] == "CASE_STATUS_CHANGED"]
+    assert status_events[-1]["metadata"]["fields"] == ["status"]
+
+
+def test_case_status_update_requires_case_editor(client, gateway):
+    case = create_case(client)  # admin only, otherio never assigned
+    r = client.patch(f"/api/v1/cases/{case['id']}", headers=auth("otherio-token"), json={"status": "CLOSED"})
+    assert r.status_code == 403
+
+
+def test_case_status_rejects_invalid_value(client):
+    case = create_case(client)
+    r = client.patch(f"/api/v1/cases/{case['id']}", headers=auth("admin-token"), json={"status": "MADE_UP_STATUS"})
+    assert r.status_code == 422
+
+
+def test_updating_title_and_status_together_uses_generic_audit_action(client, gateway):
+    """When status changes alongside other fields, it's a broader case
+    update, not purely a status transition - the generic action still
+    applies, only a pure status-only change gets the distinct one."""
+    case = create_case(client)
+    r = client.patch(
+        f"/api/v1/cases/{case['id']}", headers=auth("admin-token"),
+        json={"title": "Updated Title", "status": "UNSOLVED"},
+    )
+    assert r.status_code == 200, r.text
+    actions = [a["action"] for a in gateway.tables["audit_logs"] if a["case_id"] == case["id"]]
+    assert "CASE_UPDATED" in actions
+    assert "CASE_STATUS_CHANGED" not in actions
 
 
 def test_admin_case_management_create_primary_multi_assign_and_reassign(client, gateway):
