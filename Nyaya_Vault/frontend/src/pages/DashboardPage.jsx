@@ -4,13 +4,13 @@ import {
   BriefcaseBusiness,
   FileText,
   Search,
-  ShieldCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getRecentActivity, listCases } from "../lib/api";
 import { formatDate } from "../lib/format";
 import LoadingState from "../components/LoadingState";
-import Badge from "../components/Badge";
+import SecurityCredential from "../components/SecurityCredential";
+import Badge, { statusTone } from "../components/Badge";
 import { useAuth } from "../context/AuthContext";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 export default function DashboardPage() {
@@ -27,12 +27,12 @@ export default function DashboardPage() {
     reload().finally(() => setLoading(false));
   }, [reload]);
   useRefreshOnFocus(reload);
-  if (loading) return <LoadingState label="Loading dashboard…" />;
+  if (loading) return <LoadingState label="Loading case desk…" />;
   return (
     <div className="page">
-      <section className="welcome-panel">
+      <section className="duty-header">
         <div>
-          <p className="eyebrow">SECURE WORKSPACE</p>
+          <p className="eyebrow">CASE DESK</p>
           <h1>Good to see you, {profile?.username || "investigator"}.</h1>
           <p>
             Work appears only when your role, case assignment, and evidence
@@ -43,35 +43,17 @@ export default function DashboardPage() {
           Open cases <ArrowRight size={16} />
         </Link>
       </section>
-      <div className="stat-grid">
-        <div className="stat-card">
-          <BriefcaseBusiness size={20} />
-          <div>
-            <strong>{cases.length}</strong>
-            <span>accessible cases</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <ShieldCheck size={20} />
-          <div>
-            <strong>{profile?.clearance_level || "PUBLIC"}</strong>
-            <span>clearance</span>
-          </div>
-        </div>
-        <Link className="stat-card link-card" to="/search">
-          <Search size={20} />
-          <div>
-            <strong>Evidence search</strong>
-            <span>ACL-filtered full text</span>
-          </div>
-        </Link>
+      <div className="desk-context">
+        <SecurityCredential profile={profile} />
+        <div className="register-total"><strong>{cases.length}</strong><span>accessible case records</span></div>
+        <Link className="desk-search" to="/search"><Search size={22} /><div><strong>Case & Evidence Search</strong><span>Search records and extracted evidence within your access.</span></div><ArrowRight size={18} /></Link>
       </div>
       <div className="two-column">
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent cases</h2>
-              <p>Repository-style workspaces</p>
+              <h2>Assigned Case Register</h2>
+              <p>Your accessible case records, most recent first</p>
             </div>
             <Link to="/cases">View all</Link>
           </div>
@@ -83,6 +65,7 @@ export default function DashboardPage() {
                   <strong>{item.case_number}</strong>
                   <span>{item.title}</span>
                 </div>
+                <Badge tone={statusTone(item.status)}>{(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}</Badge>
                 <span className="muted small">
                   {formatDate(item.created_at)}
                 </span>
@@ -96,14 +79,14 @@ export default function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent activity</h2>
-              <p>Immutable events you may see</p>
+              <h2>Recent Activity Ledger</h2>
+              <p>Recorded actions within your access</p>
             </div>
           </div>
           <div className="activity-list">
             {activity.map((entry) => (
               <div className="activity-item" key={entry.sequence}>
-                <span className="activity-dot" />
+                <code className="ledger-sequence">{entry.sequence}</code>
                 <div>
                   <div>
                     <strong>{entry.actor_username || "system"}</strong>{" "}

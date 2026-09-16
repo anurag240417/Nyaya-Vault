@@ -55,8 +55,8 @@ export default function CasesPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Cases</h1>
-          <p>Private repository-style workspaces with scoped collaborators.</p>
+          <p className="eyebrow">Case records</p><h1>Case Registry</h1>
+          <p>Case-scoped records for authorized personnel.</p>
         </div>
         {canCreate ? (
           <button
@@ -73,7 +73,7 @@ export default function CasesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Find a case…"
+            aria-label="Filter cases" placeholder="Find by case number, title, or description…"
           />
         </div>
         <button
@@ -91,10 +91,10 @@ export default function CasesPage() {
       {loading ? (
         <LoadingState />
       ) : filtered.length ? (
-        <div className="case-grid">
+        <div className="case-registry">
           {filtered.map((item) => (
-            <Link to={`/cases/${item.id}`} className="case-card" key={item.id}>
-              <div className="case-card-title">
+            <Link to={`/cases/${item.id}`} className="registry-entry" key={item.id}>
+              <div className="registry-locator">
                 <BriefcaseBusiness size={18} />
                 <strong>{item.case_number}</strong>
                 <span className="visibility-pill">Private</span>

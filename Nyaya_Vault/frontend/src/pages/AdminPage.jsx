@@ -240,17 +240,17 @@ export default function AdminPage() {
     <div className="page admin-page">
       <div className="page-title-row">
         <div>
-          <h1>Administration</h1>
+          <p className="eyebrow">Administration</p><h1>System Registry & Case Assignment Office</h1>
           <p>Manage users, case ownership, investigating officers, collaborators, and access state.</p>
         </div>
       </div>
 
-      <div className="admin-tabs" role="tablist" aria-label="Administration sections">
+      <div className="admin-tabs" role="group" aria-label="Administration sections">
         <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>
-          <UserCog size={16} /> Users
+          <UserCog size={16} /> Personnel Register
         </button>
         <button className={tab === 'cases' ? 'active' : ''} onClick={() => setTab('cases')}>
-          <BriefcaseBusiness size={16} /> Case Management
+          <BriefcaseBusiness size={16} /> Case Assignment Register
         </button>
       </div>
 
@@ -258,8 +258,8 @@ export default function AdminPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2><UserCog size={18} /> Users</h2>
-              <p>Supabase Auth owns credentials; FastAPI enforces roles, assignments, and clearance.</p>
+              <h2><UserCog size={18} /> Personnel Register</h2>
+              <p>Security-sensitive controls: changes to role, clearance, department, and account state affect access.</p>
             </div>
           </div>
           <div className="admin-user-list">
@@ -273,6 +273,7 @@ export default function AdminPage() {
                     <span>{user.email}</span>
                   </div>
                   <select
+                    aria-label={`Role for ${user.username}`}
                     value={draft.role || user.role}
                     onChange={(event) => setDrafts({
                       ...drafts,
@@ -282,6 +283,7 @@ export default function AdminPage() {
                     {ROLES.map((role) => <option key={role}>{role}</option>)}
                   </select>
                   <select
+                    aria-label={`Clearance for ${user.username}`}
                     value={draft.clearance_level || user.clearance_level}
                     onChange={(event) => setDrafts({
                       ...drafts,
@@ -291,6 +293,7 @@ export default function AdminPage() {
                     {CLEARANCES.map((clearance) => <option key={clearance}>{clearance}</option>)}
                   </select>
                   <select
+                    aria-label={`Department for ${user.username}`}
                     value={draft.department ?? (user.department || '')}
                     onChange={(event) => setDrafts({
                       ...drafts,
@@ -341,7 +344,7 @@ export default function AdminPage() {
           <section className="panel">
             <div className="panel-header admin-case-header">
               <div>
-                <h2><BriefcaseBusiness size={18} /> Case Management</h2>
+                <h2><BriefcaseBusiness size={18} /> Case Assignment Register</h2>
                 <p>Create cases, choose the primary investigator, and control the complete collaborator set.</p>
               </div>
               <button
@@ -360,7 +363,7 @@ export default function AdminPage() {
                 <input
                   value={caseQuery}
                   onChange={(event) => setCaseQuery(event.target.value)}
-                  placeholder="Search cases, investigators, or collaborators…"
+                  aria-label="Search managed cases" placeholder="Search cases, investigators, or collaborators…"
                 />
               </div>
             </div>
@@ -526,7 +529,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         key={user.id}
-                        className={`admin-picker-user ${selected ? 'selected' : ''}`}
+                        aria-pressed={selected} className={`admin-picker-user ${selected ? 'selected' : ''}`}
                         onClick={() => toggleCreateCollaborator(user.id)}
                       >
                         <Avatar name={user.username} />
@@ -589,7 +592,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         key={user.id}
-                        className={`admin-picker-user ${selected ? 'selected' : ''}`}
+                        aria-pressed={selected} className={`admin-picker-user ${selected ? 'selected' : ''}`}
                         onClick={() => toggleAssignmentCollaborator(user.id)}
                       >
                         <Avatar name={user.username} />

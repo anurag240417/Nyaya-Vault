@@ -26,7 +26,7 @@ export default function IntegrityPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Audit integrity</h1>
+          <h1>Integrity Verification</h1>
           <p>
             Recalculate every entry hash and locate the first broken sequence.
           </p>
@@ -53,7 +53,7 @@ export default function IntegrityPage() {
       {error ? <div className="form-error">{error}</div> : null}
       {result ? (
         <section
-          className={`verification-card ${result.valid ? "valid" : "invalid"}`}
+          role="status" className={`verification-card ${result.valid ? "valid" : "invalid"}`}
         >
           {result.valid ? (
             <CheckCircle2 size={34} />
@@ -81,13 +81,10 @@ export default function IntegrityPage() {
         </section>
       ) : null}
       <section className="panel">
-        <div className="readme-body">
+        <div className="record-body">
           <h3>Scope</h3>
           <p>
-            This detects mutation of the protected database audit ledger. It is
-            not an external proof-of-time system; an{" "}
-            <code>integrity_anchors</code> table is included for a later
-            anchoring phase.
+            This checks the protected audit ledger for altered entries and broken hash links. It does not provide independent proof of when an event occurred.
           </p>
         </div>
       </section>

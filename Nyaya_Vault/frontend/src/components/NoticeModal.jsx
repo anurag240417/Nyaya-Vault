@@ -74,7 +74,7 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
             </select>
           </label>
           {selectedType?.statute_reference ? (
-            <p className="muted small" style={{ margin: 0 }}>Issued under: {selectedType.statute_reference}</p>
+            <p className="muted small" >Issued under: {selectedType.statute_reference}</p>
           ) : null}
 
           <label className="field">
@@ -113,7 +113,7 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
             <input required value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Pune" />
           </label>
 
-          {error ? <p style={{ color: "#b91c1c", fontSize: "0.85rem" }}>{error}</p> : null}
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
         </form>
       )}
     </Modal>

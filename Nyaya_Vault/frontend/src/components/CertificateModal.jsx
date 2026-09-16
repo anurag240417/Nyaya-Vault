@@ -39,7 +39,7 @@ export default function CertificateModal({ documentId, versionId, onClose }) {
         </>
       }
     >
-      <p className="muted small" style={{ marginBottom: "0.75rem" }}>
+      <p className="muted small" >
         Part A (device operator) is filled automatically from this document's
         stored records. Part B requires a named expert who will sign the
         certificate before it is submitted to a court.
@@ -81,7 +81,7 @@ export default function CertificateModal({ documentId, versionId, onClose }) {
             placeholder="Gorakhpur"
           />
         </label>
-        {error ? <p style={{ color: "#b91c1c", fontSize: "0.85rem" }}>{error}</p> : null}
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
       </form>
     </Modal>
   );

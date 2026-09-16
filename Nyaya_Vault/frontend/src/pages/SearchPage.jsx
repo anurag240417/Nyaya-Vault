@@ -33,10 +33,9 @@ export default function SearchPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Search</h1>
+          <p className="eyebrow">Records index</p><h1>Case & Evidence Search</h1>
           <p>
-            FastAPI authorization filters case access and evidence clearance
-            before results reach the browser.
+            Search case records and extracted text. Results follow your case access and evidence clearance.
           </p>
         </div>
       </div>
@@ -49,6 +48,7 @@ export default function SearchPage() {
       >
         <Search size={20} />
         <input
+          aria-label="Search cases and evidence"
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -68,8 +68,7 @@ export default function SearchPage() {
                   : "Search evidence"}
             </h2>
             <p>
-              PostgreSQL full-text ranking; optional pgvector migration is
-              included for later semantic search.
+              Matching evidence is indexed by case, source page, and text relevance.
             </p>
           </div>
         </div>
@@ -92,8 +91,8 @@ export default function SearchPage() {
                   </div>
                   <p>{r.snippet || "Document metadata match"}</p>
                 </div>
-                <span className="rank-pill">
-                  {Number(r.rank || 0).toFixed(2)}
+                <span className="rank-label" title="Text relevance score">
+                  Relevance {Number(r.rank || 0).toFixed(2)}
                 </span>
               </Link>
             ))}

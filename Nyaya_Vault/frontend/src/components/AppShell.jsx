@@ -4,10 +4,11 @@ import Sidebar from "./Sidebar";
 export default function AppShell() {
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <Topbar />
       <div className="shell-body">
         <Sidebar />
-        <main className="main-content">
+        <main className="main-content" id="main-content" tabIndex={-1}>
           <Outlet />
         </main>
       </div>

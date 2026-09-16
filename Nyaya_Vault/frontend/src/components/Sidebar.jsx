@@ -1,13 +1,12 @@
 import {
-  Activity,
   BriefcaseBusiness,
   LayoutDashboard,
   Search,
   ShieldCheck,
-  Users,
   UserCog,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import SecurityCredential from "./SecurityCredential";
 import { useAuth } from "../context/AuthContext";
 const links = [
   ["/dashboard", "Dashboard", LayoutDashboard],
@@ -19,19 +18,23 @@ export default function Sidebar() {
   const { profile } = useAuth();
   return (
     <aside className="sidebar">
-      <nav>
-        {links.map(([to, label, Icon]) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `side-link ${isActive ? "active" : ""}`
-            }
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+      <p className="eyebrow rail-heading">Workspace index</p>
+      <nav aria-label="Main navigation">
+        {links.map(([to, label, icon]) => {
+          const Icon = icon;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `side-link ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </NavLink>
+          );
+        })}
         {profile?.role === "ADMIN" ? (
           <NavLink
             to="/admin"
@@ -45,15 +48,7 @@ export default function Sidebar() {
         ) : null}
       </nav>
       <div className="sidebar-footer">
-        <div className="tiny-label">SIGNED IN AS</div>
-        <div className="sidebar-role">
-          <Users size={15} />
-          <span>{profile?.role?.replaceAll("_", " ") || "USER"}</span>
-        </div>
-        <div className="sidebar-role">
-          <Activity size={15} />
-          <span>{profile?.clearance_level || "PUBLIC"} clearance</span>
-        </div>
+        <SecurityCredential profile={profile} />
       </div>
     </aside>
   );

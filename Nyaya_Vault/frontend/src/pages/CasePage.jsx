@@ -25,7 +25,7 @@ import {
 } from "../lib/api";
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
-import RepoTabs from "../components/RepoTabs";
+import DossierTabs from "../components/DossierTabs";
 import Badge, {
   clearanceTone,
   departmentTone,
@@ -98,14 +98,13 @@ export default function CasePage() {
       collaborators.some((c) => c.user_id === profile.id));
   return (
     <div>
-      <header className="repo-header">
-        <div className="repo-title">
+      <header className="dossier-header">
+        <div className="dossier-title">
           <BriefcaseBusiness size={22} />
           <div>
-            <div className="repo-path">
-              <span>{caseItem.case_number}</span>
-              <span>/</span>
-              <strong>{caseItem.title}</strong>
+            <div className="dossier-identity">
+              <span className="case-reference">Case dossier · {caseItem.case_number}</span>
+              <h1>{caseItem.title}</h1>
             </div>
             <p>{caseItem.description || "No description provided."}</p>
           </div>
@@ -114,7 +113,7 @@ export default function CasePage() {
             {(caseItem.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
           </Badge>
         </div>
-        <RepoTabs
+        <DossierTabs
           caseId={caseId}
           counts={{
             documents: documents.length,
@@ -215,11 +214,11 @@ function Overview({
   return (
     <div className="two-column">
       <section className="panel">
-        <div className="panel-header readme-header">
-          <h2>Case overview</h2>
-          <span className="muted small">README-style summary</span>
+        <div className="panel-header summary-header">
+          <h2>Official Case Summary</h2>
+          <span className="muted small">Case record</span>
         </div>
-        <div className="readme-body">
+        <div className="record-body">
           <h1>{c.title}</h1>
           <p>
             {c.description ||
@@ -234,7 +233,7 @@ function Overview({
       </section>
       <aside className="stack">
         <section className="panel compact-panel">
-          <h3>About</h3>
+          <h3>Case Control</h3>
           <div className="about-row">
             <LockKeyhole size={16} />
             Private case workspace
@@ -252,7 +251,7 @@ function Overview({
             {audit.length} audit events
           </div>
           {canManage ? (
-            <label className="field" style={{ marginTop: "0.75rem" }}>
+            <label className="field section-spacer">
               <span>Case status</span>
               <select
                 value={c.status || "UNDER_INVESTIGATION"}
@@ -270,15 +269,14 @@ function Overview({
             </label>
           ) : null}
           <button
-            className="button button-block"
-            style={{ marginTop: "0.75rem" }}
+            className="button button-official button-block section-spacer"
             onClick={() => setNoticeModal(true)}
           >
             <FileOutput size={16} /> Generate legal notice
           </button>
         </section>
         <section className="panel compact-panel">
-          <h3>Collaborators</h3>
+          <h3>Assigned Personnel</h3>
           <div className="avatar-row">
             {collaborators.slice(0, 8).map((x) => (
               <Avatar key={x.user_id} name={x.username} />
@@ -397,7 +395,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Documents</h2>
+          <h2>Evidence Register</h2>
           <p>
             Every update creates a new immutable version. Only one primary FIR
             and one primary chargesheet per case - further uploads of either
@@ -405,14 +403,14 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           </p>
         </div>
         <button className="button button-primary" onClick={() => setOpen(true)}>
-          <FilePlus2 size={16} /> Upload evidence
+          <FilePlus2 size={16} /> Register evidence
         </button>
       </div>
       {documents.length ? (
-        <div className="data-list">
+        <div className="data-list" tabIndex={0} aria-label="Evidence register, scroll for all columns">
           <div className="data-header">
-            <span>Name</span>
-            <span>Clearance</span>
+            <span>Evidence / type</span>
+            <span>Classification</span>
             <span>Department</span>
             <span>Version</span>
             <span>Created</span>
@@ -424,6 +422,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 <span>
                   <strong>{doc.title}</strong>
                   <small>{doc.document_type || "Unclassified type"}</small>
+                  <code className="evidence-id">{doc.id}</code>
                 </span>
               </span>
               <Badge tone={clearanceTone(doc.clearance_level)}>
@@ -446,7 +445,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
       )}
       {open ? (
         <Modal
-          title="Upload evidence"
+          title="Register evidence"
           onClose={() => setOpen(false)}
           footer={
             <>
@@ -462,14 +461,14 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                   ? "Hashing & uploading…"
                   : matchingExisting && updateExisting
                     ? "Add as new version"
-                    : "Upload evidence"}
+                    : "Register evidence"}
               </button>
             </>
           }
         >
           <form id="upload-doc" className="form-stack" onSubmit={submit}>
             <label className="field">
-              <span>Document title</span>
+              <span>01 · Evidence title</span>
               <input
                 required
                 value={form.title}
@@ -487,28 +486,12 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               />
             </label>
             {matchingExisting ? (
-              <div
-                style={{
-                  background: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  borderRadius: "8px",
-                  padding: "0.75rem",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <label
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "flex-start",
-                    cursor: "pointer",
-                  }}
-                >
+              <div className="version-warning">
+                <label>
                   <input
                     type="checkbox"
                     checked={updateExisting}
                     onChange={(e) => setUpdateExisting(e.target.checked)}
-                    style={{ marginTop: "0.2rem" }}
                   />
                   <span>
                     This case already has a primary {singletonKey} -{" "}
@@ -522,7 +505,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </div>
             ) : null}
             <label className="field">
-              <span>Clearance</span>
+              <span>02 · Security classification</span>
               <select
                 value={form.clearanceLevel}
                 onChange={(e) =>
@@ -535,7 +518,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </select>
             </label>
             <label className="field">
-              <span>Department</span>
+              <span>03 · Responsible department</span>
               <select
                 value={form.department}
                 onChange={(e) =>
@@ -554,7 +537,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </select>
             </label>
             <label className="field">
-              <span>File · max 200 MB</span>
+              <span>04 · File selection · max 200 MB</span>
               <input
                 required
                 type="file"
@@ -640,7 +623,7 @@ function CollaboratorsTab({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Manage access</h2>
+          <h2>Case Access & Assigned Personnel</h2>
           <p>
             Only admins or assigned investigating officers can change
             membership.
@@ -669,7 +652,7 @@ function CollaboratorsTab({
             </span>
             {canManage ? (
               <button
-                className="icon-button danger-icon"
+                className="icon-button danger-icon" aria-label={`Remove access for ${x.username}`}
                 onClick={() => remove(x.user_id)}
               >
                 <Trash2 size={17} />
@@ -712,13 +695,7 @@ function CollaboratorsTab({
             </select>
           </label>
           {clearanceWarning ? (
-            <p
-              style={{
-                color: "#b45309",
-                fontSize: "0.85rem",
-                marginTop: "0.5rem",
-              }}
-            >
+            <p className="warning-note section-spacer">
               ⚠ {selectedCandidate.username}'s clearance (
               {selectedCandidate.clearance_level}) is below this case's
               highest-clearance evidence. They'll be able to open the case but
@@ -845,13 +822,13 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Conflicts</h2>
+          <h2>Evidence Timeline & Contradiction Review</h2>
           <p>
             Finds people who can't have been where evidence says, at the same
             time, given travel time between locations.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div className="button-row">
           <button className="button" onClick={generate} disabled={generating}>
             {generating
               ? "Scanning documents…"
@@ -867,24 +844,23 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
       </div>
 
       {openConflicts.length ? (
-        <div className="data-list" style={{ marginBottom: "1.25rem" }}>
+        <div className="contradiction-list">
           {openConflicts.map((c) => (
             <div
               key={c.id}
-              className="data-row"
-              style={{ alignItems: "flex-start", gridTemplateColumns: "1fr" }}
+              className="contradiction-sheet"
             >
               <div>
                 <Badge tone="danger">Contradiction</Badge>
-                <strong style={{ marginLeft: "0.5rem" }}>
+                <strong className="contradiction-person">
                   {c.person_name}
                 </strong>
-                <p className="small muted" style={{ margin: "0.35rem 0 0" }}>
+                <p className="small muted compact-copy">
                   No valid schedule reconciles these statements, even letting
                   each stated window shift freely, given known travel time
                   between the locations involved:
                 </p>
-                <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+                <ul className="statement-comparison">
                   {c.statement_ids.map((id) =>
                     byId[id] ? (
                       <li key={id} className="small">
@@ -917,37 +893,27 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
 
       {suggested.length ? (
         <>
-          <h3 style={{ margin: "1.5rem 0 0.5rem", fontSize: "0.95rem" }}>
-            Candidates from documents - review before they count as evidence
+          <h3 className="review-heading">
+            System extracted — requires human confirmation
           </h3>
           <div className="data-list">
             {suggested.map((s) => (
               <div
-                className="data-row"
+                className="data-row suggestion-row"
                 key={s.id}
-                style={{
-                  alignItems: "flex-start",
-                  gridTemplateColumns: "1fr auto",
-                }}
               >
                 <div>
                   <strong>{s.person_name}</strong> · {s.location_name}{" "}
                   <span className="muted small">
                     ({formatDate(s.window_start)} – {formatDate(s.window_end)})
                   </span>
-                  <p className="small muted" style={{ margin: "0.25rem 0 0" }}>
+                  <p className="small muted compact-copy">
                     {s.source_excerpt}
                   </p>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.4rem",
-                    alignItems: "center",
-                  }}
-                >
+                <div className="button-row">
                   <button
-                    className="button"
+                    className="button button-quiet"
                     disabled={actingOn === s.id}
                     onClick={() => reject(s.id)}
                   >
@@ -969,10 +935,10 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
 
       {confirmed.length ? (
         <>
-          <h3 style={{ margin: "1.5rem 0 0.5rem", fontSize: "0.95rem" }}>
+          <h3 className="review-heading">
             Confirmed statements
           </h3>
-          <div className="data-list">
+          <div className="data-list confirmed-register">
             <div className="data-header">
               <span>Person</span>
               <span>Location</span>
@@ -1153,7 +1119,7 @@ function AssistantTab({ caseId }) {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Ask about this case</h2>
+            <h2>Case Research Assistant</h2>
             <p>
               Answers are grounded only in this case's own confirmed evidence
               and cite their source. Not a legal or factual authority - verify
@@ -1161,15 +1127,7 @@ function AssistantTab({ caseId }) {
             </p>
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem",
-            minHeight: "120px",
-            marginBottom: "1rem",
-          }}
-        >
+        <div className="research-records">
           {messages.length === 0 ? (
             <p className="muted small">
               No questions asked yet this session. Try: "Who has been placed at
@@ -1179,24 +1137,18 @@ function AssistantTab({ caseId }) {
           {messages.map((m, i) => (
             <div
               key={i}
-              style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "85%",
-                background: m.role === "user" ? "#0969da" : "#f0f3f6",
-                color: m.role === "user" ? "#fff" : "#1f2328",
-                borderRadius: "10px",
-                padding: "0.6rem 0.85rem",
-                whiteSpace: "pre-wrap",
-              }}
+              className={`research-entry ${m.role === "user" ? "research-query" : "research-answer"}`}
             >
+              <span className="eyebrow">{m.role === "user" ? "Research query" : "Generated answer · verify against sources"}</span>
               {m.text}
             </div>
           ))}
           {asking ? <div className="muted small">Thinking…</div> : null}
         </div>
-        <form onSubmit={ask} style={{ display: "flex", gap: "0.5rem" }}>
-          <div className="field" style={{ flex: 1, margin: 0 }}>
+        <form onSubmit={ask} className="research-form">
+          <div className="field grow">
             <input
+              aria-label="Research question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Ask a question about this case…"
@@ -1211,7 +1163,7 @@ function AssistantTab({ caseId }) {
           </button>
         </form>
         {error ? (
-          <p className="form-error" style={{ marginTop: "0.5rem" }}>
+          <p className="form-error section-spacer">
             {error}
           </p>
         ) : null}
@@ -1219,7 +1171,7 @@ function AssistantTab({ caseId }) {
       <aside className="stack">
         <section className="panel compact-panel">
           <h3>Case gap check</h3>
-          <p className="muted small" style={{ marginTop: 0 }}>
+          <p className="muted small">
             Computed directly from case data - not AI-generated, always exact.
           </p>
           {gapsError ? (
@@ -1229,22 +1181,11 @@ function AssistantTab({ caseId }) {
           ) : gaps.length === 0 ? (
             <p className="muted small">No gaps found.</p>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-              }}
-            >
+            <div className="gap-list">
               {gaps.map((g, i) => (
                 <div
                   key={i}
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "flex-start",
-                  }}
-                >
+                 className="gap-row">
                   <Badge tone={severityTone(g.severity)}>{g.severity}</Badge>
                   <span className="small">{g.message}</span>
                 </div>
@@ -1263,8 +1204,7 @@ function AssistantTab({ caseId }) {
           </button>
           {summary ? (
             <div
-              className="small"
-              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+              className="small research-output"
             >
               {summary}
             </div>
@@ -1272,7 +1212,7 @@ function AssistantTab({ caseId }) {
         </section>
         <section className="panel compact-panel">
           <h3>Possible legal sections</h3>
-          <p className="muted small" style={{ marginTop: 0, color: "#b45309" }}>
+          <p className="muted small warning-note">
             ⚠ Preliminary and non-authoritative. A qualified legal officer must
             independently verify before relying on this.
           </p>
@@ -1285,8 +1225,7 @@ function AssistantTab({ caseId }) {
           </button>
           {legal ? (
             <div
-              className="small"
-              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+              className="small research-output"
             >
               {legal}
             </div>
@@ -1312,11 +1251,11 @@ function AuditTab({ audit }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Audit trail</h2>
+          <h2>Immutable Audit Ledger</h2>
           <p>Append-only globally hash-chained case events.</p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <label className="field" style={{ margin: 0 }}>
+        <div className="button-row">
+          <label className="field">
             <span className="small muted">Actor dept.</span>
             <select
               value={actorDept}
@@ -1329,7 +1268,7 @@ function AuditTab({ audit }) {
               ))}
             </select>
           </label>
-          <label className="field" style={{ margin: 0 }}>
+          <label className="field">
             <span className="small muted">Evidence dept.</span>
             <select
               value={docDept}
@@ -1349,9 +1288,9 @@ function AuditTab({ audit }) {
           No events match this department filter.
         </div>
       ) : null}
-      <div className="audit-table">
+      <div className="audit-table" tabIndex={0} aria-label="Audit ledger, scroll for all columns">
         <div className="audit-head">
-          <span>#</span>
+          <span>Sequence</span>
           <span>Event</span>
           <span>Actor</span>
           <span>Result</span>
@@ -1383,7 +1322,7 @@ function AuditTab({ audit }) {
             >
               {e.result}
             </Badge>
-            <code title={e.entry_hash}>{shortHash(e.entry_hash)}</code>
+            <details className="hash-disclosure"><summary><code>{shortHash(e.entry_hash)}</code></summary><code className="wrap-code">{e.entry_hash}</code></details>
             <span className="small muted">{formatDate(e.timestamp)}</span>
           </div>
         ))}

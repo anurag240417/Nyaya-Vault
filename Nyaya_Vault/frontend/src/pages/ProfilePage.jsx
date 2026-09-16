@@ -9,7 +9,7 @@ export default function ProfilePage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Profile</h1>
+          <p className="eyebrow">Personnel record</p><h1>Authorization Credential</h1>
           <p>Your identity and authorization attributes.</p>
         </div>
       </div>
@@ -38,6 +38,7 @@ export default function ProfilePage() {
             <Shield size={15} /> Account state
           </dt>
           <dd>{profile?.is_active ? "Active" : "Disabled"}</dd>
+          <dt>Department</dt><dd>{profile?.department || "Unassigned"}</dd>
           <dt>Created</dt>
           <dd>{formatDate(profile?.created_at)}</dd>
         </dl>

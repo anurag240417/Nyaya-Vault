@@ -42,19 +42,21 @@ export default function LoginPage() {
         <div className="auth-logo">
           <ShieldCheck size={28} />
         </div>
+        <p className="eyebrow">CASE & EVIDENCE SYSTEM</p>
         <h1>Nyaya Vault</h1>
         <p>
-          Secure case-scoped evidence management with immutable activity
-          history.
+          An organized case record.
+          A traceable evidence history.
         </p>
         <div className="auth-feature">
           <LockKeyhole size={18} />
           <span>
-            Supabase Auth + FastAPI authorization + private Supabase storage
+            Controlled access · Case-scoped records · Evidence integrity
           </span>
         </div>
       </div>
       <form className="auth-card" onSubmit={submit}>
+        <p className="eyebrow">Authorized access</p>
         <h2>
           {mode === "signin" ? "Sign in to Nyaya Vault" : "Create an account"}
         </h2>
@@ -67,7 +69,7 @@ export default function LoginPage() {
             <span>Username</span>
             <input
               required
-              value={username}
+              autoComplete="username" value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="aditya"
             />
@@ -77,7 +79,7 @@ export default function LoginPage() {
           <span>Email</span>
           <input
             required
-            type="email"
+            type="email" autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
@@ -88,14 +90,14 @@ export default function LoginPage() {
           <input
             required
             minLength={8}
-            type="password"
+            type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
           />
         </label>
-        {error ? <div className="form-error">{error}</div> : null}
-        {message ? <div className="form-success">{message}</div> : null}
+        {error ? <div role="alert" className="form-error">{error}</div> : null}
+        {message ? <div role="status" className="form-success">{message}</div> : null}
         <button className="button button-primary button-block" disabled={busy}>
           {busy
             ? "Please wait…"

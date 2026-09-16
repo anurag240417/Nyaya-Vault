@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Bot,
+  ScanLine,
   Check,
   Download,
   FileClock,
@@ -111,13 +111,14 @@ export default function DocumentPage() {
   return (
     <div className="page document-page">
       <Link className="back-link" to={`/cases/${doc.case_id}/documents`}>
-        <ArrowLeft size={15} /> Back to case documents
+        <ArrowLeft size={15} /> Back to evidence register
       </Link>
       <div className="document-title-row">
         <div className="document-icon">
           <FileText size={28} />
         </div>
         <div className="grow">
+          <p className="eyebrow">Evidence Record</p>
           <div className="title-with-badges">
             <h1>{doc.title}</h1>
             <Badge tone={clearanceTone(doc.clearance_level)}>
@@ -134,7 +135,7 @@ export default function DocumentPage() {
         </button>
         {latest ? (
           <button
-            className="button button-primary"
+            className="button"
             onClick={() =>
               downloadDocumentVersion(documentId, latest).catch((e) =>
                 setToast({ type: "error", message: e.message }),
@@ -145,7 +146,7 @@ export default function DocumentPage() {
           </button>
         ) : null}
         {latest ? (
-          <button className="button" onClick={() => setCertModal(true)}>
+          <button className="button button-official" onClick={() => setCertModal(true)}>
             <FileOutput size={16} /> Section 63 certificate
           </button>
         ) : null}
@@ -154,10 +155,10 @@ export default function DocumentPage() {
         {["overview", "entities", "redactions", "versions"].map((v) => (
           <button
             key={v}
-            className={tab === v ? "active" : ""}
+            aria-pressed={tab === v} className={tab === v ? "active" : ""}
             onClick={() => setTab(v)}
           >
-            {v[0].toUpperCase() + v.slice(1)}
+            {{ overview: "Record", entities: "Extracted Entities", redactions: "Redaction Review", versions: "Version History" }[v]}
             {v === "entities" ? (
               <span className="counter">{entities.length}</span>
             ) : v === "redactions" ? (
@@ -302,16 +303,16 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
     };
   }, [isPreviewable, documentId, latest]);
   return (
-    <div className="two-column">
+    <div className="two-column evidence-layout">
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Evidence metadata</h2>
+            <h2>Source Evidence</h2>
             <p>SHA-256 is computed from exact uploaded bytes.</p>
           </div>
         </div>
         {isPreviewable ? (
-          <div style={{ marginBottom: "1rem" }}>
+          <div className="evidence-preview">
             {previewError ? (
               <p className="form-error">
                 Could not load preview: {previewError}
@@ -322,39 +323,26 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
               <video
                 controls
                 preload="metadata"
-                style={{
-                  width: "100%",
-                  borderRadius: "8px",
-                  background: "#000",
-                }}
                 src={previewUrl}
               />
             ) : isImage ? (
               <img
                 src={previewUrl}
                 alt={doc.title}
-                style={{
-                  width: "100%",
-                  maxHeight: "70vh",
-                  objectFit: "contain",
-                  borderRadius: "8px",
-                  background: "#f6f8fa",
-                }}
               />
             ) : isPdf ? (
               <embed
+                title={`Evidence preview: ${doc.title}`}
                 src={previewUrl}
                 type="application/pdf"
-                style={{
-                  width: "100%",
-                  height: "70vh",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border)",
-                }}
               />
             ) : null}
           </div>
-        ) : null}
+        ) : <div className="panel-empty">No inline preview is available for this format. Use Download to inspect the source file.</div>}
+
+      </section>
+      <aside className="stack">
+        <section className="panel"><div className="panel-header"><h2>Record Information</h2></div>
         <dl className="definition-grid">
           <dt>Document ID</dt>
           <dd>
@@ -363,7 +351,8 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           <dt>Type</dt>
           <dd>{doc.document_type || "—"}</dd>
           <dt>Clearance</dt>
-          <dd>{doc.clearance_level}</dd>
+          <dd><Badge tone={clearanceTone(doc.clearance_level)}>{doc.clearance_level}</Badge></dd>
+          <dt>Department</dt><dd>{doc.department || "GENERAL"}</dd>
           <dt>Created</dt>
           <dd>{formatDate(doc.created_at)}</dd>
           <dt>Current version</dt>
@@ -381,10 +370,14 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
             </>
           ) : null}
         </dl>
-      </section>
-      <aside className="stack">
+        </section>
         <section className="panel compact-panel">
-          <h3>Processing pipeline</h3>
+          <h3>Processing & Provenance</h3>
+          <ol className="provenance-sequence">
+            <li><span>Registration</span><strong>Version {doc.current_version_number}</strong><small>{formatDate(latest?.created_at || doc.created_at)}</small></li>
+            <li><span>File fingerprint</span><strong>{latest?.sha256 ? "SHA-256 recorded" : "No hash available"}</strong></li>
+            <li><span>Processing record</span><strong>{latest?.processing_status || "No status available"}</strong></li>
+          </ol>
           {latest ? (
             <div className="processing-status">
               <Badge
@@ -411,11 +404,11 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
             <p className="form-error">{latest.processing_error}</p>
           ) : null}
           {isVideo ? (
-            <p className="muted small" style={{ marginTop: "0.5rem" }}>
+            <p className="muted small">
               Video is stored and hash-verified like any other evidence, but its
               visual/audio content is not automatically analyzed - there's no
               text for OCR or NER to extract. Reference what's seen or heard in
-              this video manually via a Conflicts tab timeline statement if it's
+              this video manually via a Timeline & Conflicts section timeline statement if it's
               relevant to a contradiction check.
             </p>
           ) : (
@@ -424,7 +417,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
               disabled={!configured || busy}
               onClick={runProcessor}
             >
-              <Bot size={16} />{" "}
+              <ScanLine size={16} />{" "}
               {busy ? "Requesting…" : "Run OCR / NER processing"}
             </button>
           )}
@@ -479,8 +472,8 @@ function Entities({ documentId, entities, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Extracted entities</h2>
-          <p>Confirm or reject processor suggestions.</p>
+          <h2>Human Review Sheet</h2>
+          <p>System-extracted entities require human review. Select decisions, then save the review.</p>
         </div>
         <button
           className="button button-primary"
@@ -504,15 +497,16 @@ function Entities({ documentId, entities, reload, setToast }) {
                     : `${Math.round(e.confidence * 100)}%`}
                 </span>
               </div>
+              <p className="review-state">{choices[e.id] === "confirm" ? (e.confirmed ? "Human confirmed" : "Confirm selected · unsaved") : choices[e.id] === "reject" ? "Reject selected · unsaved" : "System extracted · pending review"}</p>
               <div className="review-toggle">
                 <button
-                  className={choices[e.id] === "confirm" ? "selected good" : ""}
+                  aria-pressed={choices[e.id] === "confirm"} className={choices[e.id] === "confirm" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [e.id]: "confirm" })}
                 >
                   <Check size={15} /> Confirm
                 </button>
                 <button
-                  className={choices[e.id] === "reject" ? "selected bad" : ""}
+                  aria-pressed={choices[e.id] === "reject"} className={choices[e.id] === "reject" ? "selected bad" : ""}
                   onClick={() => setChoices({ ...choices, [e.id]: "reject" })}
                 >
                   <X size={15} /> Reject
@@ -581,7 +575,7 @@ function Redactions({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Redaction suggestions</h2>
+          <h2>Redaction Review Sheet</h2>
           <p>
             Only human-approved regions should be used in disclosure copies.
           </p>
@@ -616,20 +610,21 @@ function Redactions({
             <div className="entity-row" key={r.id}>
               <Badge tone="warning">{r.entity_type}</Badge>
               <div className="grow">
-                <strong>Region suggestion</strong>
+                <strong>Proposed redaction region</strong>
                 <code className="small wrap-code">
                   {JSON.stringify(r.region_json)}
                 </code>
               </div>
+              <p className="review-state">{choices[r.id] === "approve" ? (r.approved ? "Human approved" : "Approve selected · unsaved") : choices[r.id] === "reject" ? "Reject selected · unsaved" : "Proposed · pending review"}</p>
               <div className="review-toggle">
                 <button
-                  className={choices[r.id] === "approve" ? "selected good" : ""}
+                  aria-pressed={choices[r.id] === "approve"} className={choices[r.id] === "approve" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [r.id]: "approve" })}
                 >
                   <Check size={15} /> Approve
                 </button>
                 <button
-                  className={choices[r.id] === "reject" ? "selected bad" : ""}
+                  aria-pressed={choices[r.id] === "reject"} className={choices[r.id] === "reject" ? "selected bad" : ""}
                   onClick={() => setChoices({ ...choices, [r.id]: "reject" })}
                 >
                   <X size={15} /> Reject
