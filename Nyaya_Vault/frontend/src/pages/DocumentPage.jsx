@@ -267,16 +267,23 @@ export default function DocumentPage() {
 }
 function Overview({ documentId, doc, latest, runProcessor, busy }) {
   const configured = isProcessorConfigured();
-  const isVideo = (latest?.mime_type || "").startsWith("video/");
-  const [videoUrl, setVideoUrl] = useState(null);
-  const [videoError, setVideoError] = useState(null);
+  const mimeType = latest?.mime_type || "";
+  const isVideo = mimeType.startsWith("video/");
+  const isImage = mimeType.startsWith("image/");
+  const isPdf = mimeType === "application/pdf";
+  const isPreviewable = isVideo || isImage || isPdf;
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewError, setPreviewError] = useState(null);
   useEffect(() => {
-    if (!isVideo || !latest) {
-      setVideoUrl(null);
+    if (!isPreviewable || !latest) {
+      setPreviewUrl(null);
+      setPreviewError(null);
       return;
     }
     let cancelled = false,
       objectUrl = null;
+    setPreviewUrl(null);
+    setPreviewError(null);
     getVersionObjectUrl(documentId, latest)
       .then((url) => {
         if (cancelled) {
@@ -284,16 +291,16 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           return;
         }
         objectUrl = url;
-        setVideoUrl(url);
+        setPreviewUrl(url);
       })
       .catch((e) => {
-        if (!cancelled) setVideoError(e.message);
+        if (!cancelled) setPreviewError(e.message);
       });
     return () => {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [isVideo, documentId, latest]);
+  }, [isPreviewable, documentId, latest]);
   return (
     <div className="two-column">
       <section className="panel">
@@ -303,9 +310,15 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
             <p>SHA-256 is computed from exact uploaded bytes.</p>
           </div>
         </div>
-        {isVideo ? (
+        {isPreviewable ? (
           <div style={{ marginBottom: "1rem" }}>
-            {videoUrl ? (
+            {previewError ? (
+              <p className="form-error">
+                Could not load preview: {previewError}
+              </p>
+            ) : !previewUrl ? (
+              <LoadingState label="Loading preview…" />
+            ) : isVideo ? (
               <video
                 controls
                 preload="metadata"
@@ -314,15 +327,32 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
                   borderRadius: "8px",
                   background: "#000",
                 }}
-                src={videoUrl}
+                src={previewUrl}
               />
-            ) : videoError ? (
-              <p className="form-error">
-                Could not load video for playback: {videoError}
-              </p>
-            ) : (
-              <LoadingState label="Loading video…" />
-            )}
+            ) : isImage ? (
+              <img
+                src={previewUrl}
+                alt={doc.title}
+                style={{
+                  width: "100%",
+                  maxHeight: "70vh",
+                  objectFit: "contain",
+                  borderRadius: "8px",
+                  background: "#f6f8fa",
+                }}
+              />
+            ) : isPdf ? (
+              <embed
+                src={previewUrl}
+                type="application/pdf"
+                style={{
+                  width: "100%",
+                  height: "70vh",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border)",
+                }}
+              />
+            ) : null}
           </div>
         ) : null}
         <dl className="definition-grid">

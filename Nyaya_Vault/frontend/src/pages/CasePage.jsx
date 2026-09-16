@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Route, Routes, useNavigate, useParams, Link } from "react-router-dom";
 import {
   BriefcaseBusiness,
+  FileOutput,
   FilePlus2,
   FileText,
   History,
@@ -27,6 +28,7 @@ import RepoTabs from "../components/RepoTabs";
 import Badge, { clearanceTone, departmentTone } from "../components/Badge";
 import Avatar from "../components/Avatar";
 import Modal from "../components/Modal";
+import NoticeModal from "../components/NoticeModal";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import Toast from "../components/Toast";
@@ -120,10 +122,12 @@ export default function CasePage() {
             index
             element={
               <Overview
+                caseId={caseId}
                 c={caseItem}
                 documents={documents}
                 collaborators={collaborators}
                 audit={audit}
+                setToast={setToast}
               />
             }
           />
@@ -171,7 +175,8 @@ export default function CasePage() {
     </div>
   );
 }
-function Overview({ c, documents, collaborators, audit }) {
+function Overview({ caseId, c, documents, collaborators, audit, setToast }) {
+  const [noticeModal, setNoticeModal] = useState(false);
   return (
     <div className="two-column">
       <section className="panel">
@@ -211,6 +216,13 @@ function Overview({ c, documents, collaborators, audit }) {
             <History size={16} />
             {audit.length} audit events
           </div>
+          <button
+            className="button button-block"
+            style={{ marginTop: "0.75rem" }}
+            onClick={() => setNoticeModal(true)}
+          >
+            <FileOutput size={16} /> Generate legal notice
+          </button>
         </section>
         <section className="panel compact-panel">
           <h3>Collaborators</h3>
@@ -221,6 +233,13 @@ function Overview({ c, documents, collaborators, audit }) {
           </div>
         </section>
       </aside>
+      {noticeModal ? (
+        <NoticeModal
+          caseId={caseId}
+          onClose={() => setNoticeModal(false)}
+          setToast={setToast}
+        />
+      ) : null}
     </div>
   );
 }

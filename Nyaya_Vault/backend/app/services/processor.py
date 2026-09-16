@@ -21,6 +21,7 @@ from app.services.embeddings import EmbeddingUnavailable, embed_texts
 from app.services.ner import extract_entities
 from app.services.ocr import extract_text
 from app.services.redaction import RedactionRegion, apply_redactions, suggest_redactions
+from app.services.vision import VisionService
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class DocumentProcessor:
         self.settings = settings
         self.worker_id = f"{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex[:12]}"
         self.authz = AuthorizationService(gateway)
+        self.vision = VisionService(settings)
 
     async def _one_service_row(self, table: str, *, params: dict[str, Any], not_found: str) -> dict[str, Any]:
         rows = await self.gateway.service_table("GET", table, params=params)
@@ -117,6 +119,12 @@ class DocumentProcessor:
             )
 
             entities = await anyio.to_thread.run_sync(extract_entities, extracted_text)
+            vision_entities: list[dict[str, Any]] = []
+            if version["mime_type"].startswith("image/"):
+                vision_entities = await anyio.to_thread.run_sync(self.vision.analyze_image, file_bytes)
+            elif version["mime_type"].startswith("video/"):
+                vision_entities = await anyio.to_thread.run_sync(self.vision.analyze_video, file_bytes)
+
             confirmed_rows = await self.gateway.service_table(
                 "GET",
                 "document_entities",
@@ -146,6 +154,14 @@ class DocumentProcessor:
                         "confirmed": False,
                     }
                 )
+            # Vision detections don't dedupe against the same (type, value)
+            # key as NER text entities - the same object detected in
+            # multiple sampled frames is intentionally kept as separate
+            # rows (each with its own frame_timestamp_seconds), since each
+            # is a distinct sighting an investigator may want to review
+            # independently, not a duplicate of the same extracted fact.
+            for payload in vision_entities:
+                entity_payload.append({**payload, "document_version_id": version_id})
             if entity_payload:
                 await self.gateway.service_table("POST", "document_entities", body=entity_payload, prefer="return=minimal")
 

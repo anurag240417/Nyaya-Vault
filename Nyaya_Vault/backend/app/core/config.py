@@ -74,6 +74,16 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-sonnet-5"
 
+    # Object/scene detection for image and video evidence (self-hosted,
+    # no per-call cost - see requirements-vision.txt). Off by default: the
+    # dependency (ultralytics/torch) is heavy and this needs meaningfully
+    # more CPU/RAM than the base app, not something to silently turn on.
+    enable_vision_analysis: bool = False
+    vision_model_path: str = "yolov8n.pt"
+    vision_max_video_frames: int = 10
+    vision_frame_interval_seconds: float = 2.0
+    vision_confidence_threshold: float = 0.35
+
     @property
     def normalized_supabase_url(self) -> str:
         return self.supabase_url.rstrip("/")

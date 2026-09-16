@@ -23,6 +23,8 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable,
 )
 
+from app.services.signature_stamp import build_issuer_signature_stamp
+
 _INK = colors.HexColor("#1a1a2e")       # near-black navy, formal document ink
 _RULE = colors.HexColor("#8b1a1a")      # deep maroon rule, common on Indian legal stationery
 _HAIRLINE = colors.HexColor("#333333")
@@ -44,6 +46,7 @@ def build_section63_certificate_pdf(
     created_at: str,
     device_operator_name: str,
     device_operator_designation: str,
+    issuer_department: str | None,
     expert_name: str,
     expert_designation: str,
     expert_qualification: str,
@@ -51,6 +54,8 @@ def build_section63_certificate_pdf(
     audit_events: list[dict[str, Any]],
 ) -> bytes:
     certificate_no = f"NV/S63/{document_id[:8].upper()}/{datetime.now().year}"
+    _raw_device_operator_name = device_operator_name
+    _raw_device_operator_designation = device_operator_designation
 
     # ReportLab's Paragraph text is markup-aware (a small HTML-like subset) -
     # any of these fields that reach a Paragraph unescaped lets whoever fills
@@ -248,6 +253,9 @@ def build_section63_certificate_pdf(
         "aid for legal proceedings and does not substitute for independent "
         "verification by the signing expert before submission to a court.",
         small_style,
+    ))
+    story.extend(build_issuer_signature_stamp(
+        name=_raw_device_operator_name, designation=_raw_device_operator_designation, department=issuer_department,
     ))
 
     def _page_frame(canvas, _doc):

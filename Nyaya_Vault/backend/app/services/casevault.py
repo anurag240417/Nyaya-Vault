@@ -11,6 +11,7 @@ from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, Departm
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
 from app.services.certificate_builder import build_section63_certificate_pdf
+from app.services.notice_builder import build_legal_notice_pdf
 
 _ALLOWED_MIME = {
     "application/pdf", "image/jpeg", "image/png", "image/tiff",
@@ -847,6 +848,7 @@ class CaseVaultService:
             created_at=str(version["created_at"]),
             device_operator_name=user.username,
             device_operator_designation=user.role.value if hasattr(user.role, "value") else str(user.role),
+            issuer_department=user.department.value if getattr(user, "department", None) else None,
             expert_name=expert["expert_name"],
             expert_designation=expert["expert_designation"],
             expert_qualification=expert["expert_qualification"],
@@ -860,5 +862,35 @@ class CaseVaultService:
             document_id=document_id,
             action="CERTIFICATE_GENERATED",
             metadata={"version_id": version_id, "expert_name": expert["expert_name"]},
+        )
+        return pdf_bytes
+
+    async def generate_legal_notice(self, user: CurrentUser, case_id: str, notice: dict[str, Any]) -> bytes:
+        case = await self.authz.require_case_access(user, case_id)
+        case_rows = await self.gateway.service_table(
+            "GET", "cases", params={"id": f"eq.{case_id}", "select": "case_number,title", "limit": "1"},
+        )
+        case_row = case_rows[0] if case_rows else {"case_number": "Unknown", "title": "Unknown"}
+
+        pdf_bytes = build_legal_notice_pdf(
+            notice_type=notice["notice_type"],
+            case_number=case_row["case_number"],
+            case_title=case_row["title"],
+            sender_name=user.username,
+            sender_designation=user.role.value if hasattr(user.role, "value") else str(user.role),
+            sender_department=user.department.value if getattr(user, "department", None) else None,
+            recipient_name=notice["recipient_name"],
+            recipient_address=notice["recipient_address"],
+            fields=notice.get("fields", {}),
+            body=notice["body"],
+            place=notice["place"],
+        )
+
+        await self.gateway.append_audit_service(
+            actor_user_id=user.id,
+            case_id=case_id,
+            document_id=None,
+            action="LEGAL_NOTICE_GENERATED",
+            metadata={"notice_type": notice["notice_type"], "recipient_name": notice["recipient_name"]},
         )
         return pdf_bytes

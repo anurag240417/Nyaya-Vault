@@ -207,3 +207,21 @@ export async function generateCertificate(documentId, versionId, expertForm) {
   anchor.click();
   URL.revokeObjectURL(url);
 }
+
+export async function getNoticeTypes(caseId) {
+  return apiJson(`/api/v1/cases/${caseId}/notices/types`);
+}
+
+export async function generateNotice(caseId, payload) {
+  const response = await apiFetchRaw(`/api/v1/cases/${caseId}/notices`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = window.document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${payload.notice_type.toLowerCase()}-${caseId.slice(0, 8)}.pdf`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}

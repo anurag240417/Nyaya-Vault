@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import admin, assistant, auth, cases, certificate, documents, system, timeline, users
+from app.api.routes import admin, assistant, auth, cases, certificate, documents, notice, system, timeline, users
 from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.integrations.supabase import SupabaseGateway
@@ -67,6 +67,7 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
     app.include_router(timeline.router, prefix=prefix)
     app.include_router(assistant.router, prefix=prefix)
     app.include_router(certificate.router, prefix=prefix)
+    app.include_router(notice.router, prefix=prefix)
     return app
 
 
