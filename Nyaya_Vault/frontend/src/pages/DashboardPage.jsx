@@ -48,7 +48,7 @@ export default function DashboardPage() {
         <div className="register-total"><strong>{cases.length}</strong><span>accessible case records</span></div>
         <Link className="desk-search" to="/search"><Search size={22} /><div><strong>Case & Evidence Search</strong><span>Search records and extracted evidence within your access.</span></div><ArrowRight size={18} /></Link>
       </div>
-      <div className="two-column">
+      <div className="desk-registers">
         <section className="panel">
           <div className="panel-header">
             <div>

@@ -131,6 +131,20 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .activity-item:last-child { border-bottom: 0; }
 .ledger-sequence { color: var(--muted); font-size: 11px; }
 .activity-item .small { margin-top: 5px; }
+/* Keep the two desk registers together independently of dossier breakpoints. */
+.desk-registers { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.desk-registers .panel-header { flex-wrap: wrap; }
+.desk-registers .panel-header > a { flex-shrink: 0; }
+.desk-registers .list-main, .desk-registers .activity-item > div { overflow-wrap: anywhere; }
+@media (min-width: 801px) and (max-width: 1100px) {
+  .desk-registers { gap: 16px; }
+  .desk-registers .panel-header, .desk-registers .list-row { padding: 14px; }
+  .desk-registers .activity-item { grid-template-columns: 28px minmax(0, 1fr); padding: 14px; gap: 8px; }
+  .desk-registers .activity-item > .badge { grid-column: 2; }
+}
+@media (max-width: 800px) {
+  .desk-registers { grid-template-columns: minmax(0, 1fr); }
+}
 /* Case registry: a contiguous index */
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .search-input { min-height: 38px; min-width: 0; width: min(540px, 100%); display: flex; align-items: center; gap: 10px; padding: 0 12px; background: var(--nv-paper); border: 1px solid var(--border); border-radius: 4px; }
