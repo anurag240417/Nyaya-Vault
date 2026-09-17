@@ -15,5 +15,17 @@
     "loading": "లోడ్ అవుతోంది…"
   },
   "defaultRole": "వినియోగదారు",
-  "defaultClearance": "పబ్లిక్"
+  "defaultClearance": "పబ్లిక్",
+  "dismissNotification": "నోటిఫికేషన్‌ను మూసివేయండి",
+  "readMore": "మరింత చదవండి",
+  "readLess": "తక్కువ చదవండి",
+  "dossierTabs": {
+    "sectionsLabel": "కేసు దస్త్రం విభాగాలు",
+    "summary": "కేసు సారాంశం",
+    "documents": "సాక్ష్యాల నమోదు",
+    "collaborators": "అనుమతి మరియు సిబ్బంది",
+    "timeline": "కాలరేఖ మరియు వైరుధ్యాలు",
+    "assistant": "కేసు సహాయకుడు",
+    "audit": "ఆడిట్ లెడ్జర్"
+  }
 }

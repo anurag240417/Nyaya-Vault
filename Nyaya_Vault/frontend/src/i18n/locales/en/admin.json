@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "Administration",
+    "title": "System Registry & Case Assignment Office",
+    "subtitle": "Manage users, case ownership, investigating officers, collaborators, and access state."
+  },
+  "tabs": {
+    "ariaLabel": "Administration sections",
+    "users": "Personnel Register",
+    "cases": "Case Assignment Register"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "INVESTIGATING_OFFICER": "Investigating Officer",
+    "PROSECUTOR": "Prosecutor",
+    "JUDGE": "Judge",
+    "CLERK": "Clerk",
+    "unknown": "Unknown role"
+  },
+  "clearances": {
+    "PUBLIC": "Public",
+    "RESTRICTED": "Restricted",
+    "CONFIDENTIAL": "Confidential",
+    "SECRET": "Secret"
+  },
+  "departments": {
+    "GENERAL": "General",
+    "POLICE": "Police",
+    "FORENSICS": "Forensics",
+    "PROSECUTION": "Prosecution",
+    "JUDICIARY": "Judiciary",
+    "unassigned": "Unassigned"
+  },
+  "users": {
+    "heading": "Personnel Register",
+    "description": "Security-sensitive controls: changes to role, clearance, department, and account state affect access.",
+    "roleAriaLabel": "Role for {{username}}",
+    "clearanceAriaLabel": "Clearance for {{username}}",
+    "departmentAriaLabel": "Department for {{username}}",
+    "departmentTitle": "Only an admin can set a user's department; a document tagged for a department is only visible to matching users.",
+    "active": "Active",
+    "disabled": "Disabled",
+    "saveSuccess": "User permissions updated."
+  },
+  "summary": {
+    "totalCases": "Total cases",
+    "activeInvestigators": "Active investigators",
+    "activeUsers": "Active users"
+  },
+  "caseAssignment": {
+    "heading": "Case Assignment Register",
+    "description": "Create cases, choose the primary investigator, and control the complete collaborator set.",
+    "createDisabledTitle": "Create or activate an {{role}} first.",
+    "createButton": "Create & assign case",
+    "searchAriaLabel": "Search managed cases",
+    "searchPlaceholder": "Search cases, investigators, or collaborators…",
+    "visibilityPrivate": "Private",
+    "noDescription": "No description has been added.",
+    "createdOn": "Created {{date}}",
+    "primaryInvestigatorLabel": "PRIMARY INVESTIGATOR",
+    "notAssigned": "Not assigned",
+    "collaboratorsLabel": "COLLABORATORS",
+    "removeCollaboratorTitle": "Remove {{username}}",
+    "noCollaborators": "No additional collaborators",
+    "moreCount": "+{{count}} more",
+    "manageButton": "Manage assignments",
+    "openButton": "Open",
+    "emptyTitle": "No managed cases found",
+    "emptySearchDescription": "Try a different search.",
+    "emptyDefaultDescription": "Create the first case and assign an investigating officer.",
+    "createCaseButton": "Create case",
+    "selectPrimaryError": "Select a primary investigating officer.",
+    "createSuccess": "Case created and assignments saved.",
+    "assignmentsUpdated": "Assignments updated for {{caseNumber}}.",
+    "collaboratorRemoved": "Collaborator removed."
+  },
+  "createModal": {
+    "title": "Create and assign case",
+    "creating": "Creating…",
+    "submit": "Create & assign",
+    "caseNumberLabel": "Case number",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "Primary investigating officer",
+    "selectInvestigatorOption": "Select investigator…",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Investigation title",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Case scope, notes, or brief…",
+    "collaboratorsHeading": "Additional collaborators",
+    "collaboratorsSubtext": "Select any active users who should immediately have case access.",
+    "selectedCount": "{{count}} selected"
+  },
+  "manageModal": {
+    "title": "Manage assignments · {{caseNumber}}",
+    "saving": "Saving…",
+    "submit": "Save assignments",
+    "primaryInvestigatorLabel": "Primary investigating officer",
+    "noPrimaryOption": "No primary investigator",
+    "collaboratorsHeading": "Assigned collaborators",
+    "collaboratorsSubtext": "The case creator is retained automatically. Select the additional users who should remain assigned.",
+    "additionalCount": "{{count}} additional"
+  }
+}

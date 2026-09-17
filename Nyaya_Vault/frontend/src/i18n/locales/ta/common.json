@@ -15,5 +15,17 @@
     "loading": "ஏற்றுகிறது…"
   },
   "defaultRole": "பயனர்",
-  "defaultClearance": "பொது"
+  "defaultClearance": "பொது",
+  "dismissNotification": "அறிவிப்பை நிராகரி",
+  "readMore": "மேலும் படிக்க",
+  "readLess": "குறைவாகப் படிக்க",
+  "dossierTabs": {
+    "sectionsLabel": "வழக்கு கோவை பிரிவுகள்",
+    "summary": "வழக்கு சுருக்கம்",
+    "documents": "ஆதார பதிவேடு",
+    "collaborators": "அணுகல் மற்றும் பணியாளர்கள்",
+    "timeline": "காலவரிசை மற்றும் முரண்பாடுகள்",
+    "assistant": "வழக்கு உதவியாளர்",
+    "audit": "தணிக்கை பதிவேடு"
+  }
 }
