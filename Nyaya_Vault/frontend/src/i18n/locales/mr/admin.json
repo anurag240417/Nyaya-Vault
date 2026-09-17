@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "प्रशासन",
+    "title": "प्रणाली नोंदणी आणि प्रकरण नियुक्ती कार्यालय",
+    "subtitle": "वापरकर्ते, प्रकरण मालकी, अन्वेषण अधिकारी, सहयोगी आणि प्रवेश स्थिती व्यवस्थापित करा."
+  },
+  "tabs": {
+    "ariaLabel": "प्रशासन विभाग",
+    "users": "कर्मचारी नोंदणी",
+    "cases": "प्रकरण नियुक्ती नोंदणी"
+  },
+  "actions": {
+    "save": "जतन करा",
+    "cancel": "रद्द करा"
+  },
+  "roles": {
+    "ADMIN": "प्रशासक",
+    "INVESTIGATING_OFFICER": "अन्वेषण अधिकारी",
+    "PROSECUTOR": "अभियोक्ता",
+    "JUDGE": "न्यायाधीश",
+    "CLERK": "लिपिक",
+    "unknown": "अज्ञात भूमिका"
+  },
+  "clearances": {
+    "PUBLIC": "सार्वजनिक",
+    "RESTRICTED": "प्रतिबंधित",
+    "CONFIDENTIAL": "गोपनीय",
+    "SECRET": "गुप्त"
+  },
+  "departments": {
+    "GENERAL": "सामान्य",
+    "POLICE": "पोलीस",
+    "FORENSICS": "फॉरेन्सिक",
+    "PROSECUTION": "अभियोग",
+    "JUDICIARY": "न्यायव्यवस्था",
+    "unassigned": "नियुक्त नाही"
+  },
+  "users": {
+    "heading": "कर्मचारी नोंदणी",
+    "description": "सुरक्षा-संवेदनशील नियंत्रणे: भूमिका, क्लिअरन्स, विभाग आणि खाते स्थितीतील बदल प्रवेशावर परिणाम करतात.",
+    "roleAriaLabel": "{{username}} साठी भूमिका",
+    "clearanceAriaLabel": "{{username}} साठी क्लिअरन्स",
+    "departmentAriaLabel": "{{username}} साठी विभाग",
+    "departmentTitle": "केवळ प्रशासकच वापरकर्त्याचा विभाग सेट करू शकतो; विभागासाठी टॅग केलेले दस्तऐवज केवळ जुळणाऱ्या वापरकर्त्यांना दिसते.",
+    "active": "सक्रिय",
+    "disabled": "निष्क्रिय",
+    "saveSuccess": "वापरकर्ता परवानग्या अपडेट केल्या."
+  },
+  "summary": {
+    "totalCases": "एकूण प्रकरणे",
+    "activeInvestigators": "सक्रिय अन्वेषक",
+    "activeUsers": "सक्रिय वापरकर्ते"
+  },
+  "caseAssignment": {
+    "heading": "प्रकरण नियुक्ती नोंदणी",
+    "description": "प्रकरणे तयार करा, मुख्य अन्वेषक निवडा आणि संपूर्ण सहयोगी संच नियंत्रित करा.",
+    "createDisabledTitle": "प्रथम एक {{role}} तयार करा किंवा सक्रिय करा.",
+    "createButton": "प्रकरण तयार करा आणि नियुक्त करा",
+    "searchAriaLabel": "व्यवस्थापित प्रकरणे शोधा",
+    "searchPlaceholder": "प्रकरणे, अन्वेषक किंवा सहयोगी शोधा…",
+    "visibilityPrivate": "खाजगी",
+    "noDescription": "कोणतेही वर्णन जोडलेले नाही.",
+    "createdOn": "{{date}} रोजी तयार केले",
+    "primaryInvestigatorLabel": "मुख्य अन्वेषक",
+    "notAssigned": "नियुक्त नाही",
+    "collaboratorsLabel": "सहयोगी",
+    "removeCollaboratorTitle": "{{username}} काढा",
+    "noCollaborators": "कोणतेही अतिरिक्त सहयोगी नाहीत",
+    "moreCount": "+{{count}} अधिक",
+    "manageButton": "नियुक्ती व्यवस्थापित करा",
+    "openButton": "उघडा",
+    "emptyTitle": "कोणतेही व्यवस्थापित प्रकरण सापडले नाही",
+    "emptySearchDescription": "वेगळा शोध वापरून पहा.",
+    "emptyDefaultDescription": "पहिले प्रकरण तयार करा आणि अन्वेषण अधिकारी नियुक्त करा.",
+    "createCaseButton": "प्रकरण तयार करा",
+    "selectPrimaryError": "मुख्य अन्वेषण अधिकारी निवडा.",
+    "createSuccess": "प्रकरण तयार केले आणि नियुक्ती जतन केली.",
+    "assignmentsUpdated": "{{caseNumber}} साठी नियुक्ती अपडेट केली.",
+    "collaboratorRemoved": "सहयोगी काढला."
+  },
+  "createModal": {
+    "title": "प्रकरण तयार करा आणि नियुक्त करा",
+    "creating": "तयार होत आहे…",
+    "submit": "तयार करा आणि नियुक्त करा",
+    "caseNumberLabel": "प्रकरण क्रमांक",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "मुख्य अन्वेषण अधिकारी",
+    "selectInvestigatorOption": "अन्वेषक निवडा…",
+    "titleLabel": "शीर्षक",
+    "titlePlaceholder": "अन्वेषण शीर्षक",
+    "descriptionLabel": "वर्णन",
+    "descriptionPlaceholder": "प्रकरणाची व्याप्ती, नोंदी किंवा संक्षिप्त माहिती…",
+    "collaboratorsHeading": "अतिरिक्त सहयोगी",
+    "collaboratorsSubtext": "ज्या सक्रिय वापरकर्त्यांना त्वरित प्रकरण प्रवेश मिळावा त्यांना निवडा.",
+    "selectedCount": "{{count}} निवडले"
+  },
+  "manageModal": {
+    "title": "नियुक्ती व्यवस्थापित करा · {{caseNumber}}",
+    "saving": "जतन होत आहे…",
+    "submit": "नियुक्ती जतन करा",
+    "primaryInvestigatorLabel": "मुख्य अन्वेषण अधिकारी",
+    "noPrimaryOption": "कोणताही मुख्य अन्वेषक नाही",
+    "collaboratorsHeading": "नियुक्त सहयोगी",
+    "collaboratorsSubtext": "प्रकरण तयार करणारा स्वयंचलितपणे कायम राहतो. जे अतिरिक्त वापरकर्ते नियुक्त राहावेत त्यांना निवडा.",
+    "additionalCount": "{{count}} अतिरिक्त"
+  }
+}

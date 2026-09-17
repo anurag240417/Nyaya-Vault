@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "প্রশাসন",
+    "title": "সিস্টেম রেজিস্ট্রি ও মামলা নিয়োগ কার্যালয়",
+    "subtitle": "ব্যবহারকারী, মামলার মালিকানা, তদন্তকারী কর্মকর্তা, সহযোগী এবং প্রবেশাধিকার অবস্থা পরিচালনা করুন।"
+  },
+  "tabs": {
+    "ariaLabel": "প্রশাসন বিভাগ",
+    "users": "কর্মী রেজিস্টার",
+    "cases": "মামলা নিয়োগ রেজিস্টার"
+  },
+  "actions": {
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল করুন"
+  },
+  "roles": {
+    "ADMIN": "প্রশাসক",
+    "INVESTIGATING_OFFICER": "তদন্তকারী কর্মকর্তা",
+    "PROSECUTOR": "সরকারি আইনজীবী",
+    "JUDGE": "বিচারক",
+    "CLERK": "করণিক",
+    "unknown": "অজানা ভূমিকা"
+  },
+  "clearances": {
+    "PUBLIC": "সর্বজনীন",
+    "RESTRICTED": "সীমাবদ্ধ",
+    "CONFIDENTIAL": "গোপনীয়",
+    "SECRET": "সুগোপন"
+  },
+  "departments": {
+    "GENERAL": "সাধারণ",
+    "POLICE": "পুলিশ",
+    "FORENSICS": "ফরেনসিক",
+    "PROSECUTION": "সরকারি পক্ষ",
+    "JUDICIARY": "বিচার বিভাগ",
+    "unassigned": "অনির্ধারিত"
+  },
+  "users": {
+    "heading": "কর্মী রেজিস্টার",
+    "description": "সুরক্ষা-সংবেদনশীল নিয়ন্ত্রণ: ভূমিকা, ক্লিয়ারেন্স, বিভাগ এবং অ্যাকাউন্টের অবস্থার পরিবর্তন প্রবেশাধিকারে প্রভাব ফেলে।",
+    "roleAriaLabel": "{{username}} এর জন্য ভূমিকা",
+    "clearanceAriaLabel": "{{username}} এর জন্য ক্লিয়ারেন্স",
+    "departmentAriaLabel": "{{username}} এর জন্য বিভাগ",
+    "departmentTitle": "শুধুমাত্র একজন প্রশাসক একজন ব্যবহারকারীর বিভাগ নির্ধারণ করতে পারেন; কোনো বিভাগের জন্য ট্যাগ করা নথি শুধুমাত্র মিলে যাওয়া ব্যবহারকারীদের কাছে দৃশ্যমান হয়।",
+    "active": "সক্রিয়",
+    "disabled": "নিষ্ক্রিয়",
+    "saveSuccess": "ব্যবহারকারীর অনুমতি আপডেট হয়েছে।"
+  },
+  "summary": {
+    "totalCases": "মোট মামলা",
+    "activeInvestigators": "সক্রিয় তদন্তকারী",
+    "activeUsers": "সক্রিয় ব্যবহারকারী"
+  },
+  "caseAssignment": {
+    "heading": "মামলা নিয়োগ রেজিস্টার",
+    "description": "মামলা তৈরি করুন, প্রধান তদন্তকারী নির্বাচন করুন এবং সম্পূর্ণ সহযোগী দল নিয়ন্ত্রণ করুন।",
+    "createDisabledTitle": "প্রথমে একজন {{role}} তৈরি বা সক্রিয় করুন।",
+    "createButton": "মামলা তৈরি ও নিয়োগ করুন",
+    "searchAriaLabel": "পরিচালিত মামলা খুঁজুন",
+    "searchPlaceholder": "মামলা, তদন্তকারী বা সহযোগী খুঁজুন…",
+    "visibilityPrivate": "ব্যক্তিগত",
+    "noDescription": "কোনো বিবরণ যুক্ত করা হয়নি।",
+    "createdOn": "{{date}} তারিখে তৈরি হয়েছে",
+    "primaryInvestigatorLabel": "প্রধান তদন্তকারী",
+    "notAssigned": "নিয়োগ করা হয়নি",
+    "collaboratorsLabel": "সহযোগী",
+    "removeCollaboratorTitle": "{{username}} অপসারণ করুন",
+    "noCollaborators": "কোনো অতিরিক্ত সহযোগী নেই",
+    "moreCount": "+{{count}} আরও",
+    "manageButton": "নিয়োগ পরিচালনা করুন",
+    "openButton": "খুলুন",
+    "emptyTitle": "কোনো পরিচালিত মামলা পাওয়া যায়নি",
+    "emptySearchDescription": "একটি ভিন্ন অনুসন্ধান চেষ্টা করুন।",
+    "emptyDefaultDescription": "প্রথম মামলা তৈরি করুন এবং একজন তদন্তকারী কর্মকর্তা নিয়োগ করুন।",
+    "createCaseButton": "মামলা তৈরি করুন",
+    "selectPrimaryError": "একজন প্রধান তদন্তকারী কর্মকর্তা নির্বাচন করুন।",
+    "createSuccess": "মামলা তৈরি হয়েছে এবং নিয়োগ সংরক্ষিত হয়েছে।",
+    "assignmentsUpdated": "{{caseNumber}} এর জন্য নিয়োগ আপডেট হয়েছে।",
+    "collaboratorRemoved": "সহযোগী অপসারণ করা হয়েছে।"
+  },
+  "createModal": {
+    "title": "মামলা তৈরি ও নিয়োগ করুন",
+    "creating": "তৈরি করা হচ্ছে…",
+    "submit": "তৈরি ও নিয়োগ করুন",
+    "caseNumberLabel": "মামলা নম্বর",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "প্রধান তদন্তকারী কর্মকর্তা",
+    "selectInvestigatorOption": "তদন্তকারী নির্বাচন করুন…",
+    "titleLabel": "শিরোনাম",
+    "titlePlaceholder": "তদন্তের শিরোনাম",
+    "descriptionLabel": "বিবরণ",
+    "descriptionPlaceholder": "মামলার পরিধি, নোট বা সংক্ষিপ্ত বিবরণ…",
+    "collaboratorsHeading": "অতিরিক্ত সহযোগী",
+    "collaboratorsSubtext": "যেকোনো সক্রিয় ব্যবহারকারী নির্বাচন করুন যাদের অবিলম্বে মামলায় প্রবেশাধিকার থাকা উচিত।",
+    "selectedCount": "{{count}} নির্বাচিত"
+  },
+  "manageModal": {
+    "title": "নিয়োগ পরিচালনা করুন · {{caseNumber}}",
+    "saving": "সংরক্ষণ করা হচ্ছে…",
+    "submit": "নিয়োগ সংরক্ষণ করুন",
+    "primaryInvestigatorLabel": "প্রধান তদন্তকারী কর্মকর্তা",
+    "noPrimaryOption": "কোনো প্রধান তদন্তকারী নেই",
+    "collaboratorsHeading": "নিযুক্ত সহযোগী",
+    "collaboratorsSubtext": "মামলার স্রষ্টা স্বয়ংক্রিয়ভাবে বজায় থাকে। যে অতিরিক্ত ব্যবহারকারীদের নিযুক্ত থাকা উচিত তাদের নির্বাচন করুন।",
+    "additionalCount": "{{count}} অতিরিক্ত"
+  }
+}

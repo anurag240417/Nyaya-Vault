@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "நிர்வாகம்",
+    "title": "அமைப்பு பதிவேடு மற்றும் வழக்கு நியமன அலுவலகம்",
+    "subtitle": "பயனர்கள், வழக்கு உரிமை, புலனாய்வு அதிகாரிகள், ஒத்துழைப்பாளர்கள் மற்றும் அணுகல் நிலையை நிர்வகிக்கவும்."
+  },
+  "tabs": {
+    "ariaLabel": "நிர்வாக பிரிவுகள்",
+    "users": "பணியாளர் பதிவேடு",
+    "cases": "வழக்கு நியமன பதிவேடு"
+  },
+  "actions": {
+    "save": "சேமி",
+    "cancel": "ரத்துசெய்"
+  },
+  "roles": {
+    "ADMIN": "நிர்வாகி",
+    "INVESTIGATING_OFFICER": "புலனாய்வு அதிகாரி",
+    "PROSECUTOR": "வழக்கறிஞர் (அரசு தரப்பு)",
+    "JUDGE": "நீதிபதி",
+    "CLERK": "எழுத்தர்",
+    "unknown": "அறியப்படாத பங்கு"
+  },
+  "clearances": {
+    "PUBLIC": "பொது",
+    "RESTRICTED": "கட்டுப்படுத்தப்பட்டது",
+    "CONFIDENTIAL": "இரகசியம்",
+    "SECRET": "மிக ரகசியம்"
+  },
+  "departments": {
+    "GENERAL": "பொது",
+    "POLICE": "காவல்துறை",
+    "FORENSICS": "தடயவியல்",
+    "PROSECUTION": "வழக்குத் தொடுத்தல்",
+    "JUDICIARY": "நீதித்துறை",
+    "unassigned": "நியமிக்கப்படாதது"
+  },
+  "users": {
+    "heading": "பணியாளர் பதிவேடு",
+    "description": "பாதுகாப்பு-முக்கியமான கட்டுப்பாடுகள்: பங்கு, அனுமதி நிலை, துறை மற்றும் கணக்கு நிலையில் மாற்றங்கள் அணுகலை பாதிக்கும்.",
+    "roleAriaLabel": "{{username}} க்கான பங்கு",
+    "clearanceAriaLabel": "{{username}} க்கான அனுமதி நிலை",
+    "departmentAriaLabel": "{{username}} க்கான துறை",
+    "departmentTitle": "ஒரு நிர்வாகி மட்டுமே பயனரின் துறையை அமைக்க முடியும்; ஒரு துறைக்காக குறியிடப்பட்ட ஆவணம் பொருந்தும் பயனர்களுக்கு மட்டுமே தெரியும்.",
+    "active": "செயலில்",
+    "disabled": "முடக்கப்பட்டது",
+    "saveSuccess": "பயனர் அனுமதிகள் புதுப்பிக்கப்பட்டன."
+  },
+  "summary": {
+    "totalCases": "மொத்த வழக்குகள்",
+    "activeInvestigators": "செயலில் உள்ள புலனாய்வாளர்கள்",
+    "activeUsers": "செயலில் உள்ள பயனர்கள்"
+  },
+  "caseAssignment": {
+    "heading": "வழக்கு நியமன பதிவேடு",
+    "description": "வழக்குகளை உருவாக்கவும், முதன்மை புலனாய்வாளரைத் தேர்ந்தெடுக்கவும், முழு ஒத்துழைப்பாளர் குழுவையும் கட்டுப்படுத்தவும்.",
+    "createDisabledTitle": "முதலில் ஒரு {{role}} ஐ உருவாக்கவும் அல்லது செயல்படுத்தவும்.",
+    "createButton": "வழக்கை உருவாக்கி நியமிக்கவும்",
+    "searchAriaLabel": "நிர்வகிக்கப்படும் வழக்குகளைத் தேடு",
+    "searchPlaceholder": "வழக்குகள், புலனாய்வாளர்கள் அல்லது ஒத்துழைப்பாளர்களைத் தேடுங்கள்…",
+    "visibilityPrivate": "தனிப்பட்டது",
+    "noDescription": "விவரம் எதுவும் சேர்க்கப்படவில்லை.",
+    "createdOn": "{{date}} அன்று உருவாக்கப்பட்டது",
+    "primaryInvestigatorLabel": "முதன்மை புலனாய்வாளர்",
+    "notAssigned": "நியமிக்கப்படவில்லை",
+    "collaboratorsLabel": "ஒத்துழைப்பாளர்கள்",
+    "removeCollaboratorTitle": "{{username}} ஐ அகற்று",
+    "noCollaborators": "கூடுதல் ஒத்துழைப்பாளர்கள் இல்லை",
+    "moreCount": "+{{count}} மேலும்",
+    "manageButton": "நியமனங்களை நிர்வகிக்கவும்",
+    "openButton": "திற",
+    "emptyTitle": "நிர்வகிக்கப்படும் வழக்குகள் எதுவும் இல்லை",
+    "emptySearchDescription": "வேறு தேடலை முயற்சிக்கவும்.",
+    "emptyDefaultDescription": "முதல் வழக்கை உருவாக்கி ஒரு புலனாய்வு அதிகாரியை நியமிக்கவும்.",
+    "createCaseButton": "வழக்கை உருவாக்கு",
+    "selectPrimaryError": "ஒரு முதன்மை புலனாய்வு அதிகாரியைத் தேர்ந்தெடுக்கவும்.",
+    "createSuccess": "வழக்கு உருவாக்கப்பட்டு நியமனங்கள் சேமிக்கப்பட்டன.",
+    "assignmentsUpdated": "{{caseNumber}} க்கான நியமனங்கள் புதுப்பிக்கப்பட்டன.",
+    "collaboratorRemoved": "ஒத்துழைப்பாளர் அகற்றப்பட்டார்."
+  },
+  "createModal": {
+    "title": "வழக்கை உருவாக்கி நியமிக்கவும்",
+    "creating": "உருவாக்கப்படுகிறது…",
+    "submit": "உருவாக்கி நியமி",
+    "caseNumberLabel": "வழக்கு எண்",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "முதன்மை புலனாய்வு அதிகாரி",
+    "selectInvestigatorOption": "புலனாய்வாளரைத் தேர்ந்தெடு…",
+    "titleLabel": "தலைப்பு",
+    "titlePlaceholder": "புலனாய்வு தலைப்பு",
+    "descriptionLabel": "விவரம்",
+    "descriptionPlaceholder": "வழக்கின் நோக்கம், குறிப்புகள் அல்லது சுருக்கம்…",
+    "collaboratorsHeading": "கூடுதல் ஒத்துழைப்பாளர்கள்",
+    "collaboratorsSubtext": "உடனடியாக வழக்கு அணுகல் பெற வேண்டிய செயலில் உள்ள பயனர்களைத் தேர்ந்தெடுக்கவும்.",
+    "selectedCount": "{{count}} தேர்ந்தெடுக்கப்பட்டது"
+  },
+  "manageModal": {
+    "title": "நியமனங்களை நிர்வகிக்கவும் · {{caseNumber}}",
+    "saving": "சேமிக்கப்படுகிறது…",
+    "submit": "நியமனங்களைச் சேமி",
+    "primaryInvestigatorLabel": "முதன்மை புலனாய்வு அதிகாரி",
+    "noPrimaryOption": "முதன்மை புலனாய்வாளர் இல்லை",
+    "collaboratorsHeading": "நியமிக்கப்பட்ட ஒத்துழைப்பாளர்கள்",
+    "collaboratorsSubtext": "வழக்கை உருவாக்கியவர் தானாகவே தக்கவைக்கப்படுவார். தொடர்ந்து நியமிக்கப்பட வேண்டிய கூடுதல் பயனர்களைத் தேர்ந்தெடுக்கவும்.",
+    "additionalCount": "{{count}} கூடுதல்"
+  }
+}
