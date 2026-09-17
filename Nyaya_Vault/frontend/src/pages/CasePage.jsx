@@ -26,6 +26,7 @@ import {
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
 import DossierTabs from "../components/DossierTabs";
+import AssistantResponse from "../components/AssistantResponse";
 import Badge, {
   clearanceTone,
   departmentTone,
@@ -1140,7 +1141,7 @@ function AssistantTab({ caseId }) {
               className={`research-entry ${m.role === "user" ? "research-query" : "research-answer"}`}
             >
               <span className="eyebrow">{m.role === "user" ? "Research query" : "Generated answer · verify against sources"}</span>
-              {m.text}
+              {m.role === "user" ? m.text : <AssistantResponse>{m.text}</AssistantResponse>}
             </div>
           ))}
           {asking ? <div className="muted small">Thinking…</div> : null}
@@ -1206,7 +1207,7 @@ function AssistantTab({ caseId }) {
             <div
               className="small research-output"
             >
-              {summary}
+              <AssistantResponse>{summary}</AssistantResponse>
             </div>
           ) : null}
         </section>
@@ -1227,7 +1228,7 @@ function AssistantTab({ caseId }) {
             <div
               className="small research-output"
             >
-              {legal}
+              <AssistantResponse>{legal}</AssistantResponse>
             </div>
           ) : null}
         </section>

@@ -9,6 +9,7 @@ import Badge, { statusTone } from "../components/Badge";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import Toast from "../components/Toast";
+import ExpandableDescription from "../components/ExpandableDescription";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 export default function CasesPage() {
   const { user, profile } = useAuth();
@@ -93,21 +94,23 @@ export default function CasesPage() {
       ) : filtered.length ? (
         <div className="case-registry">
           {filtered.map((item) => (
-            <Link to={`/cases/${item.id}`} className="registry-entry" key={item.id}>
+            <article className="registry-entry" key={item.id}>
               <div className="registry-locator">
                 <BriefcaseBusiness size={18} />
-                <strong>{item.case_number}</strong>
+                <strong><Link to={`/cases/${item.id}`}>{item.case_number}</Link></strong>
                 <span className="visibility-pill">Private</span>
                 <Badge tone={statusTone(item.status)}>
                   {(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
                 </Badge>
               </div>
-              <h3>{item.title}</h3>
-              <p>{item.description || "No description has been added."}</p>
+              <h3><Link to={`/cases/${item.id}`}>{item.title}</Link></h3>
+              <ExpandableDescription>
+                {item.description || "No description has been added."}
+              </ExpandableDescription>
               <div className="case-meta">
                 Created {formatDate(item.created_at)}
               </div>
-            </Link>
+            </article>
           ))}
         </div>
       ) : (
