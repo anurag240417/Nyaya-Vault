@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "download": "Download",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading…"
+  },
+  "defaultRole": "USER",
+  "defaultClearance": "PUBLIC",
+  "dismissNotification": "Dismiss notification",
+  "readMore": "Read more",
+  "readLess": "Read less",
+  "dossierTabs": {
+    "sectionsLabel": "Case dossier sections",
+    "summary": "Case Summary",
+    "documents": "Evidence Register",
+    "collaborators": "Access & Personnel",
+    "timeline": "Timeline & Conflicts",
+    "assistant": "Case Assistant",
+    "audit": "Audit Ledger"
+  }
+}

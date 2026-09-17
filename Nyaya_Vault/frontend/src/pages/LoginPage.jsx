@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
+  const { t } = useTranslation("login");
   const { user, signIn, signUp } = useAuth();
   const [mode, setMode] = useState("signin"),
     [email, setEmail] = useState(""),
@@ -28,7 +30,7 @@ export default function LoginPage() {
       else {
         const result = await signUp(email, password, username);
         if (!result.session)
-          setMessage("Account created. Confirm your email, then sign in.");
+          setMessage(t("signUpSuccess"));
       }
     } catch (err) {
       setError(err.message);
@@ -42,51 +44,49 @@ export default function LoginPage() {
         <div className="auth-logo">
           <ShieldCheck size={28} />
         </div>
-        <p className="eyebrow">CASE & EVIDENCE SYSTEM</p>
-        <h1>Nyaya Vault</h1>
+        <p className="eyebrow">{t("eyebrowBrand")}</p>
+        <h1>{t("brandName")}</h1>
         <p>
-          An organized case record.
-          A traceable evidence history.
+          {t("tagline")}
         </p>
         <div className="auth-feature">
           <LockKeyhole size={18} />
           <span>
-            Controlled access · Case-scoped records · Evidence integrity
+            {t("feature")}
           </span>
         </div>
       </div>
       <form className="auth-card" onSubmit={submit}>
-        <p className="eyebrow">Authorized access</p>
+        <p className="eyebrow">{t("authorizedAccess")}</p>
         <h2>
-          {mode === "signin" ? "Sign in to Nyaya Vault" : "Create an account"}
+          {mode === "signin" ? t("signInTitle") : t("signUpTitle")}
         </h2>
         <p className="muted">
-          New users start as CLERK / PUBLIC until an administrator changes
-          access.
+          {t("newUserNote")}
         </p>
         {mode === "signup" ? (
           <label className="field">
-            <span>Username</span>
+            <span>{t("username")}</span>
             <input
               required
               autoComplete="username" value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="aditya"
+              placeholder={t("usernamePlaceholder")}
             />
           </label>
         ) : null}
         <label className="field">
-          <span>Email</span>
+          <span>{t("email")}</span>
           <input
             required
             type="email" autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder={t("emailPlaceholder")}
           />
         </label>
         <label className="field">
-          <span>Password</span>
+          <span>{t("password")}</span>
           <input
             required
             minLength={8}
@@ -100,10 +100,10 @@ export default function LoginPage() {
         {message ? <div role="status" className="form-success">{message}</div> : null}
         <button className="button button-primary button-block" disabled={busy}>
           {busy
-            ? "Please wait…"
+            ? t("pleaseWait")
             : mode === "signin"
-              ? "Sign in"
-              : "Create account"}
+              ? t("signIn")
+              : t("createAccount")}
         </button>
         <button
           type="button"
@@ -111,8 +111,8 @@ export default function LoginPage() {
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
           {mode === "signin"
-            ? "Need an account? Sign up"
-            : "Already have an account? Sign in"}
+            ? t("needAccount")
+            : t("haveAccount")}
         </button>
       </form>
     </div>

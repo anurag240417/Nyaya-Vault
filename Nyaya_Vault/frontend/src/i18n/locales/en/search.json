@@ -1,0 +1,24 @@
+{
+  "eyebrow": "Records index",
+  "title": "Case & Evidence Search",
+  "subtitle": "Search case records and extracted text. Results follow your case access and evidence clearance.",
+  "inputAria": "Search cases and evidence",
+  "inputPlaceholder": "Search case numbers, titles, and extracted text…",
+  "resultsHint": "Matching evidence is indexed by case, source page, and text relevance.",
+  "pageLabel": "page {{number}}",
+  "metadataMatchFallback": "Document metadata match",
+  "relevanceScoreTitle": "Text relevance score",
+  "relevanceLabel": "Relevance {{score}}",
+  "actions": {
+    "search": "Search"
+  },
+  "status": {
+    "searching": "Searching…",
+    "resultsCount": "{{count}} results",
+    "prompt": "Search evidence"
+  },
+  "empty": {
+    "noMatches": "No accessible matches.",
+    "prompt": "Enter a phrase to search."
+  }
+}

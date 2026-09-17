@@ -1,0 +1,17 @@
+{
+  "title": "Generate legal notice",
+  "generating": "Generating…",
+  "generateAndDownload": "Generate & download",
+  "loadingTypes": "Loading notice types…",
+  "noticeType": "Notice type",
+  "issuedUnder": "Issued under: {{reference}}",
+  "recipientName": "Recipient name",
+  "recipientAddress": "Recipient address",
+  "optionalSuffix": " (optional)",
+  "noticeText": "Notice text (grounds, allegations, demand - your own wording)",
+  "noticeTextPlaceholder": "State the facts, the demand, and the deadline for compliance…",
+  "place": "Place",
+  "placePlaceholder": "Pune",
+  "defaultError": "Could not generate the notice.",
+  "successMessage": "Notice generated."
+}

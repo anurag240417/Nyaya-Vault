@@ -6,6 +6,7 @@ import {
   Search,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getRecentActivity, listCases } from "../lib/api";
 import { formatDate } from "../lib/format";
 import LoadingState from "../components/LoadingState";
@@ -14,6 +15,7 @@ import Badge, { statusTone } from "../components/Badge";
 import { useAuth } from "../context/AuthContext";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 export default function DashboardPage() {
+  const { t } = useTranslation("dashboard");
   const { profile } = useAuth();
   const [cases, setCases] = useState([]),
     [activity, setActivity] = useState([]),
@@ -27,35 +29,36 @@ export default function DashboardPage() {
     reload().finally(() => setLoading(false));
   }, [reload]);
   useRefreshOnFocus(reload);
-  if (loading) return <LoadingState label="Loading case desk…" />;
+  if (loading) return <LoadingState label={t("loadingLabel")} />;
   return (
     <div className="page">
       <section className="duty-header">
         <div>
-          <p className="eyebrow">CASE DESK</p>
-          <h1>Good to see you, {profile?.username || "investigator"}.</h1>
-          <p>
-            Work appears only when your role, case assignment, and evidence
-            clearance allow it.
-          </p>
+          <p className="eyebrow">{t("eyebrow")}</p>
+          <h1>
+            {t("greeting", {
+              name: profile?.username || t("defaultInvestigator"),
+            })}
+          </h1>
+          <p>{t("accessNote")}</p>
         </div>
         <Link className="button button-primary" to="/cases">
-          Open cases <ArrowRight size={16} />
+          {t("actions.openCases")} <ArrowRight size={16} />
         </Link>
       </section>
       <div className="desk-context">
         <SecurityCredential profile={profile} />
-        <div className="register-total"><strong>{cases.length}</strong><span>accessible case records</span></div>
-        <Link className="desk-search" to="/search"><Search size={22} /><div><strong>Case & Evidence Search</strong><span>Search records and extracted evidence within your access.</span></div><ArrowRight size={18} /></Link>
+        <div className="register-total"><strong>{cases.length}</strong><span>{t("stats.accessibleCaseRecords")}</span></div>
+        <Link className="desk-search" to="/search"><Search size={22} /><div><strong>{t("search.title")}</strong><span>{t("search.description")}</span></div><ArrowRight size={18} /></Link>
       </div>
       <div className="desk-registers">
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Assigned Case Register</h2>
-              <p>Your accessible case records, most recent first</p>
+              <h2>{t("caseRegister.title")}</h2>
+              <p>{t("caseRegister.subtitle")}</p>
             </div>
-            <Link to="/cases">View all</Link>
+            <Link to="/cases">{t("caseRegister.viewAll")}</Link>
           </div>
           <div className="list-group">
             {cases.slice(0, 6).map((item) => (
@@ -72,15 +75,15 @@ export default function DashboardPage() {
               </Link>
             ))}
             {!cases.length ? (
-              <div className="panel-empty">No cases assigned yet.</div>
+              <div className="panel-empty">{t("caseRegister.empty")}</div>
             ) : null}
           </div>
         </section>
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent Activity Ledger</h2>
-              <p>Recorded actions within your access</p>
+              <h2>{t("activity.title")}</h2>
+              <p>{t("activity.subtitle")}</p>
             </div>
           </div>
           <div className="activity-list">
@@ -89,11 +92,11 @@ export default function DashboardPage() {
                 <code className="ledger-sequence">{entry.sequence}</code>
                 <div>
                   <div>
-                    <strong>{entry.actor_username || "system"}</strong>{" "}
+                    <strong>{entry.actor_username || t("activity.systemActor")}</strong>{" "}
                     {entry.action.replaceAll("_", " ").toLowerCase()}
                   </div>
                   <div className="muted small">
-                    {entry.case_number || "global"} ·{" "}
+                    {entry.case_number || t("activity.global")} ·{" "}
                     {formatDate(entry.timestamp)}
                   </div>
                 </div>
@@ -104,7 +107,7 @@ export default function DashboardPage() {
             ))}
             {!activity.length ? (
               <div className="panel-empty">
-                <FileText size={18} /> No activity yet.
+                <FileText size={18} /> {t("activity.empty")}
               </div>
             ) : null}
           </div>

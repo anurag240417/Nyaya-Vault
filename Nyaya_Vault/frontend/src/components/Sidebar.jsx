@@ -6,19 +6,21 @@ import {
   UserCog,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SecurityCredential from "./SecurityCredential";
 import { useAuth } from "../context/AuthContext";
-const links = [
-  ["/dashboard", "Dashboard", LayoutDashboard],
-  ["/cases", "Cases", BriefcaseBusiness],
-  ["/search", "Search", Search],
-  ["/integrity", "Integrity", ShieldCheck],
-];
 export default function Sidebar() {
+  const { t } = useTranslation("sidebar");
   const { profile } = useAuth();
+  const links = [
+    ["/dashboard", t("dashboard"), LayoutDashboard],
+    ["/cases", t("cases"), BriefcaseBusiness],
+    ["/search", t("search"), Search],
+    ["/integrity", t("integrity"), ShieldCheck],
+  ];
   return (
     <aside className="sidebar">
-      <p className="eyebrow rail-heading">Workspace index</p>
+      <p className="eyebrow rail-heading">{t("workspaceIndex")}</p>
       <nav aria-label="Main navigation">
         {links.map(([to, label, icon]) => {
           const Icon = icon;
@@ -30,7 +32,9 @@ export default function Sidebar() {
                 `side-link ${isActive ? "active" : ""}`
               }
             >
-              <Icon size={18} />
+              <span className="side-link-icon">
+                <Icon size={18} />
+              </span>
               <span>{label}</span>
             </NavLink>
           );
@@ -42,8 +46,10 @@ export default function Sidebar() {
               `side-link ${isActive ? "active" : ""}`
             }
           >
-            <UserCog size={18} />
-            <span>Administration</span>
+            <span className="side-link-icon">
+              <UserCog size={18} />
+            </span>
+            <span>{t("administration")}</span>
           </NavLink>
         ) : null}
       </nav>

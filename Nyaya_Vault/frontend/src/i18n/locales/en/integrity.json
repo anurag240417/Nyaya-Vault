@@ -1,0 +1,26 @@
+{
+  "title": "Integrity Verification",
+  "subtitle": "Recalculate every entry hash and locate the first broken sequence.",
+  "hero": {
+    "title": "Verify the global audit chain",
+    "description": "Each ledger row includes its canonical data, previous hash pointer, and SHA-256 digest."
+  },
+  "actions": {
+    "verifying": "Verifying…",
+    "verify": "Verify integrity now"
+  },
+  "result": {
+    "valid": "Audit chain is valid",
+    "invalid": "Integrity failure detected"
+  },
+  "meta": {
+    "entriesChecked": "entries checked",
+    "firstInvalid": "first invalid",
+    "noneFallback": "None",
+    "checked": "Checked {{date}}"
+  },
+  "scope": {
+    "title": "Scope",
+    "description": "This checks the protected audit ledger for altered entries and broken hash links. It does not provide independent proof of when an event occurred."
+  }
+}

@@ -1,16 +1,18 @@
 import { Shield, UserRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/Avatar";
 import Badge, { clearanceTone } from "../components/Badge";
 import { formatDate } from "../lib/format";
 export default function ProfilePage() {
+  const { t } = useTranslation("profile");
   const { user, profile } = useAuth();
   return (
     <div className="page">
       <div className="page-title-row">
         <div>
-          <p className="eyebrow">Personnel record</p><h1>Authorization Credential</h1>
-          <p>Your identity and authorization attributes.</p>
+          <p className="eyebrow">{t("eyebrow")}</p><h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
       </div>
       <section className="panel profile-panel">
@@ -29,17 +31,17 @@ export default function ProfilePage() {
         </div>
         <dl className="definition-grid">
           <dt>
-            <UserRound size={15} /> User ID
+            <UserRound size={15} /> {t("userId")}
           </dt>
           <dd>
             <code>{user?.id}</code>
           </dd>
           <dt>
-            <Shield size={15} /> Account state
+            <Shield size={15} /> {t("accountState")}
           </dt>
-          <dd>{profile?.is_active ? "Active" : "Disabled"}</dd>
-          <dt>Department</dt><dd>{profile?.department || "Unassigned"}</dd>
-          <dt>Created</dt>
+          <dd>{profile?.is_active ? t("active") : t("disabled")}</dd>
+          <dt>{t("department")}</dt><dd>{profile?.department || t("unassigned")}</dd>
+          <dt>{t("created")}</dt>
           <dd>{formatDate(profile?.created_at)}</dd>
         </dl>
       </section>

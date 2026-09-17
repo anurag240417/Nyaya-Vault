@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   ScanLine,
@@ -38,6 +39,7 @@ import {
   requestDocumentProcessing,
 } from "../lib/processor";
 export default function DocumentPage() {
+  const { t } = useTranslation("documentPage");
   const { documentId } = useParams();
   const [doc, setDoc] = useState(null),
     [versions, setVersions] = useState([]),
@@ -72,11 +74,11 @@ export default function DocumentPage() {
       .catch((e) => setToast({ type: "error", message: e.message }))
       .finally(() => setLoading(false));
   }, [reload]);
-  if (loading) return <LoadingState label="Loading evidence…" />;
+  if (loading) return <LoadingState label={t("loading.evidence")} />;
   if (!doc)
     return (
       <div className="center-message">
-        <h2>Document unavailable</h2>
+        <h2>{t("documentUnavailable")}</h2>
       </div>
     );
   async function addVersion(e) {
@@ -88,7 +90,7 @@ export default function DocumentPage() {
       setVersionModal(false);
       setVersionForm({ file: null, changeSummary: "" });
       await reload();
-      setToast({ message: "New immutable version registered." });
+      setToast({ message: t("toast.versionCreated") });
     } catch (err) {
       setToast({ type: "error", message: err.message });
     } finally {
@@ -100,7 +102,7 @@ export default function DocumentPage() {
     setBusy(true);
     try {
       await requestDocumentProcessing({ documentId, versionId: latest.id });
-      setToast({ message: "Processing request accepted." });
+      setToast({ message: t("toast.processingAccepted") });
       setTimeout(() => reload().catch(() => {}), 1000);
     } catch (err) {
       setToast({ type: "error", message: err.message });
@@ -111,14 +113,14 @@ export default function DocumentPage() {
   return (
     <div className="page document-page">
       <Link className="back-link" to={`/cases/${doc.case_id}/documents`}>
-        <ArrowLeft size={15} /> Back to evidence register
+        <ArrowLeft size={15} /> {t("backToRegister")}
       </Link>
       <div className="document-title-row">
         <div className="document-icon">
           <FileText size={28} />
         </div>
         <div className="grow">
-          <p className="eyebrow">Evidence Record</p>
+          <p className="eyebrow">{t("eyebrow")}</p>
           <div className="title-with-badges">
             <h1>{doc.title}</h1>
             <Badge tone={clearanceTone(doc.clearance_level)}>
@@ -126,12 +128,14 @@ export default function DocumentPage() {
             </Badge>
           </div>
           <p>
-            {doc.document_type || "Unclassified document"} · current version v
-            {doc.current_version_number}
+            {t("typeVersion", {
+              type: doc.document_type || t("unclassifiedDocument"),
+              version: doc.current_version_number,
+            })}
           </p>
         </div>
         <button className="button" onClick={() => setVersionModal(true)}>
-          <Plus size={16} /> New version
+          <Plus size={16} /> {t("actions.newVersion")}
         </button>
         {latest ? (
           <button
@@ -142,12 +146,12 @@ export default function DocumentPage() {
               )
             }
           >
-            <Download size={16} /> Download
+            <Download size={16} /> {t("actions.download")}
           </button>
         ) : null}
         {latest ? (
           <button className="button button-official" onClick={() => setCertModal(true)}>
-            <FileOutput size={16} /> Section 63 certificate
+            <FileOutput size={16} /> {t("actions.certificate")}
           </button>
         ) : null}
       </div>
@@ -158,7 +162,7 @@ export default function DocumentPage() {
             aria-pressed={tab === v} className={tab === v ? "active" : ""}
             onClick={() => setTab(v)}
           >
-            {{ overview: "Record", entities: "Extracted Entities", redactions: "Redaction Review", versions: "Version History" }[v]}
+            {{ overview: t("tabs.overview"), entities: t("tabs.entities"), redactions: t("tabs.redactions"), versions: t("tabs.versions") }[v]}
             {v === "entities" ? (
               <span className="counter">{entities.length}</span>
             ) : v === "redactions" ? (
@@ -206,26 +210,26 @@ export default function DocumentPage() {
       ) : null}
       {versionModal ? (
         <Modal
-          title="Create a new version"
+          title={t("modal.newVersionTitle")}
           onClose={() => setVersionModal(false)}
           footer={
             <>
               <button className="button" onClick={() => setVersionModal(false)}>
-                Cancel
+                {t("actions.cancel")}
               </button>
               <button
                 form="new-version"
                 className="button button-primary"
                 disabled={busy}
               >
-                {busy ? "Uploading…" : "Create version"}
+                {busy ? t("loading.uploading") : t("actions.createVersion")}
               </button>
             </>
           }
         >
           <form id="new-version" className="form-stack" onSubmit={addVersion}>
             <label className="field">
-              <span>Change summary</span>
+              <span>{t("modal.changeSummary")}</span>
               <input
                 required
                 maxLength="500"
@@ -239,7 +243,7 @@ export default function DocumentPage() {
               />
             </label>
             <label className="field">
-              <span>File</span>
+              <span>{t("modal.file")}</span>
               <input
                 required
                 type="file"
@@ -267,6 +271,7 @@ export default function DocumentPage() {
   );
 }
 function Overview({ documentId, doc, latest, runProcessor, busy }) {
+  const { t } = useTranslation("documentPage");
   const configured = isProcessorConfigured();
   const mimeType = latest?.mime_type || "";
   const isVideo = mimeType.startsWith("video/");
@@ -307,18 +312,18 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Source Evidence</h2>
-            <p>SHA-256 is computed from exact uploaded bytes.</p>
+            <h2>{t("overview.sourceEvidence")}</h2>
+            <p>{t("overview.sha256Note")}</p>
           </div>
         </div>
         {isPreviewable ? (
           <div className="evidence-preview">
             {previewError ? (
               <p className="form-error">
-                Could not load preview: {previewError}
+                {t("overview.previewError", { error: previewError })}
               </p>
             ) : !previewUrl ? (
-              <LoadingState label="Loading preview…" />
+              <LoadingState label={t("loading.preview")} />
             ) : isVideo ? (
               <video
                 controls
@@ -332,51 +337,51 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
               />
             ) : isPdf ? (
               <embed
-                title={`Evidence preview: ${doc.title}`}
+                title={t("overview.embedTitle", { title: doc.title })}
                 src={previewUrl}
                 type="application/pdf"
               />
             ) : null}
           </div>
-        ) : <div className="panel-empty">No inline preview is available for this format. Use Download to inspect the source file.</div>}
+        ) : <div className="panel-empty">{t("overview.noPreview")}</div>}
 
       </section>
       <aside className="stack">
-        <section className="panel"><div className="panel-header"><h2>Record Information</h2></div>
+        <section className="panel"><div className="panel-header"><h2>{t("overview.recordInformation")}</h2></div>
         <dl className="definition-grid">
-          <dt>Document ID</dt>
+          <dt>{t("overview.documentId")}</dt>
           <dd>
             <code>{doc.id}</code>
           </dd>
-          <dt>Type</dt>
+          <dt>{t("overview.type")}</dt>
           <dd>{doc.document_type || "—"}</dd>
-          <dt>Clearance</dt>
+          <dt>{t("overview.clearance")}</dt>
           <dd><Badge tone={clearanceTone(doc.clearance_level)}>{doc.clearance_level}</Badge></dd>
-          <dt>Department</dt><dd>{doc.department || "GENERAL"}</dd>
-          <dt>Created</dt>
+          <dt>{t("overview.department")}</dt><dd>{doc.department || t("overview.generalDepartment")}</dd>
+          <dt>{t("overview.created")}</dt>
           <dd>{formatDate(doc.created_at)}</dd>
-          <dt>Current version</dt>
+          <dt>{t("overview.currentVersion")}</dt>
           <dd>v{doc.current_version_number}</dd>
           {latest ? (
             <>
-              <dt>SHA-256</dt>
+              <dt>{t("overview.sha256")}</dt>
               <dd>
                 <code className="wrap-code">{latest.sha256}</code>
               </dd>
-              <dt>Size</dt>
+              <dt>{t("overview.size")}</dt>
               <dd>{formatBytes(latest.size_bytes)}</dd>
-              <dt>MIME type</dt>
+              <dt>{t("overview.mimeType")}</dt>
               <dd>{latest.mime_type}</dd>
             </>
           ) : null}
         </dl>
         </section>
         <section className="panel compact-panel">
-          <h3>Processing & Provenance</h3>
+          <h3>{t("overview.processingProvenance")}</h3>
           <ol className="provenance-sequence">
-            <li><span>Registration</span><strong>Version {doc.current_version_number}</strong><small>{formatDate(latest?.created_at || doc.created_at)}</small></li>
-            <li><span>File fingerprint</span><strong>{latest?.sha256 ? "SHA-256 recorded" : "No hash available"}</strong></li>
-            <li><span>Processing record</span><strong>{latest?.processing_status || "No status available"}</strong></li>
+            <li><span>{t("overview.registration")}</span><strong>{t("overview.versionLabel", { number: doc.current_version_number })}</strong><small>{formatDate(latest?.created_at || doc.created_at)}</small></li>
+            <li><span>{t("overview.fileFingerprint")}</span><strong>{latest?.sha256 ? t("overview.hashRecorded") : t("overview.noHash")}</strong></li>
+            <li><span>{t("overview.processingRecord")}</span><strong>{latest?.processing_status || t("overview.noStatus")}</strong></li>
           </ol>
           {latest ? (
             <div className="processing-status">
@@ -393,10 +398,10 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
               </Badge>
               <span>
                 {latest.ocr_used === true
-                  ? "OCR used"
+                  ? t("overview.ocrUsed")
                   : latest.ocr_used === false
-                    ? "Native text"
-                    : "Extraction pending"}
+                    ? t("overview.nativeText")
+                    : t("overview.extractionPending")}
               </span>
             </div>
           ) : null}
@@ -405,11 +410,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           ) : null}
           {isVideo ? (
             <p className="muted small">
-              Video is stored and hash-verified like any other evidence, but its
-              visual/audio content is not automatically analyzed - there's no
-              text for OCR or NER to extract. Reference what's seen or heard in
-              this video manually via a Timeline & Conflicts section timeline statement if it's
-              relevant to a contradiction check.
+              {t("overview.videoNote")}
             </p>
           ) : (
             <button
@@ -418,15 +419,14 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
               onClick={runProcessor}
             >
               <ScanLine size={16} />{" "}
-              {busy ? "Requesting…" : "Run OCR / NER processing"}
+              {busy ? t("loading.requesting") : t("actions.runProcessing")}
             </button>
           )}
         </section>
         <section className="panel compact-panel">
-          <h3>Human confirmation</h3>
+          <h3>{t("overview.humanConfirmation")}</h3>
           <p className="muted">
-            AI metadata is never automatically trusted; entities and redactions
-            require review.
+            {t("overview.humanConfirmationNote")}
           </p>
         </section>
       </aside>
@@ -434,6 +434,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
   );
 }
 function Entities({ documentId, entities, reload, setToast }) {
+  const { t } = useTranslation("documentPage");
   const [choices, setChoices] = useState({});
   useEffect(
     () =>
@@ -463,7 +464,7 @@ function Entities({ documentId, entities, reload, setToast }) {
     try {
       await confirmEntities(documentId, confirmed, rejected);
       await reload();
-      setToast({ message: "Entity review saved." });
+      setToast({ message: t("toast.entityReviewSaved") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     }
@@ -472,15 +473,15 @@ function Entities({ documentId, entities, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Human Review Sheet</h2>
-          <p>System-extracted entities require human review. Select decisions, then save the review.</p>
+          <h2>{t("entities.title")}</h2>
+          <p>{t("entities.description")}</p>
         </div>
         <button
           className="button button-primary"
           disabled={!dirty}
           onClick={save}
         >
-          <Check size={16} /> Save review
+          <Check size={16} /> {t("actions.saveReview")}
         </button>
       </div>
       {entities.length ? (
@@ -491,25 +492,27 @@ function Entities({ documentId, entities, reload, setToast }) {
               <div className="grow">
                 <strong>{e.value}</strong>
                 <span className="muted small">
-                  Confidence:{" "}
-                  {e.confidence == null
-                    ? "—"
-                    : `${Math.round(e.confidence * 100)}%`}
+                  {t("entities.confidence", {
+                    value:
+                      e.confidence == null
+                        ? "—"
+                        : `${Math.round(e.confidence * 100)}%`,
+                  })}
                 </span>
               </div>
-              <p className="review-state">{choices[e.id] === "confirm" ? (e.confirmed ? "Human confirmed" : "Confirm selected · unsaved") : choices[e.id] === "reject" ? "Reject selected · unsaved" : "System extracted · pending review"}</p>
+              <p className="review-state">{choices[e.id] === "confirm" ? (e.confirmed ? t("entities.stateConfirmed") : t("entities.stateConfirmUnsaved")) : choices[e.id] === "reject" ? t("entities.stateRejectUnsaved") : t("entities.statePending")}</p>
               <div className="review-toggle">
                 <button
                   aria-pressed={choices[e.id] === "confirm"} className={choices[e.id] === "confirm" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [e.id]: "confirm" })}
                 >
-                  <Check size={15} /> Confirm
+                  <Check size={15} /> {t("actions.confirm")}
                 </button>
                 <button
                   aria-pressed={choices[e.id] === "reject"} className={choices[e.id] === "reject" ? "selected bad" : ""}
                   onClick={() => setChoices({ ...choices, [e.id]: "reject" })}
                 >
-                  <X size={15} /> Reject
+                  <X size={15} /> {t("actions.reject")}
                 </button>
               </div>
             </div>
@@ -517,7 +520,7 @@ function Entities({ documentId, entities, reload, setToast }) {
         </div>
       ) : (
         <div className="panel-empty">
-          <ScanSearch size={20} /> No extracted entities for this version.
+          <ScanSearch size={20} /> {t("entities.empty")}
         </div>
       )}
     </section>
@@ -532,6 +535,7 @@ function Redactions({
   runProcessor,
   busy,
 }) {
+  const { t } = useTranslation("documentPage");
   const [choices, setChoices] = useState({});
   useEffect(
     () =>
@@ -552,7 +556,7 @@ function Redactions({
     try {
       await confirmRedactions(documentId, approved, rejected);
       await reload();
-      setToast({ message: "Redaction review saved." });
+      setToast({ message: t("toast.redactionReviewSaved") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     }
@@ -563,7 +567,7 @@ function Redactions({
         documentId,
         filename: `${documentTitle.replace(/[^a-zA-Z0-9._-]/g, "_")}-redacted.pdf`,
       });
-      setToast({ message: "Redacted disclosure copy exported." });
+      setToast({ message: t("toast.redactedExported") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     }
@@ -575,9 +579,9 @@ function Redactions({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Redaction Review Sheet</h2>
+          <h2>{t("redactions.title")}</h2>
           <p>
-            Only human-approved regions should be used in disclosure copies.
+            {t("redactions.description")}
           </p>
         </div>
         <div className="button-row">
@@ -586,21 +590,21 @@ function Redactions({
             disabled={!isProcessorConfigured() || busy}
             onClick={runProcessor}
           >
-            <RefreshCw size={16} /> Generate
+            <RefreshCw size={16} /> {t("actions.generate")}
           </button>
           <button
             className="button"
             disabled={!isProcessorConfigured() || !hasApproved || busy}
             onClick={exportCopy}
           >
-            <FileOutput size={16} /> Export redacted
+            <FileOutput size={16} /> {t("actions.exportRedacted")}
           </button>
           <button
             className="button button-primary"
             disabled={!redactions.length}
             onClick={save}
           >
-            <Check size={16} /> Save review
+            <Check size={16} /> {t("actions.saveReview")}
           </button>
         </div>
       </div>
@@ -610,24 +614,24 @@ function Redactions({
             <div className="entity-row" key={r.id}>
               <Badge tone="warning">{r.entity_type}</Badge>
               <div className="grow">
-                <strong>Proposed redaction region</strong>
+                <strong>{t("redactions.proposedRegion")}</strong>
                 <code className="small wrap-code">
                   {JSON.stringify(r.region_json)}
                 </code>
               </div>
-              <p className="review-state">{choices[r.id] === "approve" ? (r.approved ? "Human approved" : "Approve selected · unsaved") : choices[r.id] === "reject" ? "Reject selected · unsaved" : "Proposed · pending review"}</p>
+              <p className="review-state">{choices[r.id] === "approve" ? (r.approved ? t("redactions.stateApproved") : t("redactions.stateApproveUnsaved")) : choices[r.id] === "reject" ? t("redactions.stateRejectUnsaved") : t("redactions.statePending")}</p>
               <div className="review-toggle">
                 <button
                   aria-pressed={choices[r.id] === "approve"} className={choices[r.id] === "approve" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [r.id]: "approve" })}
                 >
-                  <Check size={15} /> Approve
+                  <Check size={15} /> {t("actions.approve")}
                 </button>
                 <button
                   aria-pressed={choices[r.id] === "reject"} className={choices[r.id] === "reject" ? "selected bad" : ""}
                   onClick={() => setChoices({ ...choices, [r.id]: "reject" })}
                 >
-                  <X size={15} /> Reject
+                  <X size={15} /> {t("actions.reject")}
                 </button>
               </div>
             </div>
@@ -635,19 +639,20 @@ function Redactions({
         </div>
       ) : (
         <div className="panel-empty">
-          <ShieldAlert size={20} /> No redaction suggestions stored.
+          <ShieldAlert size={20} /> {t("redactions.empty")}
         </div>
       )}
     </section>
   );
 }
 function Versions({ documentId, versions, setToast }) {
+  const { t } = useTranslation("documentPage");
   return (
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Version history</h2>
-          <p>Original bytes and hashes remain immutable.</p>
+          <h2>{t("versions.title")}</h2>
+          <p>{t("versions.description")}</p>
         </div>
       </div>
       <div className="version-list">
@@ -657,8 +662,8 @@ function Versions({ documentId, versions, setToast }) {
               <FileClock size={18} />
             </span>
             <div className="grow">
-              <strong>Version {v.version_number}</strong>
-              <span>{v.change_summary || "No change summary"}</span>
+              <strong>{t("versions.versionLabel", { number: v.version_number })}</strong>
+              <span>{v.change_summary || t("versions.noChangeSummary")}</span>
               <small className="muted">
                 {formatDate(v.created_at)} · {formatBytes(v.size_bytes)} ·{" "}
                 {shortHash(v.sha256, 14)}
@@ -683,7 +688,7 @@ function Versions({ documentId, versions, setToast }) {
                 )
               }
             >
-              <Download size={14} /> Download
+              <Download size={14} /> {t("actions.download")}
             </button>
           </div>
         ))}

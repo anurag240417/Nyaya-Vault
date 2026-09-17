@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   BriefcaseBusiness,
   Check,
@@ -31,13 +32,23 @@ import Toast from '../components/Toast';
 const ROLES = ['ADMIN', 'INVESTIGATING_OFFICER', 'PROSECUTOR', 'JUDGE', 'CLERK'];
 const CLEARANCES = ['PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET'];
 const DEPARTMENTS = ['', 'GENERAL', 'POLICE', 'FORENSICS', 'PROSECUTION', 'JUDICIARY'];
-function departmentLabel(d) { return d || 'Unassigned'; }
+function departmentLabel(t, d) {
+  if (!d) return t('departments.unassigned');
+  return t(`departments.${d}`, { defaultValue: d });
+}
 
-function cleanRole(role) {
-  return role?.replaceAll('_', ' ') || 'Unknown role';
+function clearanceLabel(t, clearance) {
+  if (!clearance) return clearance;
+  return t(`clearances.${clearance}`, { defaultValue: clearance });
+}
+
+function roleLabel(t, role) {
+  if (!role) return t('roles.unknown');
+  return t(`roles.${role}`, { defaultValue: role.replaceAll('_', ' ') });
 }
 
 export default function AdminPage() {
+  const { t } = useTranslation('admin');
   const { profile } = useAuth();
   const [tab, setTab] = useState('users');
   const [users, setUsers] = useState([]);
@@ -122,7 +133,7 @@ export default function AdminPage() {
     try {
       await adminUpdateProfile(id, draft.role, draft.clearance_level, draft.is_active, draft.department || null);
       await reloadUsers();
-      setToast({ message: 'User permissions updated.' });
+      setToast({ message: t('users.saveSuccess') });
     } catch (error) {
       setToast({ type: 'error', message: error.message });
     }
@@ -168,7 +179,7 @@ export default function AdminPage() {
   async function submitCreateCase(event) {
     event.preventDefault();
     if (!createForm.primary_investigator_id) {
-      setToast({ type: 'error', message: 'Select a primary investigating officer.' });
+      setToast({ type: 'error', message: t('caseAssignment.selectPrimaryError') });
       return;
     }
     setBusy(true);
@@ -188,7 +199,7 @@ export default function AdminPage() {
       });
       setCreateOpen(false);
       await reloadCases();
-      setToast({ message: 'Case created and assignments saved.' });
+      setToast({ message: t('caseAssignment.createSuccess') });
     } catch (error) {
       setToast({ type: 'error', message: error.message });
     } finally {
@@ -208,7 +219,7 @@ export default function AdminPage() {
       });
       setManageCase(null);
       await reloadCases();
-      setToast({ message: `Assignments updated for ${updated.case_number}.` });
+      setToast({ message: t('caseAssignment.assignmentsUpdated', { caseNumber: updated.case_number }) });
     } catch (error) {
       setToast({ type: 'error', message: error.message });
     } finally {
@@ -228,7 +239,7 @@ export default function AdminPage() {
         collaborator_ids: additional,
       });
       await reloadCases();
-      setToast({ message: 'Collaborator removed.' });
+      setToast({ message: t('caseAssignment.collaboratorRemoved') });
     } catch (error) {
       setToast({ type: 'error', message: error.message });
     } finally {
@@ -240,17 +251,17 @@ export default function AdminPage() {
     <div className="page admin-page">
       <div className="page-title-row">
         <div>
-          <p className="eyebrow">Administration</p><h1>System Registry & Case Assignment Office</h1>
-          <p>Manage users, case ownership, investigating officers, collaborators, and access state.</p>
+          <p className="eyebrow">{t('page.eyebrow')}</p><h1>{t('page.title')}</h1>
+          <p>{t('page.subtitle')}</p>
         </div>
       </div>
 
-      <div className="admin-tabs" role="group" aria-label="Administration sections">
+      <div className="admin-tabs" role="group" aria-label={t('tabs.ariaLabel')}>
         <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>
-          <UserCog size={16} /> Personnel Register
+          <UserCog size={16} /> {t('tabs.users')}
         </button>
         <button className={tab === 'cases' ? 'active' : ''} onClick={() => setTab('cases')}>
-          <BriefcaseBusiness size={16} /> Case Assignment Register
+          <BriefcaseBusiness size={16} /> {t('tabs.cases')}
         </button>
       </div>
 
@@ -258,8 +269,8 @@ export default function AdminPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2><UserCog size={18} /> Personnel Register</h2>
-              <p>Security-sensitive controls: changes to role, clearance, department, and account state affect access.</p>
+              <h2><UserCog size={18} /> {t('users.heading')}</h2>
+              <p>{t('users.description')}</p>
             </div>
           </div>
           <div className="admin-user-list">
@@ -273,35 +284,35 @@ export default function AdminPage() {
                     <span>{user.email}</span>
                   </div>
                   <select
-                    aria-label={`Role for ${user.username}`}
+                    aria-label={t('users.roleAriaLabel', { username: user.username })}
                     value={draft.role || user.role}
                     onChange={(event) => setDrafts({
                       ...drafts,
                       [user.id]: { ...draft, role: event.target.value },
                     })}
                   >
-                    {ROLES.map((role) => <option key={role}>{role}</option>)}
+                    {ROLES.map((role) => <option key={role} value={role}>{roleLabel(t, role)}</option>)}
                   </select>
                   <select
-                    aria-label={`Clearance for ${user.username}`}
+                    aria-label={t('users.clearanceAriaLabel', { username: user.username })}
                     value={draft.clearance_level || user.clearance_level}
                     onChange={(event) => setDrafts({
                       ...drafts,
                       [user.id]: { ...draft, clearance_level: event.target.value },
                     })}
                   >
-                    {CLEARANCES.map((clearance) => <option key={clearance}>{clearance}</option>)}
+                    {CLEARANCES.map((clearance) => <option key={clearance} value={clearance}>{clearanceLabel(t, clearance)}</option>)}
                   </select>
                   <select
-                    aria-label={`Department for ${user.username}`}
+                    aria-label={t('users.departmentAriaLabel', { username: user.username })}
                     value={draft.department ?? (user.department || '')}
                     onChange={(event) => setDrafts({
                       ...drafts,
                       [user.id]: { ...draft, department: event.target.value },
                     })}
-                    title="Only an admin can set a user's department; a document tagged for a department is only visible to matching users."
+                    title={t('users.departmentTitle')}
                   >
-                    {DEPARTMENTS.map((d) => <option key={d || 'unassigned'} value={d}>{departmentLabel(d)}</option>)}
+                    {DEPARTMENTS.map((d) => <option key={d || 'unassigned'} value={d}>{departmentLabel(t, d)}</option>)}
                   </select>
                   <label className="switch-label">
                     <input
@@ -312,12 +323,12 @@ export default function AdminPage() {
                         [user.id]: { ...draft, is_active: event.target.checked },
                       })}
                     />
-                    {draft.is_active ? 'Active' : 'Disabled'}
+                    {draft.is_active ? t('users.active') : t('users.disabled')}
                   </label>
-                  <Badge tone={clearanceTone(draft.clearance_level)}>{draft.clearance_level}</Badge>
-                  <Badge tone={departmentTone(draft.department)}>{departmentLabel(draft.department)}</Badge>
+                  <Badge tone={clearanceTone(draft.clearance_level)}>{clearanceLabel(t, draft.clearance_level)}</Badge>
+                  <Badge tone={departmentTone(draft.department)}>{departmentLabel(t, draft.department)}</Badge>
                   <button className="button button-sm" onClick={() => saveUser(user.id)}>
-                    <Save size={14} /> Save
+                    <Save size={14} /> {t('actions.save')}
                   </button>
                 </div>
               );
@@ -329,31 +340,31 @@ export default function AdminPage() {
           <div className="admin-case-summary-grid">
             <div className="admin-summary-card">
               <BriefcaseBusiness size={18} />
-              <div><strong>{cases.length}</strong><span>Total cases</span></div>
+              <div><strong>{cases.length}</strong><span>{t('summary.totalCases')}</span></div>
             </div>
             <div className="admin-summary-card">
               <ShieldCheck size={18} />
-              <div><strong>{investigators.length}</strong><span>Active investigators</span></div>
+              <div><strong>{investigators.length}</strong><span>{t('summary.activeInvestigators')}</span></div>
             </div>
             <div className="admin-summary-card">
               <Users size={18} />
-              <div><strong>{activeUsers.length}</strong><span>Active users</span></div>
+              <div><strong>{activeUsers.length}</strong><span>{t('summary.activeUsers')}</span></div>
             </div>
           </div>
 
           <section className="panel">
             <div className="panel-header admin-case-header">
               <div>
-                <h2><BriefcaseBusiness size={18} /> Case Assignment Register</h2>
-                <p>Create cases, choose the primary investigator, and control the complete collaborator set.</p>
+                <h2><BriefcaseBusiness size={18} /> {t('caseAssignment.heading')}</h2>
+                <p>{t('caseAssignment.description')}</p>
               </div>
               <button
                 className="button button-primary"
                 onClick={() => setCreateOpen(true)}
                 disabled={!investigators.length}
-                title={!investigators.length ? 'Create or activate an INVESTIGATING_OFFICER first.' : undefined}
+                title={!investigators.length ? t('caseAssignment.createDisabledTitle', { role: t('roles.INVESTIGATING_OFFICER') }) : undefined}
               >
-                <Plus size={16} /> Create & assign case
+                <Plus size={16} /> {t('caseAssignment.createButton')}
               </button>
             </div>
 
@@ -363,7 +374,7 @@ export default function AdminPage() {
                 <input
                   value={caseQuery}
                   onChange={(event) => setCaseQuery(event.target.value)}
-                  aria-label="Search managed cases" placeholder="Search cases, investigators, or collaborators…"
+                  aria-label={t('caseAssignment.searchAriaLabel')} placeholder={t('caseAssignment.searchPlaceholder')}
                 />
               </div>
             </div>
@@ -380,28 +391,28 @@ export default function AdminPage() {
                       <div className="admin-case-main">
                         <div className="admin-case-title-line">
                           <Link to={`/cases/${item.id}`}>{item.case_number}</Link>
-                          <span className="visibility-pill">Private</span>
+                          <span className="visibility-pill">{t('caseAssignment.visibilityPrivate')}</span>
                         </div>
                         <h3>{item.title}</h3>
-                        <p>{item.description || 'No description has been added.'}</p>
-                        <span className="admin-case-created">Created {formatDate(item.created_at)}</span>
+                        <p>{item.description || t('caseAssignment.noDescription')}</p>
+                        <span className="admin-case-created">{t('caseAssignment.createdOn', { date: formatDate(item.created_at) })}</span>
                       </div>
 
                       <div className="admin-assignment-column">
-                        <span className="tiny-label">PRIMARY INVESTIGATOR</span>
+                        <span className="tiny-label">{t('caseAssignment.primaryInvestigatorLabel')}</span>
                         {item.primary_investigator ? (
                           <div className="admin-primary-person">
                             <Avatar name={item.primary_investigator.username} />
                             <div>
                               <strong>{item.primary_investigator.username}</strong>
-                              <span>{cleanRole(item.primary_investigator.role)}</span>
+                              <span>{roleLabel(t, item.primary_investigator.role)}</span>
                             </div>
                           </div>
-                        ) : <span className="admin-unassigned">Not assigned</span>}
+                        ) : <span className="admin-unassigned">{t('caseAssignment.notAssigned')}</span>}
                       </div>
 
                       <div className="admin-assignment-column">
-                        <span className="tiny-label">COLLABORATORS</span>
+                        <span className="tiny-label">{t('caseAssignment.collaboratorsLabel')}</span>
                         <div className="admin-collaborator-chips">
                           {visibleCollaborators.length ? visibleCollaborators.slice(0, 5).map((collaborator) => (
                             <span className="admin-collaborator-chip" key={collaborator.user_id}>
@@ -409,25 +420,25 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 disabled={busy}
-                                title={`Remove ${collaborator.username}`}
+                                title={t('caseAssignment.removeCollaboratorTitle', { username: collaborator.username })}
                                 onClick={() => removeAdditionalCollaborator(item, collaborator.user_id)}
                               >
                                 <Trash2 size={12} />
                               </button>
                             </span>
-                          )) : <span className="admin-unassigned">No additional collaborators</span>}
+                          )) : <span className="admin-unassigned">{t('caseAssignment.noCollaborators')}</span>}
                           {visibleCollaborators.length > 5 ? (
-                            <span className="admin-more-chip">+{visibleCollaborators.length - 5} more</span>
+                            <span className="admin-more-chip">{t('caseAssignment.moreCount', { count: visibleCollaborators.length - 5 })}</span>
                           ) : null}
                         </div>
                       </div>
 
                       <div className="admin-case-actions">
                         <button className="button button-sm" onClick={() => openManage(item)}>
-                          <Users size={14} /> Manage assignments
+                          <Users size={14} /> {t('caseAssignment.manageButton')}
                         </button>
                         <Link className="button button-sm" to={`/cases/${item.id}`}>
-                          Open <ChevronRight size={14} />
+                          {t('caseAssignment.openButton')} <ChevronRight size={14} />
                         </Link>
                       </div>
                     </article>
@@ -437,11 +448,11 @@ export default function AdminPage() {
             ) : (
               <EmptyState
                 icon={<BriefcaseBusiness size={28} />}
-                title="No managed cases found"
-                description={caseQuery ? 'Try a different search.' : 'Create the first case and assign an investigating officer.'}
+                title={t('caseAssignment.emptyTitle')}
+                description={caseQuery ? t('caseAssignment.emptySearchDescription') : t('caseAssignment.emptyDefaultDescription')}
                 action={!caseQuery && investigators.length ? (
                   <button className="button button-primary" onClick={() => setCreateOpen(true)}>
-                    <Plus size={15} /> Create case
+                    <Plus size={15} /> {t('caseAssignment.createCaseButton')}
                   </button>
                 ) : null}
               />
@@ -453,13 +464,13 @@ export default function AdminPage() {
       {createOpen ? (
         <Modal
           width="780px"
-          title="Create and assign case"
+          title={t('createModal.title')}
           onClose={() => !busy && setCreateOpen(false)}
           footer={(
             <>
-              <button className="button" disabled={busy} onClick={() => setCreateOpen(false)}>Cancel</button>
+              <button className="button" disabled={busy} onClick={() => setCreateOpen(false)}>{t('actions.cancel')}</button>
               <button className="button button-primary" form="admin-create-case" disabled={busy}>
-                {busy ? 'Creating…' : 'Create & assign'}
+                {busy ? t('createModal.creating') : t('createModal.submit')}
               </button>
             </>
           )}
@@ -467,16 +478,16 @@ export default function AdminPage() {
           <form id="admin-create-case" className="form-stack" onSubmit={submitCreateCase}>
             <div className="admin-form-grid">
               <label className="field">
-                <span>Case number</span>
+                <span>{t('createModal.caseNumberLabel')}</span>
                 <input
                   required
                   value={createForm.case_number}
                   onChange={(event) => setCreateForm({ ...createForm, case_number: event.target.value })}
-                  placeholder="FIR-2026-00124"
+                  placeholder={t('createModal.caseNumberPlaceholder')}
                 />
               </label>
               <label className="field">
-                <span>Primary investigating officer</span>
+                <span>{t('createModal.primaryInvestigatorLabel')}</span>
                 <select
                   required
                   value={createForm.primary_investigator_id}
@@ -486,7 +497,7 @@ export default function AdminPage() {
                     collaborator_ids: createForm.collaborator_ids.filter((id) => id !== event.target.value),
                   })}
                 >
-                  <option value="">Select investigator…</option>
+                  <option value="">{t('createModal.selectInvestigatorOption')}</option>
                   {investigators.map((user) => (
                     <option key={user.id} value={user.id}>{user.username} — {user.email}</option>
                   ))}
@@ -494,31 +505,31 @@ export default function AdminPage() {
               </label>
             </div>
             <label className="field">
-              <span>Title</span>
+              <span>{t('createModal.titleLabel')}</span>
               <input
                 required
                 value={createForm.title}
                 onChange={(event) => setCreateForm({ ...createForm, title: event.target.value })}
-                placeholder="Investigation title"
+                placeholder={t('createModal.titlePlaceholder')}
               />
             </label>
             <label className="field">
-              <span>Description</span>
+              <span>{t('createModal.descriptionLabel')}</span>
               <textarea
                 rows="4"
                 maxLength="5000"
                 value={createForm.description}
                 onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
-                placeholder="Case scope, notes, or brief…"
+                placeholder={t('createModal.descriptionPlaceholder')}
               />
             </label>
             <div className="admin-picker-block">
               <div className="admin-picker-heading">
                 <div>
-                  <strong>Additional collaborators</strong>
-                  <span>Select any active users who should immediately have case access.</span>
+                  <strong>{t('createModal.collaboratorsHeading')}</strong>
+                  <span>{t('createModal.collaboratorsSubtext')}</span>
                 </div>
-                <Badge>{createForm.collaborator_ids.length} selected</Badge>
+                <Badge>{t('createModal.selectedCount', { count: createForm.collaborator_ids.length })}</Badge>
               </div>
               <div className="admin-user-picker">
                 {activeUsers
@@ -533,7 +544,7 @@ export default function AdminPage() {
                         onClick={() => toggleCreateCollaborator(user.id)}
                       >
                         <Avatar name={user.username} />
-                        <span><strong>{user.username}</strong><small>{cleanRole(user.role)}</small></span>
+                        <span><strong>{user.username}</strong><small>{roleLabel(t, user.role)}</small></span>
                         <span className="admin-picker-check">{selected ? <Check size={15} /> : null}</span>
                       </button>
                     );
@@ -547,13 +558,13 @@ export default function AdminPage() {
       {manageCase ? (
         <Modal
           width="760px"
-          title={`Manage assignments · ${manageCase.case_number}`}
+          title={t('manageModal.title', { caseNumber: manageCase.case_number })}
           onClose={() => !busy && setManageCase(null)}
           footer={(
             <>
-              <button className="button" disabled={busy} onClick={() => setManageCase(null)}>Cancel</button>
+              <button className="button" disabled={busy} onClick={() => setManageCase(null)}>{t('actions.cancel')}</button>
               <button className="button button-primary" disabled={busy} onClick={saveAssignments}>
-                <Save size={15} /> {busy ? 'Saving…' : 'Save assignments'}
+                <Save size={15} /> {busy ? t('manageModal.saving') : t('manageModal.submit')}
               </button>
             </>
           )}
@@ -564,12 +575,12 @@ export default function AdminPage() {
               <div><strong>{manageCase.title}</strong><span>{manageCase.case_number}</span></div>
             </div>
             <label className="field">
-              <span>Primary investigating officer</span>
+              <span>{t('manageModal.primaryInvestigatorLabel')}</span>
               <select
                 value={assignmentForm.primary_investigator_id}
                 onChange={(event) => changePrimaryInvestigator(event.target.value)}
               >
-                <option value="">No primary investigator</option>
+                <option value="">{t('manageModal.noPrimaryOption')}</option>
                 {investigators.map((user) => (
                   <option key={user.id} value={user.id}>{user.username} — {user.email}</option>
                 ))}
@@ -578,10 +589,10 @@ export default function AdminPage() {
             <div className="admin-picker-block">
               <div className="admin-picker-heading">
                 <div>
-                  <strong>Assigned collaborators</strong>
-                  <span>The case creator is retained automatically. Select the additional users who should remain assigned.</span>
+                  <strong>{t('manageModal.collaboratorsHeading')}</strong>
+                  <span>{t('manageModal.collaboratorsSubtext')}</span>
                 </div>
-                <Badge>{assignmentForm.collaborator_ids.length} additional</Badge>
+                <Badge>{t('manageModal.additionalCount', { count: assignmentForm.collaborator_ids.length })}</Badge>
               </div>
               <div className="admin-user-picker">
                 {activeUsers
@@ -596,7 +607,7 @@ export default function AdminPage() {
                         onClick={() => toggleAssignmentCollaborator(user.id)}
                       >
                         <Avatar name={user.username} />
-                        <span><strong>{user.username}</strong><small>{cleanRole(user.role)}</small></span>
+                        <span><strong>{user.username}</strong><small>{roleLabel(t, user.role)}</small></span>
                         <span className="admin-picker-check">{selected ? <Check size={15} /> : null}</span>
                       </button>
                     );

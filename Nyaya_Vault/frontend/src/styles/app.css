@@ -34,19 +34,32 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .brand-mark { border: 1px solid #7d8795; width: 38px; height: 43px; display: grid; place-items: center; border-radius: 4px 4px 12px 12px; }
 .brand-name strong { display: block; font: 500 23px Georgia, serif; letter-spacing: .01em; }
 .brand-name small { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #c5c9cc; margin-top: 5px; }
-.global-search { margin-left: auto; width: min(420px, 36vw); min-height: 38px; border: 1px solid #586170; background: #1b293c; color: #e0e2e5; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 10px; padding: 8px 12px; text-align: left; font-size: 12px; }
-.global-search:hover { background: #26364d; }
-.topbar-actions { display: flex; align-items: center; gap: 12px; }
-.profile-chip { display: flex; align-items: center; gap: 9px; color: inherit; padding: 4px; font-size: 13px; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.profile-chip { display: flex; align-items: center; gap: 10px; color: inherit; padding: 6px 10px; font-size: 13px; border-radius: var(--radius-sm); border: 1px solid transparent; }
+.profile-chip:hover { background: #1b293c; border-color: #586170; }
 .identity-name { max-width: 190px; overflow-wrap: anywhere; }
-.identity-name small { display: block; color: #c5c9cc; font-size: 10px; }
+.identity-name small { display: block; color: #c5c9cc; font-size: 10px; margin-top: 2px; }
+.logout-button { width: auto; height: auto; min-height: 38px; display: flex; align-items: center; padding: 8px 14px; gap: 8px; border: 1px solid #586170; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+.logout-button:hover { background: #2d4059; }
+.language-switcher { position: relative; }
+.language-trigger { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 8px 12px; border: 1px solid #586170; background: #1b293c; color: #e0e2e5; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+.language-trigger:hover { background: #26364d; }
+.language-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 200px; list-style: none; margin: 0; padding: 6px; background: var(--nv-paper); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: 0 12px 30px #101b2d33; }
+.language-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px; border: 0; background: transparent; border-radius: 4px; color: var(--text); text-align: left; font-size: 13px; }
+.language-option:hover { background: var(--nv-inset); }
+.language-option.selected { color: var(--nv-judicial); font-weight: 700; }
+.language-option-label { display: flex; flex-direction: column; gap: 2px; }
+.language-option-label small { color: var(--muted); font-size: 11px; font-weight: 500; }
 .shell-body { display: grid; grid-template-columns: 218px minmax(0, 1fr); min-height: calc(100vh - 78px); }
 .sidebar { position: sticky; top: 78px; height: calc(100vh - 78px); padding: 26px 14px 20px; background: var(--nv-inset); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: auto; }
 .rail-heading { padding: 0 12px; margin-bottom: 16px; }
-.sidebar nav { display: grid; gap: 5px; }
-.side-link { display: flex; align-items: center; gap: 11px; min-height: 43px; padding: 10px 12px; border-left: 3px solid transparent; color: var(--text); font-size: 13px; }
+.sidebar nav { display: grid; gap: 7px; }
+.side-link { display: flex; align-items: center; gap: 14px; min-height: 46px; padding: 10px 14px; border-left: 3px solid transparent; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text); font-size: 13px; transition: background-color 120ms, color 120ms; }
+.side-link-icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-sm); color: var(--muted); flex-shrink: 0; transition: background-color 120ms, color 120ms; }
 .side-link:hover { background: #e3e2da; text-decoration: none; }
+.side-link:hover .side-link-icon { background: #d8d6ca; color: var(--text); }
 .side-link.active { background: var(--nv-paper); border-left-color: var(--nv-judicial); color: var(--nv-judicial); font-weight: 700; }
+.side-link.active .side-link-icon { background: #702e3b1a; color: var(--nv-judicial); }
 .sidebar-footer { margin-top: auto; padding-top: 35px; }
 .security-credential { display: grid; gap: 9px; border-top: 2px solid var(--nv-ink); padding: 15px 10px 0; }
 .security-credential .eyebrow { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 10px; letter-spacing: .05em; }
@@ -431,7 +444,6 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
 }
 @media (max-width: 900px) {
   .topbar { flex-wrap: wrap; gap: 12px; position: relative; }
-  .global-search { order: 3; width: 100%; }
   .topbar-actions { margin-left: auto; }
   .shell-body { grid-template-columns: 170px minmax(0, 1fr); }
   .sidebar { top: 0; height: 100vh; }
@@ -452,13 +464,15 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
   .identity-name { max-width: 105px; font-size: 11px; }
   .identity-name small { font-size: 10px; }
   .hide-mobile, .profile-chip .avatar { display: none; }
-  .topbar-actions { gap: 5px; }
+  .topbar-actions { gap: 6px; }
+  .language-menu { right: auto; left: 0; }
   .shell-body { display: block; }
   .sidebar { position: static; height: auto; padding: 12px; border-right: 0; border-bottom: 1px solid var(--border); }
   .rail-heading { display: none; }
   .sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; }
-  .side-link { flex: 1 0 auto; min-height: 38px; font-size: 11px; padding: 8px; justify-content: center; }
-  .side-link svg { width: 15px; }
+  .side-link { flex: 1 0 auto; min-height: 38px; font-size: 11px; padding: 8px; gap: 8px; justify-content: center; }
+  .side-link-icon { width: 22px; height: 22px; }
+  .side-link-icon svg { width: 15px; }
   .sidebar-footer { padding-top: 12px; }
   .sidebar-footer .security-credential { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 10px 4px 0; border-top-width: 1px; }
   .sidebar-footer .security-credential .eyebrow { font-size: 9px; }

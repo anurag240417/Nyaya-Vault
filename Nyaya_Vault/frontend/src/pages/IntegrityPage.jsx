@@ -5,9 +5,11 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { verifyIntegrity } from "../lib/api";
 import { formatDate } from "../lib/format";
 export default function IntegrityPage() {
+  const { t } = useTranslation("integrity");
   const [result, setResult] = useState(null),
     [loading, setLoading] = useState(false),
     [error, setError] = useState("");
@@ -26,9 +28,9 @@ export default function IntegrityPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Integrity Verification</h1>
+          <h1>{t("title")}</h1>
           <p>
-            Recalculate every entry hash and locate the first broken sequence.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -36,10 +38,9 @@ export default function IntegrityPage() {
         <div className="integrity-icon">
           <Fingerprint size={42} />
         </div>
-        <h2>Verify the global audit chain</h2>
+        <h2>{t("hero.title")}</h2>
         <p>
-          Each ledger row includes its canonical data, previous hash pointer,
-          and SHA-256 digest.
+          {t("hero.description")}
         </p>
         <button
           className="button button-primary"
@@ -47,7 +48,7 @@ export default function IntegrityPage() {
           onClick={verify}
         >
           <ShieldCheck size={17} />{" "}
-          {loading ? "Verifying…" : "Verify integrity now"}
+          {loading ? t("actions.verifying") : t("actions.verify")}
         </button>
       </section>
       {error ? <div className="form-error">{error}</div> : null}
@@ -63,28 +64,27 @@ export default function IntegrityPage() {
           <div>
             <h2>
               {result.valid
-                ? "Audit chain is valid"
-                : "Integrity failure detected"}
+                ? t("result.valid")
+                : t("result.invalid")}
             </h2>
             <p>{result.detail}</p>
             <div className="verification-meta">
               <span>
-                <strong>{result.total_entries}</strong> entries checked
+                <strong>{result.total_entries}</strong> {t("meta.entriesChecked")}
               </span>
               <span>
-                <strong>{result.first_invalid_sequence || "None"}</strong> first
-                invalid
+                <strong>{result.first_invalid_sequence || t("meta.noneFallback")}</strong> {t("meta.firstInvalid")}
               </span>
-              <span>Checked {formatDate(new Date())}</span>
+              <span>{t("meta.checked", { date: formatDate(new Date()) })}</span>
             </div>
           </div>
         </section>
       ) : null}
       <section className="panel">
         <div className="record-body">
-          <h3>Scope</h3>
+          <h3>{t("scope.title")}</h3>
           <p>
-            This checks the protected audit ledger for altered entries and broken hash links. It does not provide independent proof of when an event occurred.
+            {t("scope.description")}
           </p>
         </div>
       </section>

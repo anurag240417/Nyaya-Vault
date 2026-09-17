@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BriefcaseBusiness, Plus, RefreshCw, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { createCase, listCases } from "../lib/api";
 import { formatDate } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +13,7 @@ import Toast from "../components/Toast";
 import ExpandableDescription from "../components/ExpandableDescription";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 export default function CasesPage() {
+  const { t } = useTranslation("cases");
   const { user, profile } = useAuth();
   const [cases, setCases] = useState([]),
     [query, setQuery] = useState(""),
@@ -45,7 +47,7 @@ export default function CasesPage() {
       setForm({ case_number: "", title: "", description: "" });
       setOpen(false);
       await reload();
-      setToast({ message: "Case created and creator auto-assigned." });
+      setToast({ message: t("toast.created") });
     } catch (err) {
       setToast({ type: "error", message: err.message });
     } finally {
@@ -56,15 +58,15 @@ export default function CasesPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <p className="eyebrow">Case records</p><h1>Case Registry</h1>
-          <p>Case-scoped records for authorized personnel.</p>
+          <p className="eyebrow">{t("eyebrow")}</p><h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {canCreate ? (
           <button
             className="button button-primary"
             onClick={() => setOpen(true)}
           >
-            <Plus size={16} /> New case
+            <Plus size={16} /> {t("actions.newCase")}
           </button>
         ) : null}
       </div>
@@ -74,7 +76,7 @@ export default function CasesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Filter cases" placeholder="Find by case number, title, or description…"
+            aria-label={t("filterAria")} placeholder={t("searchPlaceholder")}
           />
         </div>
         <button
@@ -86,7 +88,7 @@ export default function CasesPage() {
             )
           }
         >
-          <RefreshCw size={14} /> Refresh
+          <RefreshCw size={14} /> {t("actions.refresh")}
         </button>
       </div>
       {loading ? (
@@ -98,17 +100,17 @@ export default function CasesPage() {
               <div className="registry-locator">
                 <BriefcaseBusiness size={18} />
                 <strong><Link to={`/cases/${item.id}`}>{item.case_number}</Link></strong>
-                <span className="visibility-pill">Private</span>
+                <span className="visibility-pill">{t("visibilityPrivate")}</span>
                 <Badge tone={statusTone(item.status)}>
                   {(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
                 </Badge>
               </div>
               <h3><Link to={`/cases/${item.id}`}>{item.title}</Link></h3>
               <ExpandableDescription>
-                {item.description || "No description has been added."}
+                {item.description || t("noDescription")}
               </ExpandableDescription>
               <div className="case-meta">
-                Created {formatDate(item.created_at)}
+                {t("createdOn", { date: formatDate(item.created_at) })}
               </div>
             </article>
           ))}
@@ -116,16 +118,16 @@ export default function CasesPage() {
       ) : (
         <EmptyState
           icon={<BriefcaseBusiness size={28} />}
-          title="No cases found"
+          title={t("empty.title")}
           description={
             query
-              ? "Try another search."
-              : "You do not have any accessible cases."
+              ? t("empty.tryAnotherSearch")
+              : t("empty.noAccessibleCases")
           }
           action={
             canCreate && !query ? (
               <button className="button" onClick={() => setOpen(true)}>
-                Create the first case
+                {t("actions.createFirstCase")}
               </button>
             ) : null
           }
@@ -133,37 +135,37 @@ export default function CasesPage() {
       )}{" "}
       {open ? (
         <Modal
-          title="Create a new case"
+          title={t("modal.title")}
           onClose={() => setOpen(false)}
           footer={
             <>
               <button className="button" onClick={() => setOpen(false)}>
-                Cancel
+                {t("actions.cancel")}
               </button>
               <button
                 form="create-case"
                 className="button button-primary"
                 disabled={busy}
               >
-                {busy ? "Creating…" : "Create case"}
+                {busy ? t("actions.creating") : t("actions.createCase")}
               </button>
             </>
           }
         >
           <form id="create-case" className="form-stack" onSubmit={submit}>
             <label className="field">
-              <span>Case number</span>
+              <span>{t("form.caseNumber")}</span>
               <input
                 required
                 value={form.case_number}
                 onChange={(e) =>
                   setForm({ ...form, case_number: e.target.value })
                 }
-                placeholder="FIR-2026-00124"
+                placeholder={t("form.caseNumberPlaceholder")}
               />
             </label>
             <label className="field">
-              <span>Title</span>
+              <span>{t("form.title")}</span>
               <input
                 required
                 value={form.title}
@@ -171,7 +173,7 @@ export default function CasesPage() {
               />
             </label>
             <label className="field">
-              <span>Description</span>
+              <span>{t("form.description")}</span>
               <textarea
                 rows="5"
                 maxLength="2000"

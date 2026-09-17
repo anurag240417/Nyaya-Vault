@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল করুন",
+    "close": "বন্ধ করুন",
+    "back": "পিছনে",
+    "submit": "জমা দিন",
+    "confirm": "নিশ্চিত করুন",
+    "delete": "মুছে ফেলুন",
+    "edit": "সম্পাদনা করুন",
+    "view": "দেখুন",
+    "download": "ডাউনলোড করুন",
+    "yes": "হ্যাঁ",
+    "no": "না",
+    "loading": "লোড হচ্ছে…"
+  },
+  "defaultRole": "ব্যবহারকারী",
+  "defaultClearance": "সর্বজনীন",
+  "dismissNotification": "বিজ্ঞপ্তি বন্ধ করুন",
+  "readMore": "আরও পড়ুন",
+  "readLess": "কম পড়ুন",
+  "dossierTabs": {
+    "sectionsLabel": "মামলার নথি বিভাগ",
+    "summary": "মামলার সারসংক্ষেপ",
+    "documents": "প্রমাণ নিবন্ধ",
+    "collaborators": "অ্যাক্সেস ও কর্মী",
+    "timeline": "সময়রেখা ও বিরোধ",
+    "assistant": "মামলার সহায়ক",
+    "audit": "অডিট লেজার"
+  }
+}

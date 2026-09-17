@@ -1,15 +1,17 @@
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 export default function DossierTabs({ caseId, counts = {} }) {
+  const { t } = useTranslation("common");
   const tabs = [
-    ["", "Case Summary"],
-    ["documents", "Evidence Register", counts.documents],
-    ["collaborators", "Access & Personnel", counts.collaborators],
-    ["timeline", "Timeline & Conflicts", counts.timeline],
-    ["assistant", "Case Assistant"],
-    ["audit", "Audit Ledger", counts.audit],
+    ["", t("dossierTabs.summary")],
+    ["documents", t("dossierTabs.documents"), counts.documents],
+    ["collaborators", t("dossierTabs.collaborators"), counts.collaborators],
+    ["timeline", t("dossierTabs.timeline"), counts.timeline],
+    ["assistant", t("dossierTabs.assistant")],
+    ["audit", t("dossierTabs.audit"), counts.audit],
   ];
   return (
-    <nav aria-label="Case dossier sections" className="dossier-tabs">
+    <nav aria-label={t("dossierTabs.sectionsLabel")} className="dossier-tabs">
       {tabs.map(([path, label, count]) => (
         <NavLink
           key={label}

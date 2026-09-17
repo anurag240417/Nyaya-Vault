@@ -1,6 +1,8 @@
 import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function ExpandableDescription({ children }) {
+  const { t } = useTranslation("common");
   const id = useId();
   const textRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
@@ -31,7 +33,7 @@ export default function ExpandableDescription({ children }) {
           aria-controls={id}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? "Read less" : "Read more"}
+          {expanded ? t("readLess") : t("readMore")}
         </button>
       ) : null}
     </div>

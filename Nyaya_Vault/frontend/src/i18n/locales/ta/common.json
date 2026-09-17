@@ -1,0 +1,19 @@
+{
+  "actions": {
+    "save": "சேமி",
+    "cancel": "ரத்து செய்",
+    "close": "மூடு",
+    "back": "பின்செல்",
+    "submit": "சமர்ப்பி",
+    "confirm": "உறுதிப்படுத்து",
+    "delete": "நீக்கு",
+    "edit": "திருத்து",
+    "view": "பார்",
+    "download": "பதிவிறக்கு",
+    "yes": "ஆம்",
+    "no": "இல்லை",
+    "loading": "ஏற்றுகிறது…"
+  },
+  "defaultRole": "பயனர்",
+  "defaultClearance": "பொது"
+}
