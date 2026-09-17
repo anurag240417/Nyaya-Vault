@@ -28,14 +28,14 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .skip-link { position: fixed; z-index: 300; top: 8px; left: 8px; padding: 10px 16px; background: var(--nv-paper); transform: translateY(-150%); }
 .skip-link:focus { transform: translateY(0); }
 /* Masthead and authorization rail */
-.topbar { position: sticky; top: 0; z-index: 30; min-height: 78px; background: var(--nv-navy); color: var(--nv-paper); display: flex; align-items: center; gap: 32px; padding: 12px 26px; border-bottom: 3px solid var(--nv-brass); }
+.topbar { position: sticky; top: 0; z-index: 30; min-height: 78px; background: var(--nv-navy); color: var(--nv-paper); display: flex; align-items: center; gap: 32px; padding: 12px 40px 12px 26px; border-bottom: 3px solid var(--nv-brass); }
 .brand { display: flex; align-items: center; gap: 12px; color: inherit; flex-shrink: 0; }
 .brand:hover, .profile-chip:hover { text-decoration: none; }
 .brand-mark { border: 1px solid #7d8795; width: 38px; height: 43px; display: grid; place-items: center; border-radius: 4px 4px 12px 12px; }
 .brand-name strong { display: block; font: 500 23px Georgia, serif; letter-spacing: .01em; }
 .brand-name small { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #c5c9cc; margin-top: 5px; }
-.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; }
-.profile-chip { display: flex; align-items: center; gap: 10px; color: inherit; padding: 6px 10px; font-size: 13px; border-radius: var(--radius-sm); border: 1px solid transparent; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: 22px; }
+.profile-chip { display: flex; align-items: center; gap: 10px; min-height: 38px; color: inherit; padding: 4px 10px; font-size: 13px; border-radius: var(--radius-sm); border: 1px solid transparent; }
 .profile-chip:hover { background: #1b293c; border-color: #586170; }
 .identity-name { max-width: 190px; overflow-wrap: anywhere; }
 .identity-name small { display: block; color: #c5c9cc; font-size: 10px; margin-top: 2px; }
