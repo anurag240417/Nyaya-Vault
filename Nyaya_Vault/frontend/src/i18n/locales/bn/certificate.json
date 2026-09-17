@@ -1,0 +1,15 @@
+{
+  "title": "ধারা ৬৩ সার্টিফিকেট তৈরি করুন",
+  "description": "অংশ A (ডিভাইস অপারেটর) এই নথির সংরক্ষিত রেকর্ড থেকে স্বয়ংক্রিয়ভাবে পূরণ হয়। অংশ B-এর জন্য একজন নামযুক্ত বিশেষজ্ঞ প্রয়োজন যিনি আদালতে জমা দেওয়ার আগে সার্টিফিকেটে স্বাক্ষর করবেন।",
+  "expertName": "বিশেষজ্ঞের নাম",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "বিশেষজ্ঞের পদবি",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "বিশেষজ্ঞের যোগ্যতা",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "স্থান",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "তৈরি করা হচ্ছে…",
+  "generateAndDownload": "তৈরি করুন ও ডাউনলোড করুন",
+  "defaultError": "সার্টিফিকেট তৈরি করা যায়নি।"
+}
