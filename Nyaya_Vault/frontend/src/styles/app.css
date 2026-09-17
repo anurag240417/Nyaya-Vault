@@ -39,8 +39,6 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .profile-chip:hover { background: #1b293c; border-color: #586170; }
 .identity-name { max-width: 190px; overflow-wrap: anywhere; }
 .identity-name small { display: block; color: #c5c9cc; font-size: 10px; margin-top: 2px; }
-.logout-button { width: auto; height: auto; min-height: 38px; display: flex; align-items: center; padding: 8px 14px; gap: 8px; border: 1px solid #586170; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
-.logout-button:hover { background: #2d4059; }
 .language-switcher { position: relative; }
 .language-trigger { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 8px 12px; border: 1px solid #586170; background: #1b293c; color: #e0e2e5; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
 .language-trigger:hover { background: #26364d; }
@@ -87,6 +85,8 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .button-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .icon-button { width: 36px; height: 36px; display: grid; place-items: center; border: 0; background: transparent; border-radius: 4px; color: inherit; }
 .icon-button:hover { background: #a7a8a325; }
+.logout-button { width: auto; height: auto; min-height: 38px; display: flex; align-items: center; padding: 8px 14px; gap: 8px; margin-right: 6px; border: 1px solid #586170; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+.logout-button:hover { background: #2d4059; }
 .topbar-icon { color: var(--nv-paper); }
 .danger-icon { color: var(--danger); }
 .badge, .visibility-pill { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border: 1px solid var(--border); border-radius: 3px; padding: 3px 7px; line-height: 1.35; font-size: 10px; font-weight: 700; letter-spacing: .025em; width: fit-content; }

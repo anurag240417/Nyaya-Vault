@@ -1,4 +1,4 @@
-import { LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
@@ -25,7 +25,6 @@ export default function Topbar() {
         <Link className="profile-chip" to="/profile">
           <Avatar name={profile?.username} size="sm" />
           <span className="identity-name">{profile?.username || t("account")}<small>{profile?.role?.replaceAll("_", " ")}</small></span>
-          <UserRound size={14} className="hide-mobile" />
         </Link>
         <button
           className="icon-button topbar-icon logout-button"
