@@ -1,0 +1,17 @@
+{
+  "title": "कायदेशीर नोटीस तयार करा",
+  "generating": "तयार होत आहे…",
+  "generateAndDownload": "तयार करा आणि डाउनलोड करा",
+  "loadingTypes": "नोटीस प्रकार लोड होत आहेत…",
+  "noticeType": "नोटीस प्रकार",
+  "issuedUnder": "याअंतर्गत जारी: {{reference}}",
+  "recipientName": "प्राप्तकर्त्याचे नाव",
+  "recipientAddress": "प्राप्तकर्त्याचा पत्ता",
+  "optionalSuffix": " (ऐच्छिक)",
+  "noticeText": "नोटीस मजकूर (कारणे, आरोप, मागणी - तुमच्या स्वतःच्या शब्दांत)",
+  "noticeTextPlaceholder": "वस्तुस्थिती, मागणी आणि पूर्तता करण्याची अंतिम मुदत सांगा…",
+  "place": "ठिकाण",
+  "placePlaceholder": "Pune",
+  "defaultError": "नोटीस तयार करता आली नाही.",
+  "successMessage": "नोटीस तयार केली गेली."
+}

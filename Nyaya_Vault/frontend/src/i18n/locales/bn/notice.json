@@ -1,0 +1,17 @@
+{
+  "title": "আইনি নোটিস তৈরি করুন",
+  "generating": "তৈরি করা হচ্ছে…",
+  "generateAndDownload": "তৈরি করুন ও ডাউনলোড করুন",
+  "loadingTypes": "নোটিসের ধরন লোড হচ্ছে…",
+  "noticeType": "নোটিসের ধরন",
+  "issuedUnder": "এর অধীনে জারি করা হয়েছে: {{reference}}",
+  "recipientName": "প্রাপকের নাম",
+  "recipientAddress": "প্রাপকের ঠিকানা",
+  "optionalSuffix": " (ঐচ্ছিক)",
+  "noticeText": "নোটিসের বিষয়বস্তু (কারণ, অভিযোগ, দাবি - আপনার নিজের ভাষায়)",
+  "noticeTextPlaceholder": "ঘটনা, দাবি এবং পালনের সময়সীমা উল্লেখ করুন…",
+  "place": "স্থান",
+  "placePlaceholder": "Pune",
+  "defaultError": "নোটিস তৈরি করা যায়নি।",
+  "successMessage": "নোটিস তৈরি হয়েছে।"
+}

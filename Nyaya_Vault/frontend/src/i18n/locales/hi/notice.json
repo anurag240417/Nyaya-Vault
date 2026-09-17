@@ -1,0 +1,17 @@
+{
+  "title": "कानूनी नोटिस जनरेट करें",
+  "generating": "जनरेट किया जा रहा है…",
+  "generateAndDownload": "जनरेट करें और डाउनलोड करें",
+  "loadingTypes": "नोटिस प्रकार लोड हो रहे हैं…",
+  "noticeType": "नोटिस प्रकार",
+  "issuedUnder": "इसके अंतर्गत जारी: {{reference}}",
+  "recipientName": "प्राप्तकर्ता का नाम",
+  "recipientAddress": "प्राप्तकर्ता का पता",
+  "optionalSuffix": " (वैकल्पिक)",
+  "noticeText": "नोटिस पाठ (आधार, आरोप, मांग - अपने शब्दों में)",
+  "noticeTextPlaceholder": "तथ्य, मांग और अनुपालन की समय-सीमा बताएं…",
+  "place": "स्थान",
+  "placePlaceholder": "Pune",
+  "defaultError": "नोटिस जनरेट नहीं किया जा सका।",
+  "successMessage": "नोटिस जनरेट किया गया।"
+}
