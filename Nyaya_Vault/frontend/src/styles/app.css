@@ -381,10 +381,9 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
 .empty-icon { color: var(--muted); margin: 0 auto 14px; }
 .empty-state h3 { font: 500 20px Georgia, serif; }
 .empty-state p { max-width: 570px; margin: 0 auto 18px; color: var(--muted); }
-.loading-state { min-height: 180px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+.loading-state { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
 .loading-state.full-page { min-height: 100vh; }
-.spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--nv-judicial); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.loading-animation { width: 180px; max-width: 100%; }
 .center-message, .not-found { min-height: 75vh; display: grid; place-items: center; align-content: center; padding: 30px; text-align: center; }
 .not-found > strong { font: 64px Georgia, serif; color: var(--muted); }
 .not-found p, .center-message p { color: var(--muted); }
