@@ -25,6 +25,7 @@ import { formatDate } from '../lib/format';
 import Avatar from '../components/Avatar';
 import Badge, { clearanceTone, departmentTone } from '../components/Badge';
 import EmptyState from '../components/EmptyState';
+import ExpandableDescription from '../components/ExpandableDescription';
 import LoadingState from '../components/LoadingState';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -394,7 +395,7 @@ export default function AdminPage() {
                           <span className="visibility-pill">{t('caseAssignment.visibilityPrivate')}</span>
                         </div>
                         <h3>{item.title}</h3>
-                        <p>{item.description || t('caseAssignment.noDescription')}</p>
+                        <ExpandableDescription>{item.description || t('caseAssignment.noDescription')}</ExpandableDescription>
                         <span className="admin-case-created">{t('caseAssignment.createdOn', { date: formatDate(item.created_at) })}</span>
                       </div>
 
