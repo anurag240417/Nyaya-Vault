@@ -1,37 +1,44 @@
 import {
-  Activity,
   BriefcaseBusiness,
   LayoutDashboard,
   Search,
   ShieldCheck,
-  Users,
   UserCog,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import SecurityCredential from "./SecurityCredential";
 import { useAuth } from "../context/AuthContext";
-const links = [
-  ["/dashboard", "Dashboard", LayoutDashboard],
-  ["/cases", "Cases", BriefcaseBusiness],
-  ["/search", "Search", Search],
-  ["/integrity", "Integrity", ShieldCheck],
-];
 export default function Sidebar() {
+  const { t } = useTranslation("sidebar");
   const { profile } = useAuth();
+  const links = [
+    ["/dashboard", t("dashboard"), LayoutDashboard],
+    ["/cases", t("cases"), BriefcaseBusiness],
+    ["/search", t("search"), Search],
+    ["/integrity", t("integrity"), ShieldCheck],
+  ];
   return (
     <aside className="sidebar">
-      <nav>
-        {links.map(([to, label, Icon]) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `side-link ${isActive ? "active" : ""}`
-            }
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+      <p className="eyebrow rail-heading">{t("workspaceIndex")}</p>
+      <nav aria-label="Main navigation">
+        {links.map(([to, label, icon]) => {
+          const Icon = icon;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `side-link ${isActive ? "active" : ""}`
+              }
+            >
+              <span className="side-link-icon">
+                <Icon size={18} />
+              </span>
+              <span>{label}</span>
+            </NavLink>
+          );
+        })}
         {profile?.role === "ADMIN" ? (
           <NavLink
             to="/admin"
@@ -39,21 +46,15 @@ export default function Sidebar() {
               `side-link ${isActive ? "active" : ""}`
             }
           >
-            <UserCog size={18} />
-            <span>Administration</span>
+            <span className="side-link-icon">
+              <UserCog size={18} />
+            </span>
+            <span>{t("administration")}</span>
           </NavLink>
         ) : null}
       </nav>
       <div className="sidebar-footer">
-        <div className="tiny-label">SIGNED IN AS</div>
-        <div className="sidebar-role">
-          <Users size={15} />
-          <span>{profile?.role?.replaceAll("_", " ") || "USER"}</span>
-        </div>
-        <div className="sidebar-role">
-          <Activity size={15} />
-          <span>{profile?.clearance_level || "PUBLIC"} clearance</span>
-        </div>
+        <SecurityCredential profile={profile} />
       </div>
     </aside>
   );

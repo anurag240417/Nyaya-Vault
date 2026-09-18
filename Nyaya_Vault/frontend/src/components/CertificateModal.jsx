@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import { generateCertificate } from "../lib/api";
 
 export default function CertificateModal({ documentId, versionId, onClose }) {
+  const { t } = useTranslation(["certificate", "common"]);
   const [form, setForm] = useState({
     expertName: "",
     expertDesignation: "",
@@ -20,7 +22,7 @@ export default function CertificateModal({ documentId, versionId, onClose }) {
       await generateCertificate(documentId, versionId, form);
       onClose();
     } catch (err) {
-      setError(err?.message || "Could not generate the certificate.");
+      setError(err?.message || t("defaultError"));
     } finally {
       setBusy(false);
     }
@@ -28,60 +30,58 @@ export default function CertificateModal({ documentId, versionId, onClose }) {
 
   return (
     <Modal
-      title="Generate Section 63 certificate"
+      title={t("title")}
       onClose={onClose}
       footer={
         <>
-          <button className="button" onClick={onClose}>Cancel</button>
+          <button className="button" onClick={onClose}>{t("actions.cancel", { ns: "common" })}</button>
           <button form="cert-form" className="button button-primary" disabled={busy}>
-            {busy ? "Generating…" : "Generate & download"}
+            {busy ? t("generating") : t("generateAndDownload")}
           </button>
         </>
       }
     >
-      <p className="muted small" style={{ marginBottom: "0.75rem" }}>
-        Part A (device operator) is filled automatically from this document's
-        stored records. Part B requires a named expert who will sign the
-        certificate before it is submitted to a court.
+      <p className="muted small" >
+        {t("description")}
       </p>
       <form id="cert-form" className="form-stack" onSubmit={submit}>
         <label className="field">
-          <span>Expert name</span>
+          <span>{t("expertName")}</span>
           <input
             required
             value={form.expertName}
             onChange={(e) => setForm({ ...form, expertName: e.target.value })}
-            placeholder="Dr. Ramesh Kumar"
+            placeholder={t("expertNamePlaceholder")}
           />
         </label>
         <label className="field">
-          <span>Expert designation</span>
+          <span>{t("expertDesignation")}</span>
           <input
             required
             value={form.expertDesignation}
             onChange={(e) => setForm({ ...form, expertDesignation: e.target.value })}
-            placeholder="Digital Forensic Examiner"
+            placeholder={t("expertDesignationPlaceholder")}
           />
         </label>
         <label className="field">
-          <span>Expert qualification</span>
+          <span>{t("expertQualification")}</span>
           <input
             required
             value={form.expertQualification}
             onChange={(e) => setForm({ ...form, expertQualification: e.target.value })}
-            placeholder="M.Tech Cyber Security, CFCE"
+            placeholder={t("expertQualificationPlaceholder")}
           />
         </label>
         <label className="field">
-          <span>Place</span>
+          <span>{t("place")}</span>
           <input
             required
             value={form.place}
             onChange={(e) => setForm({ ...form, place: e.target.value })}
-            placeholder="Gorakhpur"
+            placeholder={t("placePlaceholder")}
           />
         </label>
-        {error ? <p style={{ color: "#b91c1c", fontSize: "0.85rem" }}>{error}</p> : null}
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
       </form>
     </Modal>
   );

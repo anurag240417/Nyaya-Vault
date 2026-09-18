@@ -139,6 +139,9 @@ export async function searchCaseVault(query, caseId = null) {
   return apiJson(`/api/v1/search?${params}`);
 }
 export async function verifyIntegrity() { return apiJson('/api/v1/integrity/verify'); }
+export async function listIntegrityAnchors() { return apiJson('/api/v1/integrity/anchors'); }
+export async function createIntegrityAnchor() { return apiJson('/api/v1/integrity/anchors', { method: 'POST' }); }
+export async function verifyIntegrityAnchor(anchorId) { return apiJson(`/api/v1/integrity/anchors/${anchorId}/verify`); }
 
 export async function listProfiles() { return apiJson('/api/v1/users'); }
 export async function adminUpdateProfile(userId, role, clearanceLevel, isActive, department) {

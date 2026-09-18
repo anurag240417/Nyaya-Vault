@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "close": "बंद करें",
+    "back": "पीछे",
+    "submit": "जमा करें",
+    "confirm": "पुष्टि करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "view": "देखें",
+    "download": "डाउनलोड करें",
+    "yes": "हां",
+    "no": "नहीं",
+    "loading": "लोड हो रहा है…"
+  },
+  "defaultRole": "उपयोगकर्ता",
+  "defaultClearance": "सार्वजनिक",
+  "dismissNotification": "सूचना बंद करें",
+  "readMore": "अधिक पढ़ें",
+  "readLess": "कम पढ़ें",
+  "dossierTabs": {
+    "sectionsLabel": "केस डोसियर खंड",
+    "summary": "केस सारांश",
+    "documents": "साक्ष्य रजिस्टर",
+    "collaborators": "अभिगम और कार्मिक",
+    "timeline": "समयरेखा और विरोधाभास",
+    "assistant": "केस सहायक",
+    "audit": "ऑडिट लेजर"
+  }
+}

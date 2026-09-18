@@ -1,0 +1,15 @@
+{
+  "title": "Generate Section 63 certificate",
+  "description": "Part A (device operator) is filled automatically from this document's stored records. Part B requires a named expert who will sign the certificate before it is submitted to a court.",
+  "expertName": "Expert name",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "Expert designation",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "Expert qualification",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "Place",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "Generating…",
+  "generateAndDownload": "Generate & download",
+  "defaultError": "Could not generate the certificate."
+}

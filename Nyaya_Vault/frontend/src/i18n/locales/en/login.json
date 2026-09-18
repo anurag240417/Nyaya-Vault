@@ -1,0 +1,21 @@
+{
+  "eyebrowBrand": "Case & Evidence System",
+  "brandName": "Nyaya Vault",
+  "tagline": "An organized case record. A traceable evidence history.",
+  "feature": "Controlled access · Case-scoped records · Evidence integrity",
+  "authorizedAccess": "Authorized access",
+  "signInTitle": "Sign in to Nyaya Vault",
+  "signUpTitle": "Create an account",
+  "newUserNote": "New users start as CLERK / PUBLIC until an administrator changes access.",
+  "username": "Username",
+  "usernamePlaceholder": "aditya",
+  "email": "Email",
+  "emailPlaceholder": "you@example.com",
+  "password": "Password",
+  "signUpSuccess": "Account created. Confirm your email, then sign in.",
+  "pleaseWait": "Please wait…",
+  "signIn": "Sign in",
+  "createAccount": "Create account",
+  "needAccount": "Need an account? Sign up",
+  "haveAccount": "Already have an account? Sign in"
+}

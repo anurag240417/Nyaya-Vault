@@ -1,0 +1,35 @@
+{
+  "eyebrow": "Case records",
+  "title": "Case Registry",
+  "subtitle": "Case-scoped records for authorized personnel.",
+  "filterAria": "Filter cases",
+  "searchPlaceholder": "Find by case number, title, or description…",
+  "visibilityPrivate": "Private",
+  "noDescription": "No description has been added.",
+  "createdOn": "Created {{date}}",
+  "actions": {
+    "newCase": "New case",
+    "refresh": "Refresh",
+    "createFirstCase": "Create the first case",
+    "cancel": "Cancel",
+    "creating": "Creating…",
+    "createCase": "Create case"
+  },
+  "empty": {
+    "title": "No cases found",
+    "tryAnotherSearch": "Try another search.",
+    "noAccessibleCases": "You do not have any accessible cases."
+  },
+  "modal": {
+    "title": "Create a new case"
+  },
+  "form": {
+    "caseNumber": "Case number",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "title": "Title",
+    "description": "Description"
+  },
+  "toast": {
+    "created": "Case created and creator auto-assigned."
+  }
+}

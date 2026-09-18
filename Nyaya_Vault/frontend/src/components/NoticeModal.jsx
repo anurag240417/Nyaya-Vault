@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import { getNoticeTypes, generateNotice } from "../lib/api";
 
 export default function NoticeModal({ caseId, onClose, setToast }) {
+  const { t } = useTranslation(["notice", "common"]);
   const [types, setTypes] = useState(null);
   const [selectedKey, setSelectedKey] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -41,10 +43,10 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
         body,
         place,
       });
-      setToast?.({ message: "Notice generated." });
+      setToast?.({ message: t("successMessage") });
       onClose();
     } catch (err) {
-      setError(err?.message || "Could not generate the notice.");
+      setError(err?.message || t("defaultError"));
     } finally {
       setBusy(false);
     }
@@ -52,43 +54,43 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
 
   return (
     <Modal
-      title="Generate legal notice"
+      title={t("title")}
       onClose={onClose}
       footer={
         <>
-          <button className="button" onClick={onClose}>Cancel</button>
+          <button className="button" onClick={onClose}>{t("actions.cancel", { ns: "common" })}</button>
           <button form="notice-form" className="button button-primary" disabled={busy || !selectedKey}>
-            {busy ? "Generating…" : "Generate & download"}
+            {busy ? t("generating") : t("generateAndDownload")}
           </button>
         </>
       }
     >
       {!types ? (
-        <p className="muted small">Loading notice types…</p>
+        <p className="muted small">{t("loadingTypes")}</p>
       ) : (
         <form id="notice-form" className="form-stack" onSubmit={submit}>
           <label className="field">
-            <span>Notice type</span>
+            <span>{t("noticeType")}</span>
             <select value={selectedKey} onChange={(e) => { setSelectedKey(e.target.value); setFieldValues({}); }}>
-              {types.map((t) => <option key={t.key} value={t.key}>{t.title}</option>)}
+              {types.map((nt) => <option key={nt.key} value={nt.key}>{nt.title}</option>)}
             </select>
           </label>
           {selectedType?.statute_reference ? (
-            <p className="muted small" style={{ margin: 0 }}>Issued under: {selectedType.statute_reference}</p>
+            <p className="muted small" >{t("issuedUnder", { reference: selectedType.statute_reference })}</p>
           ) : null}
 
           <label className="field">
-            <span>Recipient name</span>
+            <span>{t("recipientName")}</span>
             <input required value={recipientName} onChange={(e) => setRecipientName(e.target.value)} />
           </label>
           <label className="field">
-            <span>Recipient address</span>
+            <span>{t("recipientAddress")}</span>
             <input required value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} />
           </label>
 
           {selectedType?.fields.map((f) => (
             <label className="field" key={f.key}>
-              <span>{f.label}{f.required ? "" : " (optional)"}</span>
+              <span>{f.label}{f.required ? "" : t("optionalSuffix")}</span>
               <input
                 required={f.required}
                 value={fieldValues[f.key] || ""}
@@ -99,21 +101,21 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
           ))}
 
           <label className="field">
-            <span>Notice text (grounds, allegations, demand - your own wording)</span>
+            <span>{t("noticeText")}</span>
             <textarea
               required
               rows={6}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="State the facts, the demand, and the deadline for compliance…"
+              placeholder={t("noticeTextPlaceholder")}
             />
           </label>
           <label className="field">
-            <span>Place</span>
-            <input required value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Pune" />
+            <span>{t("place")}</span>
+            <input required value={place} onChange={(e) => setPlace(e.target.value)} placeholder={t("placePlaceholder")} />
           </label>
 
-          {error ? <p style={{ color: "#b91c1c", fontSize: "0.85rem" }}>{error}</p> : null}
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
         </form>
       )}
     </Modal>

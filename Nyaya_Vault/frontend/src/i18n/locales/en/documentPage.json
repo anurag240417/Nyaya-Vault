@@ -1,0 +1,106 @@
+{
+  "loading": {
+    "evidence": "Loading evidence…",
+    "preview": "Loading preview…",
+    "uploading": "Uploading…",
+    "requesting": "Requesting…"
+  },
+  "documentUnavailable": "Document unavailable",
+  "backToRegister": "Back to evidence register",
+  "eyebrow": "Evidence Record",
+  "unclassifiedDocument": "Unclassified document",
+  "typeVersion": "{{type}} · current version v{{version}}",
+  "actions": {
+    "newVersion": "New version",
+    "download": "Download",
+    "certificate": "Section 63 certificate",
+    "cancel": "Cancel",
+    "createVersion": "Create version",
+    "saveReview": "Save review",
+    "confirm": "Confirm",
+    "reject": "Reject",
+    "approve": "Approve",
+    "generate": "Generate",
+    "exportRedacted": "Export redacted",
+    "runProcessing": "Run OCR / NER processing"
+  },
+  "toast": {
+    "versionCreated": "New immutable version registered.",
+    "processingAccepted": "Processing request accepted.",
+    "entityReviewSaved": "Entity review saved.",
+    "redactionReviewSaved": "Redaction review saved.",
+    "redactedExported": "Redacted disclosure copy exported."
+  },
+  "tabs": {
+    "overview": "Record",
+    "entities": "Extracted Entities",
+    "redactions": "Redaction Review",
+    "versions": "Version History"
+  },
+  "modal": {
+    "newVersionTitle": "Create a new version",
+    "changeSummary": "Change summary",
+    "file": "File"
+  },
+  "overview": {
+    "sourceEvidence": "Source Evidence",
+    "sha256Note": "SHA-256 is computed from exact uploaded bytes.",
+    "previewError": "Could not load preview: {{error}}",
+    "noPreview": "No inline preview is available for this format. Use Download to inspect the source file.",
+    "embedTitle": "Evidence preview: {{title}}",
+    "recordInformation": "Record Information",
+    "documentId": "Document ID",
+    "type": "Type",
+    "clearance": "Clearance",
+    "department": "Department",
+    "generalDepartment": "GENERAL",
+    "created": "Created",
+    "currentVersion": "Current version",
+    "sha256": "SHA-256",
+    "size": "Size",
+    "mimeType": "MIME type",
+    "processingProvenance": "Processing & Provenance",
+    "registration": "Registration",
+    "versionLabel": "Version {{number}}",
+    "fileFingerprint": "File fingerprint",
+    "hashRecorded": "SHA-256 recorded",
+    "noHash": "No hash available",
+    "processingRecord": "Processing record",
+    "noStatus": "No status available",
+    "ocrUsed": "OCR used",
+    "nativeText": "Native text",
+    "extractionPending": "Extraction pending",
+    "videoNote": "Video is stored and hash-verified like any other evidence, but its visual/audio content is not automatically analyzed - there's no text for OCR or NER to extract. Reference what's seen or heard in this video manually via a Timeline & Conflicts section timeline statement if it's relevant to a contradiction check.",
+    "humanConfirmation": "Human confirmation",
+    "humanConfirmationNote": "AI metadata is never automatically trusted; entities and redactions require review."
+  },
+  "entities": {
+    "title": "Human Review Sheet",
+    "description": "System-extracted entities require human review. Select decisions, then save the review.",
+    "confidence": "Confidence: {{value}}",
+    "stateConfirmed": "Human confirmed",
+    "stateConfirmUnsaved": "Confirm selected · unsaved",
+    "stateRejectUnsaved": "Reject selected · unsaved",
+    "statePending": "System extracted · pending review",
+    "empty": "No extracted entities for this version."
+  },
+  "redactions": {
+    "title": "Redaction Review Sheet",
+    "description": "Only human-approved regions should be used in disclosure copies.",
+    "proposedRegion": "Proposed redaction region",
+    "stateApproved": "Human approved",
+    "stateApproveUnsaved": "Approve selected · unsaved",
+    "stateRejectUnsaved": "Reject selected · unsaved",
+    "statePending": "Proposed · pending review",
+    "empty": "No redaction suggestions stored."
+  },
+  "versions": {
+    "title": "Version history",
+    "description": "Original bytes and hashes remain immutable.",
+    "versionLabel": "Version {{number}}",
+    "noChangeSummary": "No change summary"
+  },
+  "assistant": {
+    "responseTable": "Response table"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "धारा 63 प्रमाणपत्र जनरेट करें",
+  "description": "भाग A (डिवाइस ऑपरेटर) इस दस्तावेज़ के संग्रहीत रिकॉर्ड से स्वचालित रूप से भरा जाता है। भाग B के लिए एक नामित विशेषज्ञ की आवश्यकता है जो न्यायालय में प्रस्तुत करने से पहले प्रमाणपत्र पर हस्ताक्षर करेगा।",
+  "expertName": "विशेषज्ञ का नाम",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "विशेषज्ञ पदनाम",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "विशेषज्ञ योग्यता",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "स्थान",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "जनरेट किया जा रहा है…",
+  "generateAndDownload": "जनरेट करें और डाउनलोड करें",
+  "defaultError": "प्रमाणपत्र जनरेट नहीं किया जा सका।"
+}

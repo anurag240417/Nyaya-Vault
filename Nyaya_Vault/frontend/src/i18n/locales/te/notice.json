@@ -1,0 +1,17 @@
+{
+  "title": "చట్టపరమైన నోటీసును రూపొందించండి",
+  "generating": "రూపొందిస్తోంది…",
+  "generateAndDownload": "రూపొందించి డౌన్‌లోడ్ చేయండి",
+  "loadingTypes": "నోటీసు రకాలు లోడ్ అవుతున్నాయి…",
+  "noticeType": "నోటీసు రకం",
+  "issuedUnder": "దీని కింద జారీ చేయబడింది: {{reference}}",
+  "recipientName": "గ్రహీత పేరు",
+  "recipientAddress": "గ్రహీత చిరునామా",
+  "optionalSuffix": " (ఐచ్ఛికం)",
+  "noticeText": "నోటీసు వచనం (కారణాలు, ఆరోపణలు, డిమాండ్ - మీ స్వంత మాటల్లో)",
+  "noticeTextPlaceholder": "వాస్తవాలు, డిమాండ్ మరియు అనుసరించడానికి గడువును పేర్కొనండి…",
+  "place": "స్థలం",
+  "placePlaceholder": "Pune",
+  "defaultError": "నోటీసును రూపొందించడం సాధ్యపడలేదు.",
+  "successMessage": "నోటీసు రూపొందించబడింది."
+}

@@ -1,0 +1,47 @@
+{
+  "title": "Integrity Verification",
+  "subtitle": "Recalculate every entry hash and locate the first broken sequence.",
+  "hero": {
+    "title": "Verify the global audit chain",
+    "description": "Each ledger row includes its canonical data, previous hash pointer, and SHA-256 digest."
+  },
+  "actions": {
+    "verifying": "Verifying…",
+    "verify": "Verify integrity now"
+  },
+  "result": {
+    "valid": "Audit chain is valid",
+    "invalid": "Integrity failure detected"
+  },
+  "meta": {
+    "entriesChecked": "entries checked",
+    "firstInvalid": "first invalid",
+    "noneFallback": "None",
+    "checked": "Checked {{date}}"
+  },
+  "scope": {
+    "title": "Scope",
+    "description": "This checks the protected audit ledger for altered entries and broken hash links. Entries covered by a blockchain anchor below carry independent, publicly verifiable proof they existed unchanged since anchor time; anything after the most recent anchor still relies on this database alone until the next one runs."
+  },
+  "anchors": {
+    "title": "Blockchain-anchored proof",
+    "anchorNow": "Anchor now",
+    "anchoring": "Anchoring…",
+    "description": "Periodically commits the audit chain's current hash to a public blockchain, so no one with database access alone can rewrite history undetected.",
+    "notConfigured": "Blockchain anchoring is not configured on this server. An administrator can enable it to make the audit chain independently verifiable outside this database.",
+    "created": "Anchored to the blockchain (tx {{hash}}).",
+    "empty": "No anchors recorded yet.",
+    "columns": {
+      "sequence": "Sequence",
+      "status": "Status",
+      "reference": "Transaction",
+      "network": "Network",
+      "anchoredAt": "Anchored",
+      "verify": "Verify"
+    },
+    "verifyAction": "Verify",
+    "verifying": "Verifying…",
+    "verified": "Verified on-chain",
+    "tampered": "Tamper detected"
+  }
+}

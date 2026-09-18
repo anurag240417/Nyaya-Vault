@@ -11,6 +11,7 @@ from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.integrations.supabase import SupabaseGateway
 from app.services.assistant import AssistantService
+from app.services.blockchain_anchor import BlockchainAnchorService
 from app.services.casevault import CaseVaultService
 from app.services.processor import DocumentProcessor
 from app.services.timeline import TimelineService
@@ -27,6 +28,7 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
         app.state.processor = DocumentProcessor(app.state.supabase, settings)
         app.state.timeline = TimelineService(app.state.supabase, settings)
         app.state.assistant = AssistantService(app.state.supabase, settings, app.state.casevault, app.state.timeline)
+        app.state.blockchain_anchor = BlockchainAnchorService(app.state.supabase, settings)
         yield
         if supplied_gateway is None:
             await app.state.supabase.close()

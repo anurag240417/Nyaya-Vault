@@ -4,16 +4,18 @@ import {
   BriefcaseBusiness,
   FileText,
   Search,
-  ShieldCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getRecentActivity, listCases } from "../lib/api";
 import { formatDate } from "../lib/format";
 import LoadingState from "../components/LoadingState";
-import Badge from "../components/Badge";
+import SecurityCredential from "../components/SecurityCredential";
+import Badge, { statusTone } from "../components/Badge";
 import { useAuth } from "../context/AuthContext";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 export default function DashboardPage() {
+  const { t } = useTranslation("dashboard");
   const { profile } = useAuth();
   const [cases, setCases] = useState([]),
     [activity, setActivity] = useState([]),
@@ -27,53 +29,36 @@ export default function DashboardPage() {
     reload().finally(() => setLoading(false));
   }, [reload]);
   useRefreshOnFocus(reload);
-  if (loading) return <LoadingState label="Loading dashboard…" />;
+  if (loading) return <LoadingState label={t("loadingLabel")} />;
   return (
     <div className="page">
-      <section className="welcome-panel">
+      <section className="duty-header">
         <div>
-          <p className="eyebrow">SECURE WORKSPACE</p>
-          <h1>Good to see you, {profile?.username || "investigator"}.</h1>
-          <p>
-            Work appears only when your role, case assignment, and evidence
-            clearance allow it.
-          </p>
+          <p className="eyebrow">{t("eyebrow")}</p>
+          <h1>
+            {t("greeting", {
+              name: profile?.username || t("defaultInvestigator"),
+            })}
+          </h1>
+          <p>{t("accessNote")}</p>
         </div>
         <Link className="button button-primary" to="/cases">
-          Open cases <ArrowRight size={16} />
+          {t("actions.openCases")} <ArrowRight size={16} />
         </Link>
       </section>
-      <div className="stat-grid">
-        <div className="stat-card">
-          <BriefcaseBusiness size={20} />
-          <div>
-            <strong>{cases.length}</strong>
-            <span>accessible cases</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <ShieldCheck size={20} />
-          <div>
-            <strong>{profile?.clearance_level || "PUBLIC"}</strong>
-            <span>clearance</span>
-          </div>
-        </div>
-        <Link className="stat-card link-card" to="/search">
-          <Search size={20} />
-          <div>
-            <strong>Evidence search</strong>
-            <span>ACL-filtered full text</span>
-          </div>
-        </Link>
+      <div className="desk-context">
+        <SecurityCredential profile={profile} />
+        <div className="register-total"><strong>{cases.length}</strong><span>{t("stats.accessibleCaseRecords")}</span></div>
+        <Link className="desk-search" to="/search"><Search size={22} /><div><strong>{t("search.title")}</strong><span>{t("search.description")}</span></div><ArrowRight size={18} /></Link>
       </div>
-      <div className="two-column">
+      <div className="desk-registers">
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent cases</h2>
-              <p>Repository-style workspaces</p>
+              <h2>{t("caseRegister.title")}</h2>
+              <p>{t("caseRegister.subtitle")}</p>
             </div>
-            <Link to="/cases">View all</Link>
+            <Link to="/cases">{t("caseRegister.viewAll")}</Link>
           </div>
           <div className="list-group">
             {cases.slice(0, 6).map((item) => (
@@ -83,34 +68,35 @@ export default function DashboardPage() {
                   <strong>{item.case_number}</strong>
                   <span>{item.title}</span>
                 </div>
+                <Badge tone={statusTone(item.status)}>{(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}</Badge>
                 <span className="muted small">
                   {formatDate(item.created_at)}
                 </span>
               </Link>
             ))}
             {!cases.length ? (
-              <div className="panel-empty">No cases assigned yet.</div>
+              <div className="panel-empty">{t("caseRegister.empty")}</div>
             ) : null}
           </div>
         </section>
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent activity</h2>
-              <p>Immutable events you may see</p>
+              <h2>{t("activity.title")}</h2>
+              <p>{t("activity.subtitle")}</p>
             </div>
           </div>
           <div className="activity-list">
             {activity.map((entry) => (
               <div className="activity-item" key={entry.sequence}>
-                <span className="activity-dot" />
+                <code className="ledger-sequence">{entry.sequence}</code>
                 <div>
                   <div>
-                    <strong>{entry.actor_username || "system"}</strong>{" "}
+                    <strong>{entry.actor_username || t("activity.systemActor")}</strong>{" "}
                     {entry.action.replaceAll("_", " ").toLowerCase()}
                   </div>
                   <div className="muted small">
-                    {entry.case_number || "global"} ·{" "}
+                    {entry.case_number || t("activity.global")} ·{" "}
                     {formatDate(entry.timestamp)}
                   </div>
                 </div>
@@ -121,7 +107,7 @@ export default function DashboardPage() {
             ))}
             {!activity.length ? (
               <div className="panel-empty">
-                <FileText size={18} /> No activity yet.
+                <FileText size={18} /> {t("activity.empty")}
               </div>
             ) : null}
           </div>

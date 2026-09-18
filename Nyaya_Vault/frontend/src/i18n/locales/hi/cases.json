@@ -1,0 +1,35 @@
+{
+  "eyebrow": "मामला रिकॉर्ड",
+  "title": "मामला रजिस्ट्री",
+  "subtitle": "अधिकृत कर्मियों के लिए मामला-विशिष्ट रिकॉर्ड।",
+  "filterAria": "मामलों को फ़िल्टर करें",
+  "searchPlaceholder": "मामला संख्या, शीर्षक या विवरण से खोजें…",
+  "visibilityPrivate": "निजी",
+  "noDescription": "कोई विवरण नहीं जोड़ा गया है।",
+  "createdOn": "बनाया गया {{date}}",
+  "actions": {
+    "newCase": "नया मामला",
+    "refresh": "रीफ़्रेश करें",
+    "createFirstCase": "पहला मामला बनाएँ",
+    "cancel": "रद्द करें",
+    "creating": "बनाया जा रहा है…",
+    "createCase": "मामला बनाएँ"
+  },
+  "empty": {
+    "title": "कोई मामला नहीं मिला",
+    "tryAnotherSearch": "कोई अन्य खोज आज़माएँ।",
+    "noAccessibleCases": "आपके पास कोई सुलभ मामला नहीं है।"
+  },
+  "modal": {
+    "title": "नया मामला बनाएँ"
+  },
+  "form": {
+    "caseNumber": "मामला संख्या",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "title": "शीर्षक",
+    "description": "विवरण"
+  },
+  "toast": {
+    "created": "मामला बनाया गया और निर्माता को स्वतः नियुक्त किया गया।"
+  }
+}

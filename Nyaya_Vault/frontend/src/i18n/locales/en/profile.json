@@ -1,0 +1,12 @@
+{
+  "eyebrow": "Personnel record",
+  "title": "Authorization Credential",
+  "subtitle": "Your identity and authorization attributes.",
+  "userId": "User ID",
+  "accountState": "Account state",
+  "active": "Active",
+  "disabled": "Disabled",
+  "department": "Department",
+  "unassigned": "Unassigned",
+  "created": "Created"
+}

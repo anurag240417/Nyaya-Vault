@@ -1,0 +1,15 @@
+{
+  "title": "कलम 63 प्रमाणपत्र तयार करा",
+  "description": "भाग A (उपकरण चालक) या दस्तऐवजाच्या संग्रहित नोंदींमधून स्वयंचलितपणे भरला जातो. भाग B साठी एका नामांकित तज्ञाची आवश्यकता आहे जो न्यायालयात सादर करण्यापूर्वी प्रमाणपत्रावर स्वाक्षरी करेल.",
+  "expertName": "तज्ञाचे नाव",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "तज्ञाचे पदनाम",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "तज्ञाची योग्यता",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "ठिकाण",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "तयार होत आहे…",
+  "generateAndDownload": "तयार करा आणि डाउनलोड करा",
+  "defaultError": "प्रमाणपत्र तयार करता आले नाही."
+}

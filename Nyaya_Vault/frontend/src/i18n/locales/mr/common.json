@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "save": "जतन करा",
+    "cancel": "रद्द करा",
+    "close": "बंद करा",
+    "back": "मागे",
+    "submit": "सादर करा",
+    "confirm": "पुष्टी करा",
+    "delete": "हटवा",
+    "edit": "संपादित करा",
+    "view": "पहा",
+    "download": "डाउनलोड करा",
+    "yes": "होय",
+    "no": "नाही",
+    "loading": "लोड होत आहे…"
+  },
+  "defaultRole": "वापरकर्ता",
+  "defaultClearance": "सार्वजनिक",
+  "dismissNotification": "सूचना बंद करा",
+  "readMore": "अधिक वाचा",
+  "readLess": "कमी वाचा",
+  "dossierTabs": {
+    "sectionsLabel": "प्रकरण दस्तावेज विभाग",
+    "summary": "प्रकरण सारांश",
+    "documents": "पुरावा नोंदणी",
+    "collaborators": "प्रवेश आणि कर्मचारी",
+    "timeline": "कालरेषा आणि विरोधाभास",
+    "assistant": "प्रकरण सहाय्यक",
+    "audit": "ऑडिट लेजर"
+  }
+}

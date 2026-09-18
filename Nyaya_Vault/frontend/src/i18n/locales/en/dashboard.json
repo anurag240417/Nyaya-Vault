@@ -1,0 +1,30 @@
+{
+  "loadingLabel": "Loading case desk…",
+  "eyebrow": "CASE DESK",
+  "greeting": "Good to see you, {{name}}.",
+  "defaultInvestigator": "investigator",
+  "accessNote": "Work appears only when your role, case assignment, and evidence clearance allow it.",
+  "actions": {
+    "openCases": "Open cases"
+  },
+  "stats": {
+    "accessibleCaseRecords": "accessible case records"
+  },
+  "search": {
+    "title": "Case & Evidence Search",
+    "description": "Search records and extracted evidence within your access."
+  },
+  "caseRegister": {
+    "title": "Assigned Case Register",
+    "subtitle": "Your accessible case records, most recent first",
+    "viewAll": "View all",
+    "empty": "No cases assigned yet."
+  },
+  "activity": {
+    "title": "Recent Activity Ledger",
+    "subtitle": "Recorded actions within your access",
+    "systemActor": "system",
+    "global": "global",
+    "empty": "No activity yet."
+  }
+}

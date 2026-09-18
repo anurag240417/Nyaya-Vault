@@ -1,0 +1,35 @@
+{
+  "eyebrow": "केस रेकॉर्ड",
+  "title": "केस नोंदणी",
+  "subtitle": "अधिकृत कर्मचाऱ्यांसाठी केस-विशिष्ट रेकॉर्ड.",
+  "filterAria": "केसेस फिल्टर करा",
+  "searchPlaceholder": "केस क्रमांक, शीर्षक किंवा वर्णनाने शोधा…",
+  "visibilityPrivate": "खाजगी",
+  "noDescription": "कोणतेही वर्णन जोडलेले नाही.",
+  "createdOn": "तयार केले {{date}}",
+  "actions": {
+    "newCase": "नवीन केस",
+    "refresh": "रिफ्रेश करा",
+    "createFirstCase": "पहिली केस तयार करा",
+    "cancel": "रद्द करा",
+    "creating": "तयार होत आहे…",
+    "createCase": "केस तयार करा"
+  },
+  "empty": {
+    "title": "कोणतीही केस सापडली नाही",
+    "tryAnotherSearch": "दुसरा शोध करून पहा.",
+    "noAccessibleCases": "तुमच्याकडे कोणतीही प्रवेशयोग्य केस नाही."
+  },
+  "modal": {
+    "title": "नवीन केस तयार करा"
+  },
+  "form": {
+    "caseNumber": "केस क्रमांक",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "title": "शीर्षक",
+    "description": "वर्णन"
+  },
+  "toast": {
+    "created": "केस तयार केली आणि निर्मात्याला स्वयंचलितपणे नेमले."
+  }
+}

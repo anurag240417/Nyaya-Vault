@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { FileSearch, Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { searchCaseVault } from "../lib/api";
 import Badge from "../components/Badge";
 export default function SearchPage() {
+  const { t } = useTranslation("search");
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState(params.get("q") || ""),
     [results, setResults] = useState([]),
@@ -33,10 +35,9 @@ export default function SearchPage() {
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Search</h1>
+          <p className="eyebrow">{t("eyebrow")}</p><h1>{t("title")}</h1>
           <p>
-            FastAPI authorization filters case access and evidence clearance
-            before results reach the browser.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -49,12 +50,13 @@ export default function SearchPage() {
       >
         <Search size={20} />
         <input
+          aria-label={t("inputAria")}
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search case numbers, titles, and extracted text…"
+          placeholder={t("inputPlaceholder")}
         />
-        <button className="button button-primary">Search</button>
+        <button className="button button-primary">{t("actions.search")}</button>
       </form>
       {error ? <div className="form-error">{error}</div> : null}
       <section className="panel">
@@ -62,14 +64,13 @@ export default function SearchPage() {
           <div>
             <h2>
               {loading
-                ? "Searching…"
+                ? t("status.searching")
                 : params.get("q")
-                  ? `${results.length} results`
-                  : "Search evidence"}
+                  ? t("status.resultsCount", { count: results.length })
+                  : t("status.prompt")}
             </h2>
             <p>
-              PostgreSQL full-text ranking; optional pgvector migration is
-              included for later semantic search.
+              {t("resultsHint")}
             </p>
           </div>
         </div>
@@ -87,13 +88,13 @@ export default function SearchPage() {
                     <strong>{r.title}</strong>
                     <Badge>{r.case_number}</Badge>
                     {r.page_number ? (
-                      <span className="muted small">page {r.page_number}</span>
+                      <span className="muted small">{t("pageLabel", { number: r.page_number })}</span>
                     ) : null}
                   </div>
-                  <p>{r.snippet || "Document metadata match"}</p>
+                  <p>{r.snippet || t("metadataMatchFallback")}</p>
                 </div>
-                <span className="rank-pill">
-                  {Number(r.rank || 0).toFixed(2)}
+                <span className="rank-label" title={t("relevanceScoreTitle")}>
+                  {t("relevanceLabel", { score: Number(r.rank || 0).toFixed(2) })}
                 </span>
               </Link>
             ))}
@@ -101,8 +102,8 @@ export default function SearchPage() {
         ) : (
           <div className="panel-empty">
             {params.get("q") && !loading
-              ? "No accessible matches."
-              : "Enter a phrase to search."}
+              ? t("empty.noMatches")
+              : t("empty.prompt")}
           </div>
         )}
       </section>

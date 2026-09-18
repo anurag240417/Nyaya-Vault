@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "प्रशासन",
+    "title": "सिस्टम रजिस्ट्री और केस असाइनमेंट कार्यालय",
+    "subtitle": "उपयोगकर्ताओं, केस स्वामित्व, अन्वेषण अधिकारियों, सहयोगियों और अभिगम स्थिति का प्रबंधन करें।"
+  },
+  "tabs": {
+    "ariaLabel": "प्रशासन अनुभाग",
+    "users": "कार्मिक रजिस्टर",
+    "cases": "केस असाइनमेंट रजिस्टर"
+  },
+  "actions": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें"
+  },
+  "roles": {
+    "ADMIN": "प्रशासक",
+    "INVESTIGATING_OFFICER": "अन्वेषण अधिकारी",
+    "PROSECUTOR": "अभियोजक",
+    "JUDGE": "न्यायाधीश",
+    "CLERK": "लिपिक",
+    "unknown": "अज्ञात भूमिका"
+  },
+  "clearances": {
+    "PUBLIC": "सार्वजनिक",
+    "RESTRICTED": "प्रतिबंधित",
+    "CONFIDENTIAL": "गोपनीय",
+    "SECRET": "गुप्त"
+  },
+  "departments": {
+    "GENERAL": "सामान्य",
+    "POLICE": "पुलिस",
+    "FORENSICS": "फोरेंसिक",
+    "PROSECUTION": "अभियोजन",
+    "JUDICIARY": "न्यायपालिका",
+    "unassigned": "अनिर्धारित"
+  },
+  "users": {
+    "heading": "कार्मिक रजिस्टर",
+    "description": "सुरक्षा-संवेदनशील नियंत्रण: भूमिका, क्लीयरेंस, विभाग और खाता स्थिति में परिवर्तन अभिगम को प्रभावित करते हैं।",
+    "roleAriaLabel": "{{username}} के लिए भूमिका",
+    "clearanceAriaLabel": "{{username}} के लिए क्लीयरेंस",
+    "departmentAriaLabel": "{{username}} के लिए विभाग",
+    "departmentTitle": "केवल एक प्रशासक ही किसी उपयोगकर्ता का विभाग सेट कर सकता है; किसी विभाग के लिए टैग किया गया दस्तावेज़ केवल मिलान करने वाले उपयोगकर्ताओं को दिखाई देता है।",
+    "active": "सक्रिय",
+    "disabled": "निष्क्रिय",
+    "saveSuccess": "उपयोगकर्ता अनुमतियां अपडेट की गईं।"
+  },
+  "summary": {
+    "totalCases": "कुल मामले",
+    "activeInvestigators": "सक्रिय अन्वेषक",
+    "activeUsers": "सक्रिय उपयोगकर्ता"
+  },
+  "caseAssignment": {
+    "heading": "केस असाइनमेंट रजिस्टर",
+    "description": "मामले बनाएं, प्रमुख अन्वेषक चुनें, और संपूर्ण सहयोगी समूह को नियंत्रित करें।",
+    "createDisabledTitle": "पहले एक {{role}} बनाएं या सक्रिय करें।",
+    "createButton": "केस बनाएं और असाइन करें",
+    "searchAriaLabel": "प्रबंधित मामले खोजें",
+    "searchPlaceholder": "मामले, अन्वेषक, या सहयोगी खोजें…",
+    "visibilityPrivate": "निजी",
+    "noDescription": "कोई विवरण नहीं जोड़ा गया है।",
+    "createdOn": "{{date}} पर बनाया गया",
+    "primaryInvestigatorLabel": "प्रमुख अन्वेषक",
+    "notAssigned": "असाइन नहीं किया गया",
+    "collaboratorsLabel": "सहयोगी",
+    "removeCollaboratorTitle": "{{username}} को हटाएं",
+    "noCollaborators": "कोई अतिरिक्त सहयोगी नहीं",
+    "moreCount": "+{{count}} और",
+    "manageButton": "असाइनमेंट प्रबंधित करें",
+    "openButton": "खोलें",
+    "emptyTitle": "कोई प्रबंधित मामला नहीं मिला",
+    "emptySearchDescription": "एक अलग खोज आज़माएं।",
+    "emptyDefaultDescription": "पहला मामला बनाएं और एक अन्वेषण अधिकारी नियुक्त करें।",
+    "createCaseButton": "मामला बनाएं",
+    "selectPrimaryError": "एक प्रमुख अन्वेषण अधिकारी चुनें।",
+    "createSuccess": "मामला बनाया गया और असाइनमेंट सहेजी गईं।",
+    "assignmentsUpdated": "{{caseNumber}} के लिए असाइनमेंट अपडेट की गईं।",
+    "collaboratorRemoved": "सहयोगी हटा दिया गया।"
+  },
+  "createModal": {
+    "title": "केस बनाएं और असाइन करें",
+    "creating": "बनाया जा रहा है…",
+    "submit": "बनाएं और असाइन करें",
+    "caseNumberLabel": "केस नंबर",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "प्रमुख अन्वेषण अधिकारी",
+    "selectInvestigatorOption": "अन्वेषक चुनें…",
+    "titleLabel": "शीर्षक",
+    "titlePlaceholder": "अन्वेषण शीर्षक",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "केस का दायरा, टिप्पणियां, या संक्षिप्त विवरण…",
+    "collaboratorsHeading": "अतिरिक्त सहयोगी",
+    "collaboratorsSubtext": "उन सभी सक्रिय उपयोगकर्ताओं को चुनें जिन्हें तुरंत मामले तक पहुंच मिलनी चाहिए।",
+    "selectedCount": "{{count}} चयनित"
+  },
+  "manageModal": {
+    "title": "असाइनमेंट प्रबंधित करें · {{caseNumber}}",
+    "saving": "सहेजा जा रहा है…",
+    "submit": "असाइनमेंट सहेजें",
+    "primaryInvestigatorLabel": "प्रमुख अन्वेषण अधिकारी",
+    "noPrimaryOption": "कोई प्रमुख अन्वेषक नहीं",
+    "collaboratorsHeading": "नियुक्त सहयोगी",
+    "collaboratorsSubtext": "मामला बनाने वाले को स्वचालित रूप से बनाए रखा जाता है। उन अतिरिक्त उपयोगकर्ताओं को चुनें जिन्हें असाइन रहना चाहिए।",
+    "additionalCount": "{{count}} अतिरिक्त"
+  }
+}

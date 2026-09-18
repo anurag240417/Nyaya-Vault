@@ -1,16 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   Fingerprint,
+  Link2,
+  ShieldAlert,
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
-import { verifyIntegrity } from "../lib/api";
-import { formatDate } from "../lib/format";
+import { useTranslation } from "react-i18next";
+import {
+  createIntegrityAnchor,
+  listIntegrityAnchors,
+  verifyIntegrity,
+  verifyIntegrityAnchor,
+} from "../lib/api";
+import { formatDate, shortHash } from "../lib/format";
+import { useAuth } from "../context/AuthContext";
+import Toast from "../components/Toast";
+
+function statusBadgeClass(status) {
+  if (status === "CONFIRMED") return "badge-success";
+  if (status === "FAILED") return "badge-danger";
+  return "badge-warning";
+}
+
 export default function IntegrityPage() {
+  const { t } = useTranslation("integrity");
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === "ADMIN";
+
   const [result, setResult] = useState(null),
     [loading, setLoading] = useState(false),
     [error, setError] = useState("");
+
+  const [anchorState, setAnchorState] = useState({ enabled: false, anchors: [] });
+  const [anchoring, setAnchoring] = useState(false);
+  const [verifyingId, setVerifyingId] = useState(null);
+  const [verifications, setVerifications] = useState({});
+  const [toast, setToast] = useState(null);
+
+  async function loadAnchors() {
+    try {
+      setAnchorState(await listIntegrityAnchors());
+    } catch (e) {
+      setToast({ type: "error", message: e.message });
+    }
+  }
+
+  useEffect(() => {
+    loadAnchors();
+  }, []);
+
   async function verify() {
     setLoading(true);
     setError("");
@@ -22,13 +62,39 @@ export default function IntegrityPage() {
       setLoading(false);
     }
   }
+
+  async function anchorNow() {
+    setAnchoring(true);
+    try {
+      const anchor = await createIntegrityAnchor();
+      setToast({ message: t("anchors.created", { hash: shortHash(anchor.tx_hash, 12) }) });
+      await loadAnchors();
+    } catch (e) {
+      setToast({ type: "error", message: e.message });
+    } finally {
+      setAnchoring(false);
+    }
+  }
+
+  async function verifyAnchor(anchorId) {
+    setVerifyingId(anchorId);
+    try {
+      const outcome = await verifyIntegrityAnchor(anchorId);
+      setVerifications((prev) => ({ ...prev, [anchorId]: outcome }));
+    } catch (e) {
+      setToast({ type: "error", message: e.message });
+    } finally {
+      setVerifyingId(null);
+    }
+  }
+
   return (
     <div className="page">
       <div className="page-title-row">
         <div>
-          <h1>Audit integrity</h1>
+          <h1>{t("title")}</h1>
           <p>
-            Recalculate every entry hash and locate the first broken sequence.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -36,10 +102,9 @@ export default function IntegrityPage() {
         <div className="integrity-icon">
           <Fingerprint size={42} />
         </div>
-        <h2>Verify the global audit chain</h2>
+        <h2>{t("hero.title")}</h2>
         <p>
-          Each ledger row includes its canonical data, previous hash pointer,
-          and SHA-256 digest.
+          {t("hero.description")}
         </p>
         <button
           className="button button-primary"
@@ -47,13 +112,13 @@ export default function IntegrityPage() {
           onClick={verify}
         >
           <ShieldCheck size={17} />{" "}
-          {loading ? "Verifying…" : "Verify integrity now"}
+          {loading ? t("actions.verifying") : t("actions.verify")}
         </button>
       </section>
       {error ? <div className="form-error">{error}</div> : null}
       {result ? (
         <section
-          className={`verification-card ${result.valid ? "valid" : "invalid"}`}
+          role="status" className={`verification-card ${result.valid ? "valid" : "invalid"}`}
         >
           {result.valid ? (
             <CheckCircle2 size={34} />
@@ -63,34 +128,100 @@ export default function IntegrityPage() {
           <div>
             <h2>
               {result.valid
-                ? "Audit chain is valid"
-                : "Integrity failure detected"}
+                ? t("result.valid")
+                : t("result.invalid")}
             </h2>
             <p>{result.detail}</p>
             <div className="verification-meta">
               <span>
-                <strong>{result.total_entries}</strong> entries checked
+                <strong>{result.total_entries}</strong> {t("meta.entriesChecked")}
               </span>
               <span>
-                <strong>{result.first_invalid_sequence || "None"}</strong> first
-                invalid
+                <strong>{result.first_invalid_sequence || t("meta.noneFallback")}</strong> {t("meta.firstInvalid")}
               </span>
-              <span>Checked {formatDate(new Date())}</span>
+              <span>{t("meta.checked", { date: formatDate(new Date()) })}</span>
             </div>
           </div>
         </section>
       ) : null}
+
       <section className="panel">
-        <div className="readme-body">
-          <h3>Scope</h3>
+        <div className="panel-header">
+          <h2><Link2 size={17} /> {t("anchors.title")}</h2>
+          {isAdmin ? (
+            <button className="button button-official" disabled={anchoring} onClick={anchorNow}>
+              <Link2 size={15} /> {anchoring ? t("anchors.anchoring") : t("anchors.anchorNow")}
+            </button>
+          ) : null}
+        </div>
+        <div className="record-body">
+          <p className="muted small">
+            {anchorState.enabled ? t("anchors.description") : t("anchors.notConfigured")}
+          </p>
+        </div>
+        {anchorState.anchors.length ? (
+          <div className="anchor-register data-list">
+            <div className="data-header">
+              <span>{t("anchors.columns.sequence")}</span>
+              <span>{t("anchors.columns.status")}</span>
+              <span>{t("anchors.columns.reference")}</span>
+              <span>{t("anchors.columns.network")}</span>
+              <span>{t("anchors.columns.anchoredAt")}</span>
+              <span>{t("anchors.columns.verify")}</span>
+            </div>
+            {anchorState.anchors.map((anchor) => {
+              const outcome = verifications[anchor.id];
+              return (
+                <div className="data-row" key={anchor.id}>
+                  <code>#{anchor.audit_sequence}</code>
+                  <span className={`badge ${statusBadgeClass(anchor.tx_status)}`}>{anchor.tx_status}</span>
+                  {anchor.explorer_url ? (
+                    <a href={anchor.explorer_url} target="_blank" rel="noreferrer">
+                      {shortHash(anchor.anchor_reference, 14)}
+                    </a>
+                  ) : (
+                    <code>{shortHash(anchor.anchor_reference, 14)}</code>
+                  )}
+                  <span>{anchor.anchor_provider}</span>
+                  <span className="small">{formatDate(anchor.anchored_at)}</span>
+                  <span>
+                    <button
+                      className="button button-sm"
+                      disabled={verifyingId === anchor.id}
+                      onClick={() => verifyAnchor(anchor.id)}
+                    >
+                      {verifyingId === anchor.id ? t("anchors.verifying") : t("anchors.verifyAction")}
+                    </button>
+                    {outcome ? (
+                      <span className={`badge ${outcome.verified ? "badge-success" : "badge-danger"}`} style={{ marginLeft: 8 }}>
+                        {outcome.verified ? (
+                          <><ShieldCheck size={11} /> {t("anchors.verified")}</>
+                        ) : (
+                          <><ShieldAlert size={11} /> {t("anchors.tampered")}</>
+                        )}
+                      </span>
+                    ) : null}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="panel-empty">
+            <span>{t("anchors.empty")}</span>
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <div className="record-body">
+          <h3>{t("scope.title")}</h3>
           <p>
-            This detects mutation of the protected database audit ledger. It is
-            not an external proof-of-time system; an{" "}
-            <code>integrity_anchors</code> table is included for a later
-            anchoring phase.
+            {t("scope.description")}
           </p>
         </div>
       </section>
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

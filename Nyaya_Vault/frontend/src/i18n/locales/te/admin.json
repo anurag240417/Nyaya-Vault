@@ -1,0 +1,107 @@
+{
+  "page": {
+    "eyebrow": "నిర్వాహణ",
+    "title": "సిస్టమ్ రిజిస్ట్రీ మరియు కేసు నియామక కార్యాలయం",
+    "subtitle": "వినియోగదారులు, కేసు యజమానిత్వం, పరిశోధన అధికారులు, సహకారులు మరియు యాక్సెస్ స్థితిని నిర్వహించండి."
+  },
+  "tabs": {
+    "ariaLabel": "నిర్వాహణ విభాగాలు",
+    "users": "సిబ్బంది రిజిస్టర్",
+    "cases": "కేసు నియామక రిజిస్టర్"
+  },
+  "actions": {
+    "save": "సేవ్ చేయి",
+    "cancel": "రద్దు చేయి"
+  },
+  "roles": {
+    "ADMIN": "అడ్మినిస్ట్రేటర్",
+    "INVESTIGATING_OFFICER": "పరిశోధన అధికారి",
+    "PROSECUTOR": "ప్రాసిక్యూటర్",
+    "JUDGE": "న్యాయమూర్తి",
+    "CLERK": "క్లర్క్",
+    "unknown": "తెలియని పాత్ర"
+  },
+  "clearances": {
+    "PUBLIC": "పబ్లిక్",
+    "RESTRICTED": "నియంత్రిత",
+    "CONFIDENTIAL": "గోప్యం",
+    "SECRET": "రహస్యం"
+  },
+  "departments": {
+    "GENERAL": "సాధారణ",
+    "POLICE": "పోలీసు",
+    "FORENSICS": "ఫోరెన్సిక్",
+    "PROSECUTION": "ప్రాసిక్యూషన్",
+    "JUDICIARY": "న్యాయవ్యవస్థ",
+    "unassigned": "నియమించబడలేదు"
+  },
+  "users": {
+    "heading": "సిబ్బంది రిజిస్టర్",
+    "description": "భద్రతా-సున్నితమైన నియంత్రణలు: పాత్ర, క్లియరెన్స్, విభాగం మరియు ఖాతా స్థితిలో మార్పులు యాక్సెస్‌ను ప్రభావితం చేస్తాయి.",
+    "roleAriaLabel": "{{username}} కోసం పాత్ర",
+    "clearanceAriaLabel": "{{username}} కోసం క్లియరెన్స్",
+    "departmentAriaLabel": "{{username}} కోసం విభాగం",
+    "departmentTitle": "అడ్మిన్ మాత్రమే వినియోగదారుని విభాగాన్ని సెట్ చేయగలరు; ఒక విభాగం కోసం ట్యాగ్ చేసిన పత్రం సరిపోలే వినియోగదారులకు మాత్రమే కనిపిస్తుంది.",
+    "active": "యాక్టివ్",
+    "disabled": "నిలిపివేయబడింది",
+    "saveSuccess": "వినియోగదారు అనుమతులు అప్‌డేట్ చేయబడ్డాయి."
+  },
+  "summary": {
+    "totalCases": "మొత్తం కేసులు",
+    "activeInvestigators": "యాక్టివ్ పరిశోధకులు",
+    "activeUsers": "యాక్టివ్ వినియోగదారులు"
+  },
+  "caseAssignment": {
+    "heading": "కేసు నియామక రిజిస్టర్",
+    "description": "కేసులను సృష్టించండి, ప్రధాన పరిశోధకుడిని ఎంచుకోండి మరియు పూర్తి సహకారుల సమూహాన్ని నియంత్రించండి.",
+    "createDisabledTitle": "మొదట ఒక {{role}} ను సృష్టించండి లేదా యాక్టివేట్ చేయండి.",
+    "createButton": "కేసు సృష్టించి నియమించండి",
+    "searchAriaLabel": "నిర్వహించే కేసులను శోధించండి",
+    "searchPlaceholder": "కేసులు, పరిశోధకులు లేదా సహకారుల కోసం శోధించండి…",
+    "visibilityPrivate": "ప్రైవేట్",
+    "noDescription": "వివరణ ఏదీ జోడించబడలేదు.",
+    "createdOn": "{{date}} న సృష్టించబడింది",
+    "primaryInvestigatorLabel": "ప్రధాన పరిశోధకుడు",
+    "notAssigned": "నియమించబడలేదు",
+    "collaboratorsLabel": "సహకారులు",
+    "removeCollaboratorTitle": "{{username}} ను తీసివేయండి",
+    "noCollaborators": "అదనపు సహకారులు లేరు",
+    "moreCount": "+{{count}} మరిన్ని",
+    "manageButton": "నియామకాలను నిర్వహించండి",
+    "openButton": "తెరువు",
+    "emptyTitle": "నిర్వహించే కేసులు కనుగొనబడలేదు",
+    "emptySearchDescription": "వేరే శోధనను ప్రయత్నించండి.",
+    "emptyDefaultDescription": "మొదటి కేసును సృష్టించి పరిశోధన అధికారిని నియమించండి.",
+    "createCaseButton": "కేసు సృష్టించండి",
+    "selectPrimaryError": "ప్రధాన పరిశోధన అధికారిని ఎంచుకోండి.",
+    "createSuccess": "కేసు సృష్టించబడింది మరియు నియామకాలు సేవ్ చేయబడ్డాయి.",
+    "assignmentsUpdated": "{{caseNumber}} కోసం నియామకాలు అప్‌డేట్ చేయబడ్డాయి.",
+    "collaboratorRemoved": "సహకారుడు తీసివేయబడ్డారు."
+  },
+  "createModal": {
+    "title": "కేసు సృష్టించి నియమించండి",
+    "creating": "సృష్టిస్తోంది…",
+    "submit": "సృష్టించి నియమించండి",
+    "caseNumberLabel": "కేసు నంబర్",
+    "caseNumberPlaceholder": "FIR-2026-00124",
+    "primaryInvestigatorLabel": "ప్రధాన పరిశోధన అధికారి",
+    "selectInvestigatorOption": "పరిశోధకుడిని ఎంచుకోండి…",
+    "titleLabel": "శీర్షిక",
+    "titlePlaceholder": "పరిశోధన శీర్షిక",
+    "descriptionLabel": "వివరణ",
+    "descriptionPlaceholder": "కేసు పరిధి, గమనికలు లేదా సారాంశం…",
+    "collaboratorsHeading": "అదనపు సహకారులు",
+    "collaboratorsSubtext": "వెంటనే కేసు యాక్సెస్ కలిగి ఉండవలసిన యాక్టివ్ వినియోగదారులను ఎంచుకోండి.",
+    "selectedCount": "{{count}} ఎంచుకోబడింది"
+  },
+  "manageModal": {
+    "title": "నియామకాలను నిర్వహించండి · {{caseNumber}}",
+    "saving": "సేవ్ చేస్తోంది…",
+    "submit": "నియామకాలను సేవ్ చేయండి",
+    "primaryInvestigatorLabel": "ప్రధాన పరిశోధన అధికారి",
+    "noPrimaryOption": "ప్రధాన పరిశోధకుడు లేరు",
+    "collaboratorsHeading": "నియమించిన సహకారులు",
+    "collaboratorsSubtext": "కేసును సృష్టించినవారు స్వయంచాలకంగా కొనసాగుతారు. కొనసాగవలసిన అదనపు వినియోగదారులను ఎంచుకోండి.",
+    "additionalCount": "{{count}} అదనపు"
+  }
+}

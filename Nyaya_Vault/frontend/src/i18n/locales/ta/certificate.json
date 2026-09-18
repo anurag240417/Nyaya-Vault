@@ -1,0 +1,15 @@
+{
+  "title": "பிரிவு 63 சான்றிதழை உருவாக்கவும்",
+  "description": "பகுதி A (சாதன இயக்குபவர்) இந்த ஆவணத்தின் சேமிக்கப்பட்ட பதிவுகளிலிருந்து தானாக நிரப்பப்படுகிறது. பகுதி B க்கு நீதிமன்றத்தில் சமர்ப்பிக்கும் முன் சான்றிதழில் கையெழுத்திடும் பெயரிடப்பட்ட நிபுணர் தேவை.",
+  "expertName": "நிபுணரின் பெயர்",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "நிபுணரின் பதவி",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "நிபுணரின் தகுதி",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "இடம்",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "உருவாக்குகிறது…",
+  "generateAndDownload": "உருவாக்கி பதிவிறக்கவும்",
+  "defaultError": "சான்றிதழை உருவாக்க முடியவில்லை."
+}

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.deps import get_casevault_service
+from app.api.deps import get_blockchain_anchor_service, get_casevault_service
 from app.core.models import CurrentUser
 from app.security.auth import get_current_user
+from app.services.blockchain_anchor import BlockchainAnchorService
 from app.services.casevault import CaseVaultService
 
 router = APIRouter(tags=["search", "audit", "integrity"])
@@ -36,3 +37,29 @@ async def verify_integrity(
     service: CaseVaultService = Depends(get_casevault_service),
 ) -> dict:
     return await service.verify_integrity(user)
+
+
+@router.get("/integrity/anchors")
+async def list_integrity_anchors(
+    limit: int = Query(default=25, ge=1, le=100),
+    user: CurrentUser = Depends(get_current_user),
+    anchors: BlockchainAnchorService = Depends(get_blockchain_anchor_service),
+) -> dict:
+    return {"enabled": anchors.enabled, "anchors": await anchors.list_anchors(user, limit)}
+
+
+@router.post("/integrity/anchors")
+async def create_integrity_anchor(
+    user: CurrentUser = Depends(get_current_user),
+    anchors: BlockchainAnchorService = Depends(get_blockchain_anchor_service),
+) -> dict:
+    return await anchors.create_anchor(user)
+
+
+@router.get("/integrity/anchors/{anchor_id}/verify")
+async def verify_integrity_anchor(
+    anchor_id: str,
+    user: CurrentUser = Depends(get_current_user),
+    anchors: BlockchainAnchorService = Depends(get_blockchain_anchor_service),
+) -> dict:
+    return await anchors.verify_anchor(user, anchor_id)

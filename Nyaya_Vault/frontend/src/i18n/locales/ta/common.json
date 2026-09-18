@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "save": "சேமி",
+    "cancel": "ரத்து செய்",
+    "close": "மூடு",
+    "back": "பின்செல்",
+    "submit": "சமர்ப்பி",
+    "confirm": "உறுதிப்படுத்து",
+    "delete": "நீக்கு",
+    "edit": "திருத்து",
+    "view": "பார்",
+    "download": "பதிவிறக்கு",
+    "yes": "ஆம்",
+    "no": "இல்லை",
+    "loading": "ஏற்றுகிறது…"
+  },
+  "defaultRole": "பயனர்",
+  "defaultClearance": "பொது",
+  "dismissNotification": "அறிவிப்பை நிராகரி",
+  "readMore": "மேலும் படிக்க",
+  "readLess": "குறைவாகப் படிக்க",
+  "dossierTabs": {
+    "sectionsLabel": "வழக்கு கோவை பிரிவுகள்",
+    "summary": "வழக்கு சுருக்கம்",
+    "documents": "ஆதார பதிவேடு",
+    "collaborators": "அணுகல் மற்றும் பணியாளர்கள்",
+    "timeline": "காலவரிசை மற்றும் முரண்பாடுகள்",
+    "assistant": "வழக்கு உதவியாளர்",
+    "audit": "தணிக்கை பதிவேடு"
+  }
+}

@@ -84,6 +84,29 @@ class Settings(BaseSettings):
     vision_frame_interval_seconds: float = 2.0
     vision_confidence_threshold: float = 0.35
 
+    # Blockchain anchoring: periodically commits the audit chain's current
+    # head (sequence + entry_hash) to a public blockchain by sending a
+    # zero-value transaction to a wallet the backend controls, with the
+    # anchor payload in the transaction's data field - no smart contract
+    # needed, the calldata itself is the permanent public record. This is
+    # what turns "hash-chained log in our own Postgres" into "independently
+    # verifiable even if someone with service_role DB access rewrote our
+    # history" - see app/services/blockchain_anchor.py for the honest
+    # explanation of exactly what this does and doesn't guarantee. Off by
+    # default: it needs a funded testnet wallet, not something to silently
+    # turn on.
+    enable_blockchain_anchor: bool = False
+    blockchain_rpc_url: str | None = None
+    blockchain_private_key: str | None = None
+    blockchain_chain_id: int = 80002  # Polygon Amoy testnet
+    blockchain_network_name: str = "Polygon Amoy Testnet"
+    blockchain_explorer_tx_base_url: str = "https://amoy.polygonscan.com/tx/"
+    # Defaults to anchoring to the sender's own address (a plain self-transfer
+    # carrying data) - set only if you want a distinct, dedicated anchor address.
+    blockchain_anchor_to_address: str | None = None
+    blockchain_gas_limit: int = 100_000
+    blockchain_confirmation_timeout_seconds: float = 60.0
+
     @property
     def normalized_supabase_url(self) -> str:
         return self.supabase_url.rstrip("/")

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Route, Routes, useNavigate, useParams, Link } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -25,7 +26,8 @@ import {
 } from "../lib/api";
 import { formatDate, shortHash } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
-import RepoTabs from "../components/RepoTabs";
+import DossierTabs from "../components/DossierTabs";
+import AssistantResponse from "../components/AssistantResponse";
 import Badge, {
   clearanceTone,
   departmentTone,
@@ -53,6 +55,7 @@ import {
   getCaseGaps,
 } from "../lib/api";
 export default function CasePage() {
+  const { t } = useTranslation("casePage");
   const { caseId } = useParams();
   const { profile } = useAuth();
   const [caseItem, setCaseItem] = useState(null),
@@ -85,11 +88,11 @@ export default function CasePage() {
       .finally(() => setLoading(false));
   }, [reload]);
   useRefreshOnFocus(reload);
-  if (loading) return <LoadingState label="Loading case…" />;
+  if (loading) return <LoadingState label={t("common.loadingCase")} />;
   if (!caseItem)
     return (
       <div className="center-message">
-        <h2>Case unavailable</h2>
+        <h2>{t("common.caseUnavailable")}</h2>
       </div>
     );
   const canManage =
@@ -98,23 +101,22 @@ export default function CasePage() {
       collaborators.some((c) => c.user_id === profile.id));
   return (
     <div>
-      <header className="repo-header">
-        <div className="repo-title">
+      <header className="dossier-header">
+        <div className="dossier-title">
           <BriefcaseBusiness size={22} />
           <div>
-            <div className="repo-path">
-              <span>{caseItem.case_number}</span>
-              <span>/</span>
-              <strong>{caseItem.title}</strong>
+            <div className="dossier-identity">
+              <span className="case-reference">{t("common.caseDossier", { caseNumber: caseItem.case_number })}</span>
+              <h1>{caseItem.title}</h1>
             </div>
-            <p>{caseItem.description || "No description provided."}</p>
+            <p>{caseItem.description || t("common.noDescription")}</p>
           </div>
-          <span className="visibility-pill">Private</span>
+          <span className="visibility-pill">{t("common.private")}</span>
           <Badge tone={statusTone(caseItem.status)}>
             {(caseItem.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
           </Badge>
         </div>
-        <RepoTabs
+        <DossierTabs
           caseId={caseId}
           counts={{
             documents: documents.length,
@@ -195,6 +197,7 @@ function Overview({
   reload,
   setToast,
 }) {
+  const { t } = useTranslation("casePage");
   const [noticeModal, setNoticeModal] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
   async function changeStatus(newStatus) {
@@ -204,7 +207,9 @@ function Overview({
       await updateCase(caseId, { status: newStatus });
       await reload();
       setToast({
-        message: `Case status updated to ${newStatus.replaceAll("_", " ")}.`,
+        message: t("overview.statusUpdated", {
+          status: newStatus.replaceAll("_", " "),
+        }),
       });
     } catch (err) {
       setToast({ type: "error", message: err.message });
@@ -215,45 +220,45 @@ function Overview({
   return (
     <div className="two-column">
       <section className="panel">
-        <div className="panel-header readme-header">
-          <h2>Case overview</h2>
-          <span className="muted small">README-style summary</span>
+        <div className="panel-header summary-header">
+          <h2>{t("overview.summaryTitle")}</h2>
+          <span className="muted small">{t("overview.caseRecord")}</span>
         </div>
-        <div className="readme-body">
+        <div className="record-body">
           <h1>{c.title}</h1>
           <p>
             {c.description ||
-              "No detailed case narrative has been written yet."}
+              t("overview.noNarrative")}
           </p>
           <hr />
-          <h3>Case number</h3>
+          <h3>{t("overview.caseNumber")}</h3>
           <code>{c.case_number}</code>
-          <h3>Created</h3>
+          <h3>{t("overview.created")}</h3>
           <p>{formatDate(c.created_at)}</p>
         </div>
       </section>
       <aside className="stack">
         <section className="panel compact-panel">
-          <h3>About</h3>
+          <h3>{t("overview.caseControl")}</h3>
           <div className="about-row">
             <LockKeyhole size={16} />
-            Private case workspace
+            {t("overview.privateWorkspace")}
           </div>
           <div className="about-row">
             <FileText size={16} />
-            {documents.length} documents
+            {t("overview.documentsCount", { count: documents.length })}
           </div>
           <div className="about-row">
             <Users size={16} />
-            {collaborators.length} collaborators
+            {t("overview.collaboratorsCount", { count: collaborators.length })}
           </div>
           <div className="about-row">
             <History size={16} />
-            {audit.length} audit events
+            {t("overview.auditEventsCount", { count: audit.length })}
           </div>
           {canManage ? (
-            <label className="field" style={{ marginTop: "0.75rem" }}>
-              <span>Case status</span>
+            <label className="field section-spacer">
+              <span>{t("overview.caseStatus")}</span>
               <select
                 value={c.status || "UNDER_INVESTIGATION"}
                 disabled={statusBusy}
@@ -270,15 +275,14 @@ function Overview({
             </label>
           ) : null}
           <button
-            className="button button-block"
-            style={{ marginTop: "0.75rem" }}
+            className="button button-official button-block section-spacer"
             onClick={() => setNoticeModal(true)}
           >
-            <FileOutput size={16} /> Generate legal notice
+            <FileOutput size={16} /> {t("overview.generateLegalNotice")}
           </button>
         </section>
         <section className="panel compact-panel">
-          <h3>Collaborators</h3>
+          <h3>{t("overview.assignedPersonnel")}</h3>
           <div className="avatar-row">
             {collaborators.slice(0, 8).map((x) => (
               <Avatar key={x.user_id} name={x.username} />
@@ -307,6 +311,7 @@ function singletonTypeKey(documentType) {
   return SINGLETON_TYPE_ALIASES[normalized] || null;
 }
 function DocumentsTab({ caseId, documents, reload, setToast }) {
+  const { t } = useTranslation("casePage");
   const [open, setOpen] = useState(false),
     [busy, setBusy] = useState(false),
     [updateExisting, setUpdateExisting] = useState(false),
@@ -337,7 +342,10 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
     if (matchingExisting && !updateExisting) {
       setToast({
         type: "error",
-        message: `This case already has a primary ${singletonKey} ("${matchingExisting.title}"). Check the box to add this as a new version, or change the document type if this is genuinely different evidence.`,
+        message: t("documents.alreadyPrimaryError", {
+          type: singletonKey,
+          title: matchingExisting.title,
+        }),
       });
       return;
     }
@@ -360,7 +368,9 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
         setUpdateExisting(false);
         await reload();
         setToast({
-          message: `New version of "${matchingExisting.title}" registered - previous version stays available in its history.`,
+          message: t("documents.newVersionRegistered", {
+            title: matchingExisting.title,
+          }),
         });
         nav(`/documents/${matchingExisting.id}`);
       } else {
@@ -374,7 +384,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           file: null,
         });
         await reload();
-        setToast({ message: "Evidence uploaded as immutable version 1." });
+        setToast({ message: t("documents.uploadedAsVersion1") });
         nav(`/documents/${r.documentId}`);
       }
     } catch (err) {
@@ -384,7 +394,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
       ) {
         setToast({
           type: "error",
-          message: `${err.message} Check the "add as new version" box above and try again.`,
+          message: t("documents.conflictRetry", { message: err.message }),
         });
       } else {
         setToast({ type: "error", message: err.message });
@@ -397,25 +407,23 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Documents</h2>
+          <h2>{t("documents.title")}</h2>
           <p>
-            Every update creates a new immutable version. Only one primary FIR
-            and one primary chargesheet per case - further uploads of either
-            become new versions.
+            {t("documents.description")}
           </p>
         </div>
         <button className="button button-primary" onClick={() => setOpen(true)}>
-          <FilePlus2 size={16} /> Upload evidence
+          <FilePlus2 size={16} /> {t("documents.registerEvidence")}
         </button>
       </div>
       {documents.length ? (
-        <div className="data-list">
+        <div className="data-list" tabIndex={0} aria-label={t("documents.ariaScroll")}>
           <div className="data-header">
-            <span>Name</span>
-            <span>Clearance</span>
-            <span>Department</span>
-            <span>Version</span>
-            <span>Created</span>
+            <span>{t("documents.colEvidenceType")}</span>
+            <span>{t("documents.colClassification")}</span>
+            <span>{t("documents.colDepartment")}</span>
+            <span>{t("documents.colVersion")}</span>
+            <span>{t("documents.colCreated")}</span>
           </div>
           {documents.map((doc) => (
             <Link className="data-row" to={`/documents/${doc.id}`} key={doc.id}>
@@ -423,7 +431,8 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 <FileText size={17} />
                 <span>
                   <strong>{doc.title}</strong>
-                  <small>{doc.document_type || "Unclassified type"}</small>
+                  <small>{doc.document_type || t("documents.unclassifiedType")}</small>
+                  <code className="evidence-id">{doc.id}</code>
                 </span>
               </span>
               <Badge tone={clearanceTone(doc.clearance_level)}>
@@ -440,18 +449,18 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
       ) : (
         <EmptyState
           icon={<FileText size={28} />}
-          title="No evidence yet"
-          description="Upload a PDF or supported image to create version 1."
+          title={t("documents.emptyTitle")}
+          description={t("documents.emptyDescription")}
         />
       )}
       {open ? (
         <Modal
-          title="Upload evidence"
+          title={t("documents.modalTitle")}
           onClose={() => setOpen(false)}
           footer={
             <>
               <button className="button" onClick={() => setOpen(false)}>
-                Cancel
+                {t("documents.cancel")}
               </button>
               <button
                 form="upload-doc"
@@ -459,17 +468,17 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 disabled={busy || (matchingExisting && !updateExisting)}
               >
                 {busy
-                  ? "Hashing & uploading…"
+                  ? t("documents.hashingUploading")
                   : matchingExisting && updateExisting
-                    ? "Add as new version"
-                    : "Upload evidence"}
+                    ? t("documents.addAsNewVersion")
+                    : t("documents.registerEvidence")}
               </button>
             </>
           }
         >
           <form id="upload-doc" className="form-stack" onSubmit={submit}>
             <label className="field">
-              <span>Document title</span>
+              <span>{t("documents.fieldTitle")}</span>
               <input
                 required
                 value={form.title}
@@ -477,52 +486,35 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               />
             </label>
             <label className="field">
-              <span>Document type</span>
+              <span>{t("documents.fieldDocType")}</span>
               <input
                 value={form.documentType}
                 onChange={(e) =>
                   setForm({ ...form, documentType: e.target.value })
                 }
-                placeholder="FIR, charge sheet, statement…"
+                placeholder={t("documents.docTypePlaceholder")}
               />
             </label>
             {matchingExisting ? (
-              <div
-                style={{
-                  background: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  borderRadius: "8px",
-                  padding: "0.75rem",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <label
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "flex-start",
-                    cursor: "pointer",
-                  }}
-                >
+              <div className="version-warning">
+                <label>
                   <input
                     type="checkbox"
                     checked={updateExisting}
                     onChange={(e) => setUpdateExisting(e.target.checked)}
-                    style={{ marginTop: "0.2rem" }}
                   />
                   <span>
-                    This case already has a primary {singletonKey} -{" "}
-                    <strong>"{matchingExisting.title}"</strong> (v
-                    {matchingExisting.current_version_number}). Check this to
-                    add your file as a new version of it. The previous version
-                    stays stored and viewable in its version history - nothing
-                    is deleted.
+                    {t("documents.versionWarning", {
+                      type: singletonKey,
+                      title: matchingExisting.title,
+                      version: matchingExisting.current_version_number,
+                    })}
                   </span>
                 </label>
               </div>
             ) : null}
             <label className="field">
-              <span>Clearance</span>
+              <span>{t("documents.fieldClassification")}</span>
               <select
                 value={form.clearanceLevel}
                 onChange={(e) =>
@@ -535,7 +527,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </select>
             </label>
             <label className="field">
-              <span>Department</span>
+              <span>{t("documents.fieldDepartment")}</span>
               <select
                 value={form.department}
                 onChange={(e) =>
@@ -554,7 +546,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
               </select>
             </label>
             <label className="field">
-              <span>File · max 200 MB</span>
+              <span>{t("documents.fieldFile")}</span>
               <input
                 required
                 type="file"
@@ -579,6 +571,7 @@ function CollaboratorsTab({
   reload,
   setToast,
 }) {
+  const { t } = useTranslation("casePage");
   const [open, setOpen] = useState(false),
     [candidates, setCandidates] = useState([]),
     [selected, setSelected] = useState(""),
@@ -619,7 +612,7 @@ function CollaboratorsTab({
       await reload();
       setOpen(false);
       setSelected("");
-      setToast({ message: "Collaborator added." });
+      setToast({ message: t("collaborators.collaboratorAdded") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     } finally {
@@ -627,11 +620,11 @@ function CollaboratorsTab({
     }
   }
   async function remove(id) {
-    if (!confirm("Remove this collaborator?")) return;
+    if (!confirm(t("collaborators.confirmRemove"))) return;
     try {
       await removeCollaborator(caseId, id);
       await reload();
-      setToast({ message: "Collaborator removed." });
+      setToast({ message: t("collaborators.collaboratorRemoved") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     }
@@ -640,15 +633,14 @@ function CollaboratorsTab({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Manage access</h2>
+          <h2>{t("collaborators.title")}</h2>
           <p>
-            Only admins or assigned investigating officers can change
-            membership.
+            {t("collaborators.description")}
           </p>
         </div>
         {canManage ? (
           <button className="button button-primary" onClick={picker}>
-            <UserPlus size={16} /> Add collaborator
+            <UserPlus size={16} /> {t("collaborators.addCollaborator")}
           </button>
         ) : null}
       </div>
@@ -663,13 +655,13 @@ function CollaboratorsTab({
               </span>
             </div>
             <span className="muted small">
-              Added by {x.assigned_by_username}
+              {t("collaborators.addedBy", { name: x.assigned_by_username })}
               <br />
               {formatDate(x.assigned_at)}
             </span>
             {canManage ? (
               <button
-                className="icon-button danger-icon"
+                className="icon-button danger-icon" aria-label={t("collaborators.removeAccessAria", { name: x.username })}
                 onClick={() => remove(x.user_id)}
               >
                 <Trash2 size={17} />
@@ -680,30 +672,30 @@ function CollaboratorsTab({
       </div>
       {open ? (
         <Modal
-          title="Add a collaborator"
+          title={t("collaborators.modalTitle")}
           onClose={() => setOpen(false)}
           footer={
             <>
               <button className="button" onClick={() => setOpen(false)}>
-                Cancel
+                {t("collaborators.cancel")}
               </button>
               <button
                 className="button button-primary"
                 disabled={!selected || busy}
                 onClick={add}
               >
-                {busy ? "Adding…" : "Add collaborator"}
+                {busy ? t("collaborators.adding") : t("collaborators.addCollaborator")}
               </button>
             </>
           }
         >
           <label className="field">
-            <span>Active user</span>
+            <span>{t("collaborators.activeUser")}</span>
             <select
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
             >
-              <option value="">Select user…</option>
+              <option value="">{t("collaborators.selectUser")}</option>
               {candidates.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.username} — {c.role} / {c.clearance_level}
@@ -712,17 +704,11 @@ function CollaboratorsTab({
             </select>
           </label>
           {clearanceWarning ? (
-            <p
-              style={{
-                color: "#b45309",
-                fontSize: "0.85rem",
-                marginTop: "0.5rem",
-              }}
-            >
-              ⚠ {selectedCandidate.username}'s clearance (
-              {selectedCandidate.clearance_level}) is below this case's
-              highest-clearance evidence. They'll be able to open the case but
-              won't see all documents until an admin raises their clearance.
+            <p className="warning-note section-spacer">
+              {t("collaborators.clearanceWarning", {
+                name: selectedCandidate.username,
+                clearance: selectedCandidate.clearance_level,
+              })}
             </p>
           ) : null}
         </Modal>
@@ -731,6 +717,7 @@ function CollaboratorsTab({
   );
 }
 function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
+  const { t } = useTranslation("casePage");
   const [open, setOpen] = useState(false),
     [busy, setBusy] = useState(false),
     [generating, setGenerating] = useState(false),
@@ -757,8 +744,8 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
       await reload();
       setToast({
         message: created.length
-          ? `${created.length} candidate statement(s) found from uploaded documents - review below.`
-          : "No new candidates found. Confirm entities on your documents first, or add a statement manually.",
+          ? t("timeline.candidatesFound", { count: created.length })
+          : t("timeline.noCandidatesFound"),
       });
     } catch (e) {
       setToast({ type: "error", message: e.message });
@@ -775,10 +762,9 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
         r.contradiction_detected
           ? {
               type: "error",
-              message:
-                "Confirmed - this creates a contradiction, see Open conflicts below.",
+              message: t("timeline.confirmedContradiction"),
             }
-          : { message: "Statement confirmed." },
+          : { message: t("timeline.statementConfirmed") },
       );
     } catch (e) {
       setToast({ type: "error", message: e.message });
@@ -791,7 +777,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
     try {
       await rejectTimelineSuggestion(caseId, id);
       await reload();
-      setToast({ message: "Suggestion dismissed." });
+      setToast({ message: t("timeline.suggestionDismissed") });
     } catch (e) {
       setToast({ type: "error", message: e.message });
     } finally {
@@ -831,9 +817,11 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
         r.contradiction_detected
           ? {
               type: "error",
-              message: `Contradiction detected for ${form.personName} - see Open conflicts below.`,
+              message: t("timeline.contradictionDetected", {
+                person: form.personName,
+              }),
             }
-          : { message: "Statement added." },
+          : { message: t("timeline.statementAdded") },
       );
     } catch (err) {
       setToast({ type: "error", message: err.message });
@@ -845,46 +833,42 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Conflicts</h2>
+          <h2>{t("timeline.title")}</h2>
           <p>
-            Finds people who can't have been where evidence says, at the same
-            time, given travel time between locations.
+            {t("timeline.description")}
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div className="button-row">
           <button className="button" onClick={generate} disabled={generating}>
             {generating
-              ? "Scanning documents…"
-              : "Scan documents for candidates"}
+              ? t("timeline.scanning")
+              : t("timeline.scanButton")}
           </button>
           <button
             className="button button-primary"
             onClick={() => setOpen(true)}
           >
-            <UserPlus size={16} /> Add manually
+            <UserPlus size={16} /> {t("timeline.addManually")}
           </button>
         </div>
       </div>
 
       {openConflicts.length ? (
-        <div className="data-list" style={{ marginBottom: "1.25rem" }}>
+        <div className="contradiction-list">
           {openConflicts.map((c) => (
             <div
               key={c.id}
-              className="data-row"
-              style={{ alignItems: "flex-start", gridTemplateColumns: "1fr" }}
+              className="contradiction-sheet"
             >
               <div>
-                <Badge tone="danger">Contradiction</Badge>
-                <strong style={{ marginLeft: "0.5rem" }}>
+                <Badge tone="danger">{t("timeline.contradiction")}</Badge>
+                <strong className="contradiction-person">
                   {c.person_name}
                 </strong>
-                <p className="small muted" style={{ margin: "0.35rem 0 0" }}>
-                  No valid schedule reconciles these statements, even letting
-                  each stated window shift freely, given known travel time
-                  between the locations involved:
+                <p className="small muted compact-copy">
+                  {t("timeline.noValidSchedule")}
                 </p>
-                <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+                <ul className="statement-comparison">
                   {c.statement_ids.map((id) =>
                     byId[id] ? (
                       <li key={id} className="small">
@@ -910,55 +894,45 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
       ) : (
         <EmptyState
           icon={<History size={28} />}
-          title="No contradictions found yet"
-          description="Scan documents for candidates, add a statement manually, or both - conflicts appear here automatically once two statements about the same person can't both be true."
+          title={t("timeline.emptyTitle")}
+          description={t("timeline.emptyDescription")}
         />
       )}
 
       {suggested.length ? (
         <>
-          <h3 style={{ margin: "1.5rem 0 0.5rem", fontSize: "0.95rem" }}>
-            Candidates from documents - review before they count as evidence
+          <h3 className="review-heading">
+            {t("timeline.systemExtracted")}
           </h3>
           <div className="data-list">
             {suggested.map((s) => (
               <div
-                className="data-row"
+                className="data-row suggestion-row"
                 key={s.id}
-                style={{
-                  alignItems: "flex-start",
-                  gridTemplateColumns: "1fr auto",
-                }}
               >
                 <div>
                   <strong>{s.person_name}</strong> · {s.location_name}{" "}
                   <span className="muted small">
                     ({formatDate(s.window_start)} – {formatDate(s.window_end)})
                   </span>
-                  <p className="small muted" style={{ margin: "0.25rem 0 0" }}>
+                  <p className="small muted compact-copy">
                     {s.source_excerpt}
                   </p>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.4rem",
-                    alignItems: "center",
-                  }}
-                >
+                <div className="button-row">
                   <button
-                    className="button"
+                    className="button button-quiet"
                     disabled={actingOn === s.id}
                     onClick={() => reject(s.id)}
                   >
-                    Dismiss
+                    {t("timeline.dismiss")}
                   </button>
                   <button
                     className="button button-primary"
                     disabled={actingOn === s.id}
                     onClick={() => accept(s.id)}
                   >
-                    {actingOn === s.id ? "Confirming…" : "Confirm"}
+                    {actingOn === s.id ? t("timeline.confirming") : t("timeline.confirm")}
                   </button>
                 </div>
               </div>
@@ -969,15 +943,15 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
 
       {confirmed.length ? (
         <>
-          <h3 style={{ margin: "1.5rem 0 0.5rem", fontSize: "0.95rem" }}>
-            Confirmed statements
+          <h3 className="review-heading">
+            {t("timeline.confirmedStatements")}
           </h3>
-          <div className="data-list">
+          <div className="data-list confirmed-register">
             <div className="data-header">
-              <span>Person</span>
-              <span>Location</span>
-              <span>Window</span>
-              <span>Source</span>
+              <span>{t("timeline.colPerson")}</span>
+              <span>{t("timeline.colLocation")}</span>
+              <span>{t("timeline.colWindow")}</span>
+              <span>{t("timeline.colSource")}</span>
             </div>
             {confirmed.map((s) => (
               <div className="data-row" key={s.id}>
@@ -988,7 +962,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
                 <span className="small muted">
                   {formatDate(s.window_start)} – {formatDate(s.window_end)}
                 </span>
-                <span className="small muted">{s.source_excerpt || "—"}</span>
+                <span className="small muted">{s.source_excerpt || t("timeline.noSource")}</span>
               </div>
             ))}
           </div>
@@ -997,48 +971,48 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
 
       {open ? (
         <Modal
-          title="Add statement manually"
+          title={t("timeline.modalTitle")}
           onClose={() => setOpen(false)}
           footer={
             <>
               <button className="button" onClick={() => setOpen(false)}>
-                Cancel
+                {t("timeline.cancel")}
               </button>
               <button
                 form="add-statement"
                 className="button button-primary"
                 disabled={busy}
               >
-                {busy ? "Checking…" : "Add & check"}
+                {busy ? t("timeline.checking") : t("timeline.addAndCheck")}
               </button>
             </>
           }
         >
           <form id="add-statement" className="form-stack" onSubmit={submit}>
             <label className="field">
-              <span>Person</span>
+              <span>{t("timeline.fieldPerson")}</span>
               <input
                 required
                 value={form.personName}
                 onChange={(e) =>
                   setForm({ ...form, personName: e.target.value })
                 }
-                placeholder="Rakesh Sharma"
+                placeholder={t("timeline.personPlaceholder")}
               />
             </label>
             <label className="field">
-              <span>Location</span>
+              <span>{t("timeline.fieldLocation")}</span>
               <input
                 required
                 value={form.locationName}
                 onChange={(e) =>
                   setForm({ ...form, locationName: e.target.value })
                 }
-                placeholder="City / place name, exact spelling matters"
+                placeholder={t("timeline.locationPlaceholder")}
               />
             </label>
             <label className="field">
-              <span>Window start</span>
+              <span>{t("timeline.fieldWindowStart")}</span>
               <input
                 required
                 type="datetime-local"
@@ -1049,7 +1023,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
               />
             </label>
             <label className="field">
-              <span>Window end</span>
+              <span>{t("timeline.fieldWindowEnd")}</span>
               <input
                 required
                 type="datetime-local"
@@ -1060,7 +1034,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
               />
             </label>
             <label className="field">
-              <span>Expected duration (minutes)</span>
+              <span>{t("timeline.fieldDuration")}</span>
               <input
                 type="number"
                 min="1"
@@ -1071,13 +1045,13 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
               />
             </label>
             <label className="field">
-              <span>Source excerpt (optional)</span>
+              <span>{t("timeline.fieldSourceExcerpt")}</span>
               <input
                 value={form.sourceExcerpt}
                 onChange={(e) =>
                   setForm({ ...form, sourceExcerpt: e.target.value })
                 }
-                placeholder="Quote or reference from the statement"
+                placeholder={t("timeline.sourcePlaceholder")}
               />
             </label>
           </form>
@@ -1087,6 +1061,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
   );
 }
 function AssistantTab({ caseId }) {
+  const { t } = useTranslation("casePage");
   const [gaps, setGaps] = useState(null),
     [gapsError, setGapsError] = useState(null);
   const [messages, setMessages] = useState([]),
@@ -1153,53 +1128,36 @@ function AssistantTab({ caseId }) {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Ask about this case</h2>
+            <h2>{t("assistant.title")}</h2>
             <p>
-              Answers are grounded only in this case's own confirmed evidence
-              and cite their source. Not a legal or factual authority - verify
-              anything important yourself.
+              {t("assistant.description")}
             </p>
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem",
-            minHeight: "120px",
-            marginBottom: "1rem",
-          }}
-        >
+        <div className="research-records">
           {messages.length === 0 ? (
             <p className="muted small">
-              No questions asked yet this session. Try: "Who has been placed at
-              more than one location?" or "What evidence do we have so far?"
+              {t("assistant.noQuestionsYet")}
             </p>
           ) : null}
           {messages.map((m, i) => (
             <div
               key={i}
-              style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "85%",
-                background: m.role === "user" ? "#0969da" : "#f0f3f6",
-                color: m.role === "user" ? "#fff" : "#1f2328",
-                borderRadius: "10px",
-                padding: "0.6rem 0.85rem",
-                whiteSpace: "pre-wrap",
-              }}
+              className={`research-entry ${m.role === "user" ? "research-query" : "research-answer"}`}
             >
-              {m.text}
+              <span className="eyebrow">{m.role === "user" ? t("assistant.researchQuery") : t("assistant.generatedAnswer")}</span>
+              {m.role === "user" ? m.text : <AssistantResponse>{m.text}</AssistantResponse>}
             </div>
           ))}
-          {asking ? <div className="muted small">Thinking…</div> : null}
+          {asking ? <div className="muted small">{t("assistant.thinking")}</div> : null}
         </div>
-        <form onSubmit={ask} style={{ display: "flex", gap: "0.5rem" }}>
-          <div className="field" style={{ flex: 1, margin: 0 }}>
+        <form onSubmit={ask} className="research-form">
+          <div className="field grow">
             <input
+              aria-label={t("assistant.researchQuestionAria")}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask a question about this case…"
+              placeholder={t("assistant.questionPlaceholder")}
               disabled={asking}
             />
           </div>
@@ -1207,44 +1165,33 @@ function AssistantTab({ caseId }) {
             className="button button-primary"
             disabled={asking || !question.trim()}
           >
-            Ask
+            {t("assistant.ask")}
           </button>
         </form>
         {error ? (
-          <p className="form-error" style={{ marginTop: "0.5rem" }}>
+          <p className="form-error section-spacer">
             {error}
           </p>
         ) : null}
       </section>
       <aside className="stack">
         <section className="panel compact-panel">
-          <h3>Case gap check</h3>
-          <p className="muted small" style={{ marginTop: 0 }}>
-            Computed directly from case data - not AI-generated, always exact.
+          <h3>{t("assistant.gapCheckTitle")}</h3>
+          <p className="muted small">
+            {t("assistant.gapCheckDescription")}
           </p>
           {gapsError ? (
             <p className="form-error">{gapsError}</p>
           ) : gaps === null ? (
-            <LoadingState label="Checking…" />
+            <LoadingState label={t("assistant.checkingGaps")} />
           ) : gaps.length === 0 ? (
-            <p className="muted small">No gaps found.</p>
+            <p className="muted small">{t("assistant.noGapsFound")}</p>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-              }}
-            >
+            <div className="gap-list">
               {gaps.map((g, i) => (
                 <div
                   key={i}
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "flex-start",
-                  }}
-                >
+                 className="gap-row">
                   <Badge tone={severityTone(g.severity)}>{g.severity}</Badge>
                   <span className="small">{g.message}</span>
                 </div>
@@ -1253,42 +1200,39 @@ function AssistantTab({ caseId }) {
           )}
         </section>
         <section className="panel compact-panel">
-          <h3>Investigative briefing</h3>
+          <h3>{t("assistant.briefingTitle")}</h3>
           <button
             className="button button-block"
             disabled={summarizing}
             onClick={generateSummary}
           >
-            {summarizing ? "Generating…" : "Generate summary"}
+            {summarizing ? t("assistant.generating") : t("assistant.generateSummary")}
           </button>
           {summary ? (
             <div
-              className="small"
-              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+              className="small research-output"
             >
-              {summary}
+              <AssistantResponse>{summary}</AssistantResponse>
             </div>
           ) : null}
         </section>
         <section className="panel compact-panel">
-          <h3>Possible legal sections</h3>
-          <p className="muted small" style={{ marginTop: 0, color: "#b45309" }}>
-            ⚠ Preliminary and non-authoritative. A qualified legal officer must
-            independently verify before relying on this.
+          <h3>{t("assistant.legalTitle")}</h3>
+          <p className="muted small warning-note">
+            {t("assistant.legalWarning")}
           </p>
           <button
             className="button button-block"
             disabled={suggestingLegal}
             onClick={generateLegal}
           >
-            {suggestingLegal ? "Analyzing…" : "Suggest sections to review"}
+            {suggestingLegal ? t("assistant.analyzing") : t("assistant.suggestSections")}
           </button>
           {legal ? (
             <div
-              className="small"
-              style={{ marginTop: "0.75rem", whiteSpace: "pre-wrap" }}
+              className="small research-output"
             >
-              {legal}
+              <AssistantResponse>{legal}</AssistantResponse>
             </div>
           ) : null}
         </section>
@@ -1297,6 +1241,7 @@ function AssistantTab({ caseId }) {
   );
 }
 function AuditTab({ audit }) {
+  const { t } = useTranslation("casePage");
   const [actorDept, setActorDept] = useState("ALL"),
     [docDept, setDocDept] = useState("ALL");
   const deptOptions = (key) => [
@@ -1312,32 +1257,32 @@ function AuditTab({ audit }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2>Audit trail</h2>
-          <p>Append-only globally hash-chained case events.</p>
+          <h2>{t("audit.title")}</h2>
+          <p>{t("audit.description")}</p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <label className="field" style={{ margin: 0 }}>
-            <span className="small muted">Actor dept.</span>
+        <div className="button-row">
+          <label className="field">
+            <span className="small muted">{t("audit.actorDept")}</span>
             <select
               value={actorDept}
               onChange={(e) => setActorDept(e.target.value)}
             >
               {deptOptions("actor_department").map((d) => (
                 <option key={d} value={d}>
-                  {d === "ALL" ? "All" : d}
+                  {d === "ALL" ? t("audit.all") : d}
                 </option>
               ))}
             </select>
           </label>
-          <label className="field" style={{ margin: 0 }}>
-            <span className="small muted">Evidence dept.</span>
+          <label className="field">
+            <span className="small muted">{t("audit.evidenceDept")}</span>
             <select
               value={docDept}
               onChange={(e) => setDocDept(e.target.value)}
             >
               {deptOptions("document_department").map((d) => (
                 <option key={d} value={d}>
-                  {d === "ALL" ? "All" : d}
+                  {d === "ALL" ? t("audit.all") : d}
                 </option>
               ))}
             </select>
@@ -1346,17 +1291,17 @@ function AuditTab({ audit }) {
       </div>
       {(actorDept !== "ALL" || docDept !== "ALL") && filtered.length === 0 ? (
         <div className="panel-empty">
-          No events match this department filter.
+          {t("audit.noEventsMatch")}
         </div>
       ) : null}
-      <div className="audit-table">
+      <div className="audit-table" tabIndex={0} aria-label={t("audit.ariaScroll")}>
         <div className="audit-head">
-          <span>#</span>
-          <span>Event</span>
-          <span>Actor</span>
-          <span>Result</span>
-          <span>Hash</span>
-          <span>Time</span>
+          <span>{t("audit.colSequence")}</span>
+          <span>{t("audit.colEvent")}</span>
+          <span>{t("audit.colActor")}</span>
+          <span>{t("audit.colResult")}</span>
+          <span>{t("audit.colHash")}</span>
+          <span>{t("audit.colTime")}</span>
         </div>
         {filtered.map((e) => (
           <div className="audit-row" key={e.sequence}>
@@ -1365,11 +1310,11 @@ function AuditTab({ audit }) {
               <strong>{e.action.replaceAll("_", " ")}</strong>
               {e.reason ? <small>{e.reason}</small> : null}
               {e.document_department ? (
-                <small>Evidence dept: {e.document_department}</small>
+                <small>{t("audit.evidenceDeptLabel", { dept: e.document_department })}</small>
               ) : null}
             </span>
             <span>
-              {e.actor_username || "system"}
+              {e.actor_username || t("audit.system")}
               {e.actor_department ? <small>{e.actor_department}</small> : null}
             </span>
             <Badge
@@ -1383,7 +1328,7 @@ function AuditTab({ audit }) {
             >
               {e.result}
             </Badge>
-            <code title={e.entry_hash}>{shortHash(e.entry_hash)}</code>
+            <details className="hash-disclosure"><summary><code>{shortHash(e.entry_hash)}</code></summary><code className="wrap-code">{e.entry_hash}</code></details>
             <span className="small muted">{formatDate(e.timestamp)}</span>
           </div>
         ))}

@@ -1,0 +1,15 @@
+{
+  "title": "సెక్షన్ 63 సర్టిఫికెట్‌ను రూపొందించండి",
+  "description": "భాగం A (పరికర నిర్వాహకుడు) ఈ పత్రం యొక్క నిల్వ చేసిన రికార్డుల నుండి స్వయంచాలకంగా నింపబడుతుంది. భాగం B కోసం న్యాయస్థానానికి సమర్పించే ముందు సర్టిఫికెట్‌పై సంతకం చేసే పేరుపెట్టబడిన నిపుణుడు అవసరం.",
+  "expertName": "నిపుణుడి పేరు",
+  "expertNamePlaceholder": "Dr. Ramesh Kumar",
+  "expertDesignation": "నిపుణుడి పదవి",
+  "expertDesignationPlaceholder": "Digital Forensic Examiner",
+  "expertQualification": "నిపుణుడి అర్హత",
+  "expertQualificationPlaceholder": "M.Tech Cyber Security, CFCE",
+  "place": "స్థలం",
+  "placePlaceholder": "Gorakhpur",
+  "generating": "రూపొందిస్తోంది…",
+  "generateAndDownload": "రూపొందించి డౌన్‌లోడ్ చేయండి",
+  "defaultError": "సర్టిఫికెట్‌ను రూపొందించడం సాధ్యపడలేదు."
+}
