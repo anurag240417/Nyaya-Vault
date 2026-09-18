@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from io import BytesIO
+from typing import Any
 from xml.sax.saxutils import escape as _xml_escape
 
 from reportlab.lib import colors
@@ -47,6 +48,7 @@ def build_legal_notice_pdf(
     fields: dict[str, str],
     body: str,
     place: str,
+    signature: dict[str, Any] | None = None,
 ) -> bytes:
     spec = NOTICE_TYPES[notice_type]  # KeyError deliberately propagates - caller must validate first
     notice_no = f"NV/NOTICE/{notice_type[:4]}/{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -149,7 +151,7 @@ def build_legal_notice_pdf(
         small_style,
     ))
     story.extend(build_issuer_signature_stamp(
-        name=sender_name, designation=sender_designation, department=sender_department,
+        name=sender_name, designation=sender_designation, department=sender_department, signature=signature,
     ))
 
     def _page_frame(canvas, _doc):

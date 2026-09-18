@@ -52,6 +52,7 @@ def build_section63_certificate_pdf(
     expert_qualification: str,
     place: str,
     audit_events: list[dict[str, Any]],
+    signature: dict[str, Any] | None = None,
 ) -> bytes:
     certificate_no = f"NV/S63/{document_id[:8].upper()}/{datetime.now().year}"
     _raw_device_operator_name = device_operator_name
@@ -255,7 +256,8 @@ def build_section63_certificate_pdf(
         small_style,
     ))
     story.extend(build_issuer_signature_stamp(
-        name=_raw_device_operator_name, designation=_raw_device_operator_designation, department=issuer_department,
+        name=_raw_device_operator_name, designation=_raw_device_operator_designation,
+        department=issuer_department, signature=signature,
     ))
 
     def _page_frame(canvas, _doc):

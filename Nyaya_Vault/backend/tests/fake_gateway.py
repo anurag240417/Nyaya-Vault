@@ -15,6 +15,13 @@ def uid() -> str:
     return str(uuid.uuid4())
 
 
+def _cosine(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na = sum(x * x for x in a) ** 0.5
+    nb = sum(y * y for y in b) ** 0.5
+    return dot / (na * nb) if na and nb else -1.0
+
+
 class FakeGateway:
     def __init__(self) -> None:
         self.tables: dict[str, list[dict[str, Any]]] = {
@@ -303,4 +310,54 @@ class FakeGateway:
                 if not matched and (q in doc["title"].lower() or q in case["case_number"].lower() or q in case["title"].lower()):
                     out.append({"document_id": doc["id"], "case_id": doc["case_id"], "case_number": case["case_number"], "title": doc["title"], "page_number": None, "snippet": "Document title or case metadata match", "rank": 0.2})
             return out[:int(p.get("p_limit", 50))]
+        if function == "backend_list_chunk_embeddings":
+            out = [
+                {
+                    "document_chunk_id": row["chunk"]["id"], "document_id": row["doc"]["id"],
+                    "case_id": row["doc"]["case_id"], "case_number": row["case"]["case_number"],
+                    "title": row["doc"]["title"], "page_number": row["chunk"].get("page_number"),
+                    "chunk_text": row["chunk"]["chunk_text"], "embedding_json": row["embedding_row"]["embedding_json"],
+                }
+                for row in self._matching_chunk_rows(p.get("p_case_ids"), p.get("p_clearance", "PUBLIC"))
+                if row["embedding_row"] is not None
+            ]
+            return out[:int(p.get("p_limit", 2000))]
+        if function == "backend_semantic_search_casevault":
+            import ast
+            query_vector = [float(x) for x in ast.literal_eval(p["p_query_embedding"])]
+            out = []
+            for row in self._matching_chunk_rows(p.get("p_case_ids"), p.get("p_clearance", "PUBLIC")):
+                emb = row["embedding_row"]
+                if emb is None or emb.get("embedding") is None:
+                    continue  # mirrors `where de.embedding is not null` - native column required
+                out.append({
+                    "document_id": row["doc"]["id"], "case_id": row["doc"]["case_id"],
+                    "case_number": row["case"]["case_number"], "title": row["doc"]["title"],
+                    "page_number": row["chunk"].get("page_number"), "snippet": row["chunk"]["chunk_text"][:320],
+                    "similarity": _cosine(query_vector, emb["embedding_json"]),
+                })
+            out.sort(key=lambda r: r["similarity"], reverse=True)
+            return out[:int(p.get("p_limit", 50))]
         raise NotImplementedError(function)
+
+    def _matching_chunk_rows(self, allowed: list[str] | None, clearance: str):
+        """Shared access-scoped join used by both semantic-search fakes -
+        mirrors the real SQL functions' `latest` CTE + clearance filter."""
+        ranks = {"PUBLIC": 1, "RESTRICTED": 2, "CONFIDENTIAL": 3, "SECRET": 4}
+        for doc in self.tables["documents"]:
+            if allowed is not None and doc["case_id"] not in allowed:
+                continue
+            if ranks[doc["clearance_level"]] > ranks[clearance]:
+                continue
+            case = next(r for r in self.tables["cases"] if r["id"] == doc["case_id"])
+            latest = next(
+                (v for v in self.tables["document_versions"]
+                 if v["document_id"] == doc["id"] and v["version_number"] == doc["current_version_number"]),
+                None,
+            )
+            chunks = [c for c in self.tables["document_chunks"] if latest and c["document_version_id"] == latest["id"]]
+            for chunk in chunks:
+                embedding_row = next(
+                    (e for e in self.tables["document_embeddings"] if e["document_chunk_id"] == chunk["id"]), None,
+                )
+                yield {"doc": doc, "case": case, "chunk": chunk, "embedding_row": embedding_row}

@@ -9,6 +9,11 @@
   "metadataMatchFallback": "డాక్యుమెంట్ మెటాడేటా సరిపోలిక",
   "relevanceScoreTitle": "టెక్స్ట్ సంబంధిత స్కోరు",
   "relevanceLabel": "సంబంధితత {{score}}",
+  "similarityLabel": "సారూప్యత {{score}}%",
+  "matchBadge": {
+    "semantic": "అర్థ-ఆధారిత సరిపోలిక",
+    "both": "కీవర్డ్ + అర్థ-ఆధారిత"
+  },
   "actions": {
     "search": "శోధించండి"
   },

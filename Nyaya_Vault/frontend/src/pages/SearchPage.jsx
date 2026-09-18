@@ -87,6 +87,11 @@ export default function SearchPage() {
                   <div className="search-result-title">
                     <strong>{r.title}</strong>
                     <Badge>{r.case_number}</Badge>
+                    {r.matched_by !== "keyword" ? (
+                      <Badge tone="info">
+                        {t(r.matched_by === "both" ? "matchBadge.both" : "matchBadge.semantic")}
+                      </Badge>
+                    ) : null}
                     {r.page_number ? (
                       <span className="muted small">{t("pageLabel", { number: r.page_number })}</span>
                     ) : null}
@@ -94,7 +99,9 @@ export default function SearchPage() {
                   <p>{r.snippet || t("metadataMatchFallback")}</p>
                 </div>
                 <span className="rank-label" title={t("relevanceScoreTitle")}>
-                  {t("relevanceLabel", { score: Number(r.rank || 0).toFixed(2) })}
+                  {r.rank != null
+                    ? t("relevanceLabel", { score: Number(r.rank).toFixed(2) })
+                    : t("similarityLabel", { score: Math.round((r.similarity || 0) * 100) })}
                 </span>
               </Link>
             ))}

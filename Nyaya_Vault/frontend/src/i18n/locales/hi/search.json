@@ -9,6 +9,11 @@
   "metadataMatchFallback": "दस्तावेज़ मेटाडेटा मिलान",
   "relevanceScoreTitle": "टेक्स्ट संगति स्कोर",
   "relevanceLabel": "संगति {{score}}",
+  "similarityLabel": "समानता {{score}}%",
+  "matchBadge": {
+    "semantic": "अर्थ-आधारित मिलान",
+    "both": "कीवर्ड + अर्थ-आधारित"
+  },
   "actions": {
     "search": "खोजें"
   },
