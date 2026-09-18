@@ -9,6 +9,11 @@
   "metadataMatchFallback": "ஆவண மேலடிவிவரப் பொருத்தம்",
   "relevanceScoreTitle": "உரை பொருத்த மதிப்பெண்",
   "relevanceLabel": "பொருத்தம் {{score}}",
+  "similarityLabel": "ஒற்றுமை {{score}}%",
+  "matchBadge": {
+    "semantic": "பொருள் அடிப்படையிலான பொருத்தம்",
+    "both": "முக்கியச்சொல் + பொருள் அடிப்படையிலான"
+  },
   "actions": {
     "search": "தேடு"
   },

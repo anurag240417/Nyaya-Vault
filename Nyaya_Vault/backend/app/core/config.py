@@ -53,6 +53,19 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_chunk_chars: int = 1200
     embedding_chunk_overlap: int = 180
+    # Uses the native pgvector column/HNSW index (supabase/optional/pgvector.sql)
+    # for semantic search instead of the pure-Python fallback. Requires that
+    # migration to have been run, and enable_semantic_embeddings to also be
+    # on (nothing to search without stored vectors). Off by default: only
+    # turn on once pgvector.sql has actually been applied, or every search
+    # will just find nothing on the semantic side (falling back cleanly to
+    # keyword-only, not an error - but not the point of turning this on).
+    enable_pgvector_search: bool = False
+    semantic_search_candidate_limit: int = 2000
+    # Below this cosine similarity, a "match" is noise, not meaning - two
+    # unrelated sentences from a MiniLM-family model typically score well
+    # under this; related ones score well above it.
+    semantic_similarity_threshold: float = 0.35
 
     max_ocr_pages: int = 25
     poppler_path: str | None = None
@@ -106,6 +119,20 @@ class Settings(BaseSettings):
     blockchain_anchor_to_address: str | None = None
     blockchain_gas_limit: int = 100_000
     blockchain_confirmation_timeout_seconds: float = 60.0
+
+    # Real cryptographic signing for certificates/legal notices (ECDSA
+    # P-256). Each user gets a keypair issued on first use; the private key
+    # is held server-side, encrypted at rest with this secret, since PDF
+    # generation happens entirely on the backend - see
+    # app/services/signing.py for exactly what this does and doesn't prove.
+    # Falls back to deriving a key from the Supabase secret/service-role key
+    # if unset, so this works out of the box; set it independently for real
+    # deployments so a leak of one secret doesn't also compromise the other.
+    signing_key_encryption_secret: str | None = None
+
+    @property
+    def resolved_signing_key_encryption_secret(self) -> str:
+        return self.signing_key_encryption_secret or self.backend_api_key
 
     @property
     def normalized_supabase_url(self) -> str:

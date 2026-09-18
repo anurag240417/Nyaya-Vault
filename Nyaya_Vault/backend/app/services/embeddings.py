@@ -28,6 +28,14 @@ def embed_texts(texts: list[str], model_name: str) -> list[list[float]]:
     return [[float(value) for value in vector] for vector in vectors]
 
 
+def vector_literal(values: list[float]) -> str:
+    """pgvector's text input format, e.g. "[0.1,0.2,0.3]" - PostgREST sends
+    this as a plain JSON string and Postgres casts it to `vector` at the
+    column/parameter boundary, the same way it casts any other typed text
+    input."""
+    return "[" + ",".join(repr(float(v)) for v in values) + "]"
+
+
 def cosine_similarity(a: Iterable[float], b: Iterable[float]) -> float:
     av = [float(x) for x in a]
     bv = [float(x) for x in b]

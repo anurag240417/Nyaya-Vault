@@ -5,13 +5,23 @@ import re
 import uuid
 from typing import Any
 
+import anyio
+
 from app.core.config import Settings
 from app.core.exceptions import AuthorizationError, ConflictError, NotFoundError, SupabaseError
 from app.core.models import CLEARANCE_RANK, ClearanceLevel, CurrentUser, Department, UserRole
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
 from app.services.certificate_builder import build_section63_certificate_pdf
+from app.services.embeddings import EmbeddingUnavailable, cosine_similarity, embed_texts, vector_literal
 from app.services.notice_builder import build_legal_notice_pdf
+
+# Reciprocal-rank-fusion constant for blending keyword and semantic search
+# results - a standard, scale-free way to combine two differently-scored
+# rankings without needing to tune how a raw ts_rank_cd value compares to a
+# raw cosine similarity. Lower k weights top ranks more heavily; 60 is the
+# commonly cited default in the RRF literature.
+_RRF_K = 60
 
 _ALLOWED_MIME = {
     "application/pdf", "image/jpeg", "image/png", "image/tiff",
@@ -39,6 +49,52 @@ def _singleton_type_key(document_type: str | None) -> str | None:
         return None
     normalized = re.sub(r"[^A-Za-z]", "", document_type).upper()
     return _SINGLETON_TYPE_ALIASES.get(normalized)
+
+
+def _merge_key(row: dict[str, Any]) -> tuple[str, Any]:
+    return (str(row.get("document_id")), row.get("page_number"))
+
+
+def _rrf_merge(
+    keyword_rows: list[dict[str, Any]], semantic_rows: list[dict[str, Any]], limit: int,
+) -> list[dict[str, Any]]:
+    """Combines two independently-ranked result lists by rank position, not
+    raw score - a keyword ts_rank_cd value and a cosine similarity aren't on
+    comparable scales, so fusing by where each result *placed* in its own
+    list (reciprocal rank fusion) avoids having to invent a weighting
+    between them. A result appearing near the top of both lists outranks
+    one appearing near the top of only one. With semantic_rows empty (the
+    default, semantic search off), this reduces to the original keyword
+    order exactly - rank-based scores are monotonic in the input order."""
+    scores: dict[tuple[str, Any], float] = {}
+    merged: dict[tuple[str, Any], dict[str, Any]] = {}
+    matched_by: dict[tuple[str, Any], set[str]] = {}
+
+    for rank, row in enumerate(keyword_rows, start=1):
+        key = _merge_key(row)
+        scores[key] = scores.get(key, 0.0) + 1.0 / (_RRF_K + rank)
+        merged.setdefault(key, dict(row))
+        matched_by.setdefault(key, set()).add("keyword")
+
+    for rank, row in enumerate(semantic_rows, start=1):
+        key = _merge_key(row)
+        scores[key] = scores.get(key, 0.0) + 1.0 / (_RRF_K + rank)
+        existing = merged.setdefault(key, dict(row))
+        existing["similarity"] = row.get("similarity")
+        for field in ("case_id", "case_number", "title", "document_id", "page_number", "snippet"):
+            existing.setdefault(field, row.get(field))
+        matched_by.setdefault(key, set()).add("semantic")
+
+    results = []
+    for key, score in scores.items():
+        row = merged[key]
+        modes = matched_by[key]
+        row["matched_by"] = "both" if len(modes) == 2 else next(iter(modes))
+        row["score"] = score
+        results.append(row)
+
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results[:limit]
 
 
 class CaseVaultService:
@@ -861,23 +917,78 @@ class CaseVaultService:
             allowed_case_ids = await self.authz.accessible_case_ids(user)
         if allowed_case_ids is not None and not allowed_case_ids:
             return []
-        result = await self.gateway.rpc_service(
+        capped_limit = max(1, min(limit, 100))
+        keyword_rows = await self.gateway.rpc_service(
             "backend_search_casevault",
             {
                 "p_query": q,
                 "p_case_ids": allowed_case_ids,
                 "p_clearance": user.clearance_level.value,
-                "p_limit": max(1, min(limit, 100)),
+                "p_limit": capped_limit,
             },
-        )
+        ) or []
+
+        semantic_rows, semantic_used = await self._semantic_search(user, q, allowed_case_ids, capped_limit)
+        merged = _rrf_merge(keyword_rows, semantic_rows, capped_limit) if semantic_rows else [
+            {**row, "matched_by": "keyword", "score": 1.0 / (_RRF_K + rank)}
+            for rank, row in enumerate(keyword_rows, start=1)
+        ]
+
         await self.gateway.append_audit_service(
             actor_user_id=user.id,
             case_id=case_id,
             document_id=None,
             action="SEARCH_PERFORMED",
-            metadata={"query_length": len(q), "case_scoped": case_id is not None},
+            metadata={"query_length": len(q), "case_scoped": case_id is not None, "semantic_used": semantic_used},
         )
-        return result or []
+        return merged
+
+    async def _semantic_search(
+        self, user: CurrentUser, q: str, case_ids: list[str] | None, limit: int,
+    ) -> tuple[list[dict[str, Any]], bool]:
+        """Returns (rows, semantic_used). semantic_used distinguishes "ran
+        but found nothing" from "didn't run" for the audit trail and lets
+        callers fall back to pure-keyword ordering cleanly either way."""
+        if not self.settings.enable_semantic_embeddings:
+            return [], False
+        try:
+            vectors = await anyio.to_thread.run_sync(embed_texts, [q], self.settings.embedding_model)
+        except EmbeddingUnavailable:
+            return [], False
+        query_vector = vectors[0]
+
+        threshold = self.settings.semantic_similarity_threshold
+
+        if self.settings.enable_pgvector_search:
+            rows = await self.gateway.rpc_service(
+                "backend_semantic_search_casevault",
+                {
+                    "p_query_embedding": vector_literal(query_vector),
+                    "p_case_ids": case_ids,
+                    "p_clearance": user.clearance_level.value,
+                    "p_limit": limit,
+                },
+            ) or []
+            return [row for row in rows if row.get("similarity", 0) >= threshold], True
+
+        # No pgvector: rank a bounded candidate set in Python instead. Real
+        # semantic search, just not index-accelerated - fine at small/medium
+        # scale, not a substitute for pgvector at real document volume.
+        candidates = await self.gateway.rpc_service(
+            "backend_list_chunk_embeddings",
+            {
+                "p_case_ids": case_ids,
+                "p_clearance": user.clearance_level.value,
+                "p_limit": self.settings.semantic_search_candidate_limit,
+            },
+        ) or []
+        scored = [
+            {**row, "similarity": cosine_similarity(query_vector, row["embedding_json"])}
+            for row in candidates
+        ]
+        scored = [row for row in scored if row["similarity"] >= threshold]
+        scored.sort(key=lambda r: r["similarity"], reverse=True)
+        return scored[:limit], True
 
     async def verify_integrity(self, user: CurrentUser) -> dict[str, Any]:
         # No audit row contents are exposed, only verification summary.

@@ -9,6 +9,11 @@
   "metadataMatchFallback": "ডকুমেন্ট মেটাডেটা মিল",
   "relevanceScoreTitle": "টেক্সট প্রাসঙ্গিকতা স্কোর",
   "relevanceLabel": "প্রাসঙ্গিকতা {{score}}",
+  "similarityLabel": "সাদৃশ্য {{score}}%",
+  "matchBadge": {
+    "semantic": "অর্থ-ভিত্তিক মিল",
+    "both": "কীওয়ার্ড + অর্থ-ভিত্তিক"
+  },
   "actions": {
     "search": "অনুসন্ধান করুন"
   },

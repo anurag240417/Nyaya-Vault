@@ -17,7 +17,7 @@ from app.integrations.supabase import SupabaseGateway
 from app.core.models import CurrentUser
 from app.services.authorization import AuthorizationService
 from app.services.chunking import chunk_text
-from app.services.embeddings import EmbeddingUnavailable, embed_texts
+from app.services.embeddings import EmbeddingUnavailable, embed_texts, vector_literal
 from app.services.ner import extract_entities
 from app.services.ocr import extract_text
 from app.services.redaction import RedactionRegion, apply_redactions, suggest_redactions
@@ -207,6 +207,11 @@ class DocumentProcessor:
                             "document_chunk_id": row["id"],
                             "model_name": self.settings.embedding_model,
                             "embedding_json": vector,
+                            # Only populated when the optional pgvector migration is
+                            # in play - PostgREST casts this string to the native
+                            # `vector` column; sending it when that column doesn't
+                            # exist would 400 the whole insert, so it's gated.
+                            **({"embedding": vector_literal(vector)} if self.settings.enable_pgvector_search else {}),
                         }
                         for row, vector in zip(chunk_rows, vectors)
                     ]

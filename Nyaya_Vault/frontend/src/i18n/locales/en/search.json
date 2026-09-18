@@ -9,6 +9,11 @@
   "metadataMatchFallback": "Document metadata match",
   "relevanceScoreTitle": "Text relevance score",
   "relevanceLabel": "Relevance {{score}}",
+  "similarityLabel": "Similarity {{score}}%",
+  "matchBadge": {
+    "semantic": "Semantic match",
+    "both": "Keyword + semantic"
+  },
   "actions": {
     "search": "Search"
   },

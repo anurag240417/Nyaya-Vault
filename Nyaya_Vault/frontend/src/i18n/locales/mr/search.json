@@ -9,6 +9,11 @@
   "metadataMatchFallback": "दस्तऐवज मेटाडेटा जुळणी",
   "relevanceScoreTitle": "मजकूर सुसंगतता गुण",
   "relevanceLabel": "सुसंगतता {{score}}",
+  "similarityLabel": "साम्य {{score}}%",
+  "matchBadge": {
+    "semantic": "अर्थ-आधारित जुळणी",
+    "both": "कीवर्ड + अर्थ-आधारित"
+  },
   "actions": {
     "search": "शोधा"
   },
