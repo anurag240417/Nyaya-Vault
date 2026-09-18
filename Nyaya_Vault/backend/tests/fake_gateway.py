@@ -260,6 +260,32 @@ class FakeGateway:
             return rows
         if function == "backend_verify_audit_chain":
             return [{"valid": True, "total_entries": len(self.tables["audit_logs"]), "first_invalid_sequence": None, "detail": "Audit chain verified."}]
+        if function == "backend_record_integrity_anchor":
+            actor = next((r for r in self.tables["profiles"] if r["id"] == p["p_actor_user_id"]), None)
+            if not actor or not actor["is_active"]:
+                return {"ok": False, "error": "Actor profile is missing or inactive."}
+            entry_hash = str(p["p_audit_entry_hash"]).lower()
+            row = next((r for r in self.tables["audit_logs"] if r["sequence"] == p["p_audit_sequence"]), None)
+            if not row:
+                return {"ok": False, "error": "No audit entry exists at that sequence."}
+            if row["entry_hash"] != entry_hash:
+                return {"ok": False, "error": "Entry hash does not match the audit log at that sequence."}
+            anchor_id = uid()
+            anchor = {
+                "id": anchor_id, "case_id": None, "audit_sequence": p["p_audit_sequence"], "audit_entry_hash": entry_hash,
+                "anchor_provider": p["p_anchor_provider"], "anchor_reference": p["p_anchor_reference"],
+                "chain_id": p.get("p_chain_id"), "tx_status": p.get("p_tx_status") or "PENDING",
+                "explorer_url": p.get("p_explorer_url"), "anchored_at": now_iso(), "created_by": actor["id"],
+            }
+            self.tables["integrity_anchors"].append(anchor)
+            failed = p.get("p_tx_status") == "FAILED"
+            await self.append_audit_service(
+                actor_user_id=actor["id"], case_id=None, document_id=None,
+                action="AUDIT_CHAIN_ANCHOR_FAILED" if failed else "AUDIT_CHAIN_ANCHORED",
+                result="FAILED" if failed else "SUCCESS",
+                metadata={"anchor_id": anchor_id, "audit_sequence": p["p_audit_sequence"], "anchor_provider": p["p_anchor_provider"], "anchor_reference": p["p_anchor_reference"]},
+            )
+            return {"ok": True, "anchor_id": anchor_id}
         if function == "backend_search_casevault":
             q = str(p["p_query"]).lower(); allowed = p.get("p_case_ids"); clearance = p.get("p_clearance", "PUBLIC")
             ranks = {"PUBLIC": 1, "RESTRICTED": 2, "CONFIDENTIAL": 3, "SECRET": 4}

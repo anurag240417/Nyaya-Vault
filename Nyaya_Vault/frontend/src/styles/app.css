@@ -228,6 +228,8 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .suggestion-row { min-width: 0; grid-template-columns: minmax(0, 1fr) auto; border-left: 3px solid var(--nv-warning); align-items: start; }
 .confirmed-register .data-row, .confirmed-register .data-header { grid-template-columns: 160px 170px 240px minmax(200px, 1fr); min-width: 830px; }
 .confirmed-register .data-row { border-left: 3px solid var(--nv-verified); }
+.anchor-register .data-row, .anchor-register .data-header { grid-template-columns: 70px 110px minmax(160px, 1fr) 140px 170px 200px; min-width: 950px; align-items: center; }
+.anchor-register .data-row { border-left: 3px solid var(--nv-brass); }
 .research-records { min-height: 160px; padding: 20px; display: grid; gap: 16px; }
 .research-entry { white-space: pre-wrap; overflow-wrap: anywhere; border-top: 1px solid var(--border); padding-top: 14px; font-size: 13px; }
 .research-entry .eyebrow { display: block; margin-bottom: 8px; }
