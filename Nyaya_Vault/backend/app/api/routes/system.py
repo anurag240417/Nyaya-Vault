@@ -59,7 +59,11 @@ async def list_integrity_anchors(
     user: CurrentUser = Depends(get_current_user),
     anchors: BlockchainAnchorService = Depends(get_blockchain_anchor_service),
 ) -> dict:
-    return {"enabled": anchors.enabled, "anchors": await anchors.list_anchors(user, limit)}
+    return {
+        "enabled": anchors.enabled,
+        "schedule": anchors.schedule_info(),
+        "anchors": await anchors.list_anchors(user, limit),
+    }
 
 
 @router.post("/integrity/anchors")

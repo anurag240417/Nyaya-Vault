@@ -33,7 +33,7 @@ export default function IntegrityPage() {
     [loading, setLoading] = useState(false),
     [error, setError] = useState("");
 
-  const [anchorState, setAnchorState] = useState({ enabled: false, anchors: [] });
+  const [anchorState, setAnchorState] = useState({ enabled: false, schedule: null, anchors: [] });
   const [anchoring, setAnchoring] = useState(false);
   const [verifyingId, setVerifyingId] = useState(null);
   const [verifications, setVerifications] = useState({});
@@ -158,6 +158,20 @@ export default function IntegrityPage() {
           <p className="muted small">
             {anchorState.enabled ? t("anchors.description") : t("anchors.notConfigured")}
           </p>
+          {anchorState.schedule?.enabled ? (
+            <p className="muted small">
+              {t("anchors.schedule.on", { minutes: Math.max(1, Math.round(anchorState.schedule.interval_seconds / 60)) })}
+              {anchorState.schedule.last_result ? (
+                <>
+                  {" "}
+                  {t("anchors.schedule.last", {
+                    when: formatDate(anchorState.schedule.last_run_at),
+                    result: t(`anchors.schedule.results.${anchorState.schedule.last_result.status}`),
+                  })}
+                </>
+              ) : null}
+            </p>
+          ) : null}
         </div>
         {anchorState.anchors.length ? (
           <div className="anchor-register data-list">

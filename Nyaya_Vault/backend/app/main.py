@@ -10,6 +10,7 @@ from app.api.routes import admin, assistant, auth, cases, certificate, documents
 from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.integrations.supabase import SupabaseGateway
+from app.security.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.services.assistant import AssistantService
 from app.services.blockchain_anchor import BlockchainAnchorService
 from app.services.casevault import CaseVaultService
@@ -29,17 +30,25 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
         app.state.timeline = TimelineService(app.state.supabase, settings)
         app.state.assistant = AssistantService(app.state.supabase, settings, app.state.casevault, app.state.timeline)
         app.state.blockchain_anchor = BlockchainAnchorService(app.state.supabase, settings)
+        app.state.blockchain_anchor.start_scheduler()
         yield
+        await app.state.blockchain_anchor.stop_scheduler()
         if supplied_gateway is None:
             await app.state.supabase.close()
 
     app = FastAPI(
         title=settings.app_name,
         version="1.0.0",
-        docs_url="/docs" if settings.expose_docs else None,
-        redoc_url="/redoc" if settings.expose_docs else None,
+        docs_url="/docs" if settings.docs_enabled else None,
+        redoc_url="/redoc" if settings.docs_enabled else None,
+        openapi_url="/openapi.json" if settings.docs_enabled else None,
         lifespan=lifespan,
     )
+    # Middleware added later wraps earlier ones: these two sit inside CORS so a
+    # 429 or any error response still carries CORS headers (otherwise the
+    # browser reports an opaque "Failed to fetch" instead of the real status).
+    app.add_middleware(RateLimitMiddleware, settings=settings)
+    app.add_middleware(SecurityHeadersMiddleware, settings=settings)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

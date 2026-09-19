@@ -43,7 +43,9 @@ def enable_anchoring(client) -> FakeAnchorClient:
 def test_anchoring_is_disabled_by_default(client):
     listing = client.get("/api/v1/integrity/anchors", headers=auth("admin-token"))
     assert listing.status_code == 200, listing.text
-    assert listing.json() == {"enabled": False, "anchors": []}
+    body = listing.json()
+    assert body["enabled"] is False and body["anchors"] == []
+    assert body["schedule"]["enabled"] is False
 
     created = client.post("/api/v1/integrity/anchors", headers=auth("admin-token"))
     assert created.status_code == 409

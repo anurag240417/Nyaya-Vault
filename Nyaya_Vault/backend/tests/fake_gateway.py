@@ -70,6 +70,10 @@ class FakeGateway:
                 elif raw == "false": want = False
                 elif raw == "null": want = None
                 if str(row.get(key)) != str(want) and row.get(key) != want: return False
+            elif isinstance(expr, str) and expr.startswith("gt."):
+                if row.get(key) is None or float(row[key]) <= float(expr[3:]): return False
+            elif isinstance(expr, str) and expr.startswith("not.in.(") and expr.endswith(")"):
+                if str(row.get(key)) in {v for v in expr[8:-1].split(",") if v}: return False
             elif isinstance(expr, str) and expr.startswith("in.(") and expr.endswith(")"):
                 vals = {v for v in expr[4:-1].split(",") if v}
                 if str(row.get(key)) not in vals: return False
@@ -269,7 +273,7 @@ class FakeGateway:
             return [{"valid": True, "total_entries": len(self.tables["audit_logs"]), "first_invalid_sequence": None, "detail": "Audit chain verified."}]
         if function == "backend_record_integrity_anchor":
             actor = next((r for r in self.tables["profiles"] if r["id"] == p["p_actor_user_id"]), None)
-            if not actor or not actor["is_active"]:
+            if p["p_actor_user_id"] is not None and (not actor or not actor["is_active"]):
                 return {"ok": False, "error": "Actor profile is missing or inactive."}
             entry_hash = str(p["p_audit_entry_hash"]).lower()
             row = next((r for r in self.tables["audit_logs"] if r["sequence"] == p["p_audit_sequence"]), None)
@@ -282,15 +286,15 @@ class FakeGateway:
                 "id": anchor_id, "case_id": None, "audit_sequence": p["p_audit_sequence"], "audit_entry_hash": entry_hash,
                 "anchor_provider": p["p_anchor_provider"], "anchor_reference": p["p_anchor_reference"],
                 "chain_id": p.get("p_chain_id"), "tx_status": p.get("p_tx_status") or "PENDING",
-                "explorer_url": p.get("p_explorer_url"), "anchored_at": now_iso(), "created_by": actor["id"],
+                "explorer_url": p.get("p_explorer_url"), "anchored_at": now_iso(), "created_by": actor["id"] if actor else None,
             }
             self.tables["integrity_anchors"].append(anchor)
             failed = p.get("p_tx_status") == "FAILED"
             await self.append_audit_service(
-                actor_user_id=actor["id"], case_id=None, document_id=None,
+                actor_user_id=actor["id"] if actor else None, case_id=None, document_id=None,
                 action="AUDIT_CHAIN_ANCHOR_FAILED" if failed else "AUDIT_CHAIN_ANCHORED",
                 result="FAILED" if failed else "SUCCESS",
-                metadata={"anchor_id": anchor_id, "audit_sequence": p["p_audit_sequence"], "anchor_provider": p["p_anchor_provider"], "anchor_reference": p["p_anchor_reference"]},
+                metadata={"anchor_id": anchor_id, "audit_sequence": p["p_audit_sequence"], "anchor_provider": p["p_anchor_provider"], "anchor_reference": p["p_anchor_reference"], "source": p.get("p_source", "manual")},
             )
             return {"ok": True, "anchor_id": anchor_id}
         if function == "backend_search_casevault":

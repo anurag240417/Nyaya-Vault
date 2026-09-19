@@ -42,6 +42,15 @@
     "verifyAction": "Verify",
     "verifying": "Verifying…",
     "verified": "Verified on-chain",
-    "tampered": "Tamper detected"
+    "tampered": "Tamper detected",
+    "schedule": {
+      "on": "Automatic anchoring runs every {{minutes}} min.",
+      "last": "Last automatic run: {{when}} — {{result}}.",
+      "results": {
+        "anchored": "anchored",
+        "skipped": "nothing new to anchor",
+        "error": "failed, will retry"
+      }
+    }
   }
 }

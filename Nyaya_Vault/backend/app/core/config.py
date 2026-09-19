@@ -119,6 +119,14 @@ class Settings(BaseSettings):
     blockchain_anchor_to_address: str | None = None
     blockchain_gas_limit: int = 100_000
     blockchain_confirmation_timeout_seconds: float = 60.0
+    # Periodic system-initiated anchoring (needs the settings above to be
+    # working too). Runs as a background task inside this process: run ONE
+    # worker/instance with this on, or each one anchors independently.
+    # A run is skipped when nothing but anchor entries were logged since the
+    # last anchor, so an idle system doesn't spend gas on a schedule.
+    auto_anchor_enabled: bool = False
+    auto_anchor_interval_seconds: float = 3600.0
+    auto_anchor_initial_delay_seconds: float = 30.0
 
     # Real cryptographic signing for certificates/legal notices (ECDSA
     # P-256). Each user gets a keypair issued on first use; the private key
@@ -129,6 +137,33 @@ class Settings(BaseSettings):
     # if unset, so this works out of the box; set it independently for real
     # deployments so a leak of one secret doesn't also compromise the other.
     signing_key_encryption_secret: str | None = None
+
+    # Per-client-IP rate limiting (in-memory sliding window, per process -
+    # behind several workers/instances each keeps its own counts, so the
+    # effective limit is multiplied; put a shared limiter at the proxy/CDN
+    # for that). Sign-in itself goes browser -> Supabase, not through this
+    # API, so brute-force protection there is Supabase's own auth limits.
+    rate_limit_enabled: bool = True
+    rate_limit_per_minute: int = 240
+    # Stricter bucket for expensive or side-effecting calls: document
+    # processing, certificate/notice generation, AI assistant, anchoring.
+    rate_limit_strict_per_minute: int = 20
+    # Only enable when running behind a reverse proxy that overwrites
+    # X-Forwarded-For - otherwise a client can spoof it to dodge the limit.
+    trust_proxy_headers: bool = False
+
+    security_headers_enabled: bool = True
+    hsts_max_age_seconds: int = 31_536_000
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env.strip().lower() == "production"
+
+    @property
+    def docs_enabled(self) -> bool:
+        # Interactive API docs are reconnaissance for an attacker; never on
+        # in production even if EXPOSE_DOCS was left true.
+        return self.expose_docs and not self.is_production
 
     @property
     def resolved_signing_key_encryption_secret(self) -> str:
