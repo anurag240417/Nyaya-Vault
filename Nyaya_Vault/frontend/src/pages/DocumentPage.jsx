@@ -1,3 +1,4 @@
+import DocumentKindIcon from "../components/DocumentKindIcon";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -8,7 +9,6 @@ import {
   Download,
   FileClock,
   FileOutput,
-  FileText,
   Plus,
   RefreshCw,
   ScanSearch,
@@ -117,7 +117,7 @@ export default function DocumentPage() {
       </Link>
       <div className="document-title-row">
         <div className="document-icon">
-          <FileText size={28} />
+          <DocumentKindIcon doc={{ ...doc, mime_type: latest?.mime_type ?? versions[0]?.mime_type }} size={28} />
         </div>
         <div className="grow">
           <p className="eyebrow">{t("eyebrow")}</p>

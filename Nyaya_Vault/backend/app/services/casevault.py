@@ -527,7 +527,24 @@ class CaseVaultService:
             "documents",
             params={"case_id": f"eq.{case_id}", "select": "*", "order": "created_at.desc"},
         ) or []
-        return self.authz.visible_documents(user, rows)
+        visible = self.authz.visible_documents(user, rows)
+        if visible:
+            # The free-text document_type ("video", "Video", "FIR") can't be
+            # trusted to say what kind of file this is; the current version's
+            # MIME type can. One batched query so the UI can tell video from
+            # image from PDF at a glance.
+            versions = await self.gateway.service_table(
+                "GET",
+                "document_versions",
+                params={
+                    "document_id": f"in.({','.join(str(d['id']) for d in visible)})",
+                    "select": "document_id,version_number,mime_type",
+                },
+            ) or []
+            mime_by_version = {(str(v["document_id"]), v["version_number"]): v["mime_type"] for v in versions}
+            for d in visible:
+                d["mime_type"] = mime_by_version.get((str(d["id"]), d.get("current_version_number")))
+        return visible
 
     async def get_document(self, user: CurrentUser, document_id: str, *, record_view: bool = True) -> dict[str, Any]:
         access = await self.authz.require_document_access(user, document_id)

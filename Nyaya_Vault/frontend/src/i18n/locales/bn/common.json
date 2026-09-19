@@ -27,5 +27,11 @@
     "timeline": "সময়রেখা ও বিরোধ",
     "assistant": "মামলার সহায়ক",
     "audit": "অডিট লেজার"
+  },
+  "documentKinds": {
+    "video": "ভিডিও প্রমাণ",
+    "image": "ছবির প্রমাণ",
+    "notice": "নোটিশ",
+    "document": "নথি"
   }
 }
