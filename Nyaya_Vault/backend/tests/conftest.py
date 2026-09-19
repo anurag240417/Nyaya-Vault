@@ -22,8 +22,10 @@ def gateway() -> FakeGateway:
 
 @pytest.fixture
 def client(gateway: FakeGateway):
+    # _env_file=None: tests must never inherit a developer's real .env (e.g. live
+    # blockchain keys or feature flags).
     settings = Settings(
-        supabase_url="http://fake.invalid", supabase_anon_key="anon", supabase_service_role_key="service",
+        _env_file=None, supabase_url="http://fake.invalid", supabase_anon_key="anon", supabase_service_role_key="service",
         expose_docs=True, enable_semantic_embeddings=False, anthropic_api_key=None, openai_api_key=None,
     )
     app = create_app(settings=settings, gateway=gateway)

@@ -18,7 +18,7 @@ The browser uses Supabase only to create/sign into an account and obtain an acce
 ## Fresh setup
 
 1. Create a Supabase project.
-2. In SQL Editor, run every file in `supabase/migrations/` **in numeric order** (currently `001_casevault_core.sql` through `019_semantic_search_fallback.sql` (`018_signing_keys.sql` adds per-user signing keys)). Every file is written to be safe to re-run (`if not exists` / `create or replace` throughout), so re-running the whole set on an already-migrated database is harmless.
+2. In SQL Editor, run every file in `supabase/migrations/` **in numeric order** (currently `001_casevault_core.sql` through `020_scheduled_anchor.sql` (`018_signing_keys.sql` adds per-user signing keys)). Every file is written to be safe to re-run (`if not exists` / `create or replace` throughout), so re-running the whole set on an already-migrated database is harmless.
 3. Optional indexed semantic search: run `supabase/optional/pgvector.sql` and install `requirements-ml.txt` — see "Semantic search" below. Without it, semantic search still works via a pure-Python fallback once `ENABLE_SEMANTIC_EMBEDDINGS=true`, just not index-accelerated.
 4. Optional blockchain anchoring of the audit chain: see "Blockchain-anchored audit integrity" below — off by default, no setup required unless you want it.
 5. Copy `.env.example` to `.env` and set `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and the server-only `SUPABASE_SECRET_KEY`. Legacy anon/service-role keys are also supported.
@@ -95,7 +95,18 @@ See `app/services/blockchain_anchor.py` for the implementation and its documente
    (`BLOCKCHAIN_CHAIN_ID`, `BLOCKCHAIN_NETWORK_NAME`, and `BLOCKCHAIN_EXPLORER_TX_BASE_URL` already default correctly for Amoy — only override them for a different network.)
 5. Restart the backend. On the frontend's Integrity page, an ADMIN will now see an "Anchor now" button instead of a "not configured" notice; anyone can list anchors and verify one against the live chain.
 
+**Scheduled anchoring.** Set `AUTO_ANCHOR_ENABLED=true` and the backend anchors on its own every `AUTO_ANCHOR_INTERVAL_SECONDS` (default 3600, first run after `AUTO_ANCHOR_INITIAL_DELAY_SECONDS`). A run is skipped when nothing but anchor entries were logged since the last anchor — anchoring writes its own audit entry, so without that check an idle system would anchor forever — which keeps gas spend proportional to real activity. Scheduled anchors have no logged-in user: the audit entry has a null actor and `source: scheduled` (manual ones say `manual`), and `created_by` is null. A failed run (RPC down, wallet out of gas) is logged and retried next interval; it never stops the loop. Status (interval, last run and result, next run) is returned by `GET /api/v1/integrity/anchors` and shown on the Integrity page. It runs inside the API process, so run a single instance/worker with it enabled — multiple would each anchor independently (harmless but wasteful). Migration `020_scheduled_anchor.sql` (needed for this) makes the anchor RPC accept a null actor.
+
 Migration `017_blockchain_anchor_support.sql` adds the columns/RPC this needs on top of the `integrity_anchors` table that already existed. `web3` and `eth-account` (installed transitively) are the only new dependencies, both in `requirements.txt`.
+
+## Rate limiting and security headers
+
+`app/security/middleware.py` adds two layers, both on by default:
+
+- **Rate limiting** — per client IP, sliding one-minute window (`RATE_LIMIT_PER_MINUTE`, default 240), with a stricter bucket (`RATE_LIMIT_STRICT_PER_MINUTE`, default 20) for expensive or side-effecting calls: document processing, certificate/notice generation, the AI assistant, timeline suggestions, anchoring, and integrity/signature verification. Exceeding it returns `429` with `Retry-After`. `/health` and CORS preflights are exempt, and 429s still carry CORS headers so the browser shows the real error. Counts are in-memory **per process** — behind multiple workers each keeps its own, so put a shared limiter at your proxy/CDN for real scale. Sign-in goes browser → Supabase, not through this API, so login brute-force limits are Supabase's own. Set `TRUST_PROXY_HEADERS=true` only behind a proxy that overwrites `X-Forwarded-For`; otherwise clients could spoof it to dodge the limit (and with it off, everyone behind one NAT shares one allowance).
+- **Security headers** — `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, COOP/CORP, a deny-everything `Content-Security-Policy` on API responses (skipped for the Swagger/ReDoc pages, which load CDN scripts), `Cache-Control: no-store` on `/api/*` so case data isn't cached, and HSTS when `APP_ENV=production` over HTTPS.
+
+With `APP_ENV=production`, `/docs`, `/redoc` and `/openapi.json` are disabled even if `EXPOSE_DOCS` is left true. The frontend's `vercel.json` sets the equivalent headers for the static site; it deliberately omits a CSP because `lottie-web` (the loading animation) needs `eval`, and a permissive CSP would add little.
 
 ## Digital signatures
 

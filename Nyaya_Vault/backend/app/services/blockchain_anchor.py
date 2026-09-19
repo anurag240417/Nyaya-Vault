@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
+import logging
 import re
+from datetime import datetime, timedelta, timezone
 from typing import Any, Protocol
 
 import anyio
@@ -10,6 +13,10 @@ from app.core.exceptions import ConflictError, NotFoundError
 from app.core.models import CurrentUser, UserRole
 from app.integrations.supabase import SupabaseGateway
 from app.services.authorization import AuthorizationService
+
+logger = logging.getLogger(__name__)
+
+_ANCHOR_ACTIONS = "AUDIT_CHAIN_ANCHORED,AUDIT_CHAIN_ANCHOR_FAILED"
 
 # Versioned so a future payload shape change can't be misread as this one.
 # The whole point of anchoring is that this exact string, sitting in a
@@ -162,6 +169,10 @@ class BlockchainAnchorService:
         self.settings = settings
         self.authz = AuthorizationService(gateway)
         self.chain_client: AnchorClient = chain_client or PolygonAnchorClient(settings)
+        self._task: asyncio.Task | None = None
+        self.last_run_at: datetime | None = None
+        self.last_result: dict[str, Any] | None = None
+        self.next_run_at: datetime | None = None
 
     @property
     def enabled(self) -> bool:
@@ -175,14 +186,20 @@ class BlockchainAnchorService:
             raise ConflictError("Audit chain is empty - nothing to anchor yet.")
         return rows[0]
 
-    async def create_anchor(self, user: CurrentUser) -> dict[str, Any]:
-        await self.authz.require_role(user, UserRole.ADMIN)
+    def _require_enabled(self) -> None:
         if not self.enabled:
             raise ConflictError(
                 "Blockchain anchoring is not configured on this server - set ENABLE_BLOCKCHAIN_ANCHOR, "
                 "BLOCKCHAIN_RPC_URL and BLOCKCHAIN_PRIVATE_KEY.",
                 details={"reason": "BLOCKCHAIN_ANCHOR_NOT_CONFIGURED"},
             )
+
+    async def create_anchor(self, user: CurrentUser) -> dict[str, Any]:
+        await self.authz.require_role(user, UserRole.ADMIN)
+        self._require_enabled()
+        return await self._anchor_head(actor_id=user.id, source="manual")
+
+    async def _anchor_head(self, *, actor_id: str | None, source: str) -> dict[str, Any]:
         head = await self._chain_head()
         sequence, entry_hash = int(head["sequence"]), str(head["entry_hash"])
 
@@ -191,7 +208,7 @@ class BlockchainAnchorService:
         result = await self.gateway.rpc_service(
             "backend_record_integrity_anchor",
             {
-                "p_actor_user_id": user.id,
+                "p_actor_user_id": actor_id,
                 "p_audit_sequence": sequence,
                 "p_audit_entry_hash": entry_hash,
                 "p_anchor_provider": submission["provider"],
@@ -199,6 +216,7 @@ class BlockchainAnchorService:
                 "p_chain_id": submission["chain_id"],
                 "p_tx_status": submission["status"],
                 "p_explorer_url": submission.get("explorer_url"),
+                "p_source": source,
             },
         )
         if isinstance(result, list):
@@ -212,6 +230,78 @@ class BlockchainAnchorService:
             "audit_entry_hash": entry_hash,
             **submission,
         }
+
+    async def _has_unanchored_activity(self) -> bool:
+        """True if anything other than an anchor's own audit entry was logged
+        after the newest anchor. Anchoring itself appends an audit entry, so
+        comparing raw head sequence to the last anchor would always look
+        'new' and the scheduler would anchor on every tick forever."""
+        last = await self.gateway.service_table(
+            "GET", "integrity_anchors",
+            params={"select": "audit_sequence", "order": "audit_sequence.desc", "limit": "1"},
+        )
+        after = int(last[0]["audit_sequence"]) if last else 0
+        rows = await self.gateway.service_table(
+            "GET", "audit_logs",
+            params={
+                "select": "sequence", "sequence": f"gt.{after}",
+                "action": f"not.in.({_ANCHOR_ACTIONS})", "limit": "1",
+            },
+        )
+        return bool(rows)
+
+    async def run_scheduled_anchor(self) -> dict[str, Any]:
+        """One scheduler tick. Never raises - a failed tick (RPC down,
+        wallet out of gas) is recorded and retried next interval, it must
+        not kill the loop. Returns {status: anchored|skipped|error, ...}."""
+        now = datetime.now(timezone.utc)
+        try:
+            self._require_enabled()
+            if not await self._has_unanchored_activity():
+                result = {"status": "skipped", "detail": "No new audit activity since the last anchor."}
+            else:
+                anchor = await self._anchor_head(actor_id=None, source="scheduled")
+                result = {"status": "anchored", "tx_hash": anchor["tx_hash"], "audit_sequence": anchor["audit_sequence"]}
+        except Exception as exc:  # noqa: BLE001 - deliberately catch-all, see docstring
+            logger.warning("Scheduled blockchain anchor failed: %s", exc)
+            result = {"status": "error", "detail": str(getattr(exc, "message", exc))[:300]}
+        self.last_run_at = now
+        self.last_result = result
+        return result
+
+    # ---- scheduler ----
+    def schedule_info(self) -> dict[str, Any]:
+        return {
+            "enabled": bool(self.settings.auto_anchor_enabled and self.enabled),
+            "interval_seconds": self.settings.auto_anchor_interval_seconds,
+            "last_run_at": self.last_run_at.isoformat() if self.last_run_at else None,
+            "last_result": self.last_result,
+            "next_run_at": self.next_run_at.isoformat() if self.next_run_at else None,
+        }
+
+    async def _scheduler_loop(self) -> None:
+        delay = self.settings.auto_anchor_initial_delay_seconds
+        while True:
+            self.next_run_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
+            await asyncio.sleep(delay)
+            await self.run_scheduled_anchor()
+            delay = self.settings.auto_anchor_interval_seconds
+
+    def start_scheduler(self) -> None:
+        if not (self.settings.auto_anchor_enabled and self.enabled) or self._task is not None:
+            return
+        self._task = asyncio.get_running_loop().create_task(self._scheduler_loop())
+
+    async def stop_scheduler(self) -> None:
+        if self._task is None:
+            return
+        self._task.cancel()
+        try:
+            await self._task
+        except asyncio.CancelledError:
+            pass
+        self._task = None
+        self.next_run_at = None
 
     async def list_anchors(self, user: CurrentUser, limit: int = 25) -> list[dict[str, Any]]:
         return await self.gateway.service_table(
