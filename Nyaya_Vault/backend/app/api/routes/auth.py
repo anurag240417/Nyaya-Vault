@@ -23,6 +23,14 @@ async def me(user: CurrentUser = Depends(get_current_user)) -> dict:
     }
 
 
+@router.get("/signing-key")
+async def my_signing_key(
+    user: CurrentUser = Depends(get_current_user),
+    service: CaseVaultService = Depends(get_casevault_service),
+) -> dict:
+    return await service.get_my_signing_key(user)
+
+
 @router.post("/login-event")
 async def record_login(
     user: CurrentUser = Depends(get_current_user),

@@ -15,6 +15,7 @@ from app.services.authorization import AuthorizationService
 from app.services.certificate_builder import build_section63_certificate_pdf
 from app.services.embeddings import EmbeddingUnavailable, cosine_similarity, embed_texts, vector_literal
 from app.services.notice_builder import build_legal_notice_pdf
+from app.services.signing import SigningService
 
 # Reciprocal-rank-fusion constant for blending keyword and semantic search
 # results - a standard, scale-free way to combine two differently-scored
@@ -102,6 +103,7 @@ class CaseVaultService:
         self.gateway = gateway
         self.settings = settings
         self.authz = AuthorizationService(gateway)
+        self.signing = SigningService(gateway, settings)
 
     @staticmethod
     def _safe_name(name: str) -> str:
@@ -1015,6 +1017,18 @@ class CaseVaultService:
         # not the whole case's audit trail.
         doc_events = [e for e in audit_events if str(e.get("document_id")) == document_id]
 
+        signature = await self.signing.sign_for_user(
+            user,
+            purpose="SECTION_63_CERTIFICATE",
+            payload={
+                "document_id": document_id,
+                "version_id": version_id,
+                "version_number": version["version_number"],
+                "sha256": version["sha256"],
+                "case_number": case["case_number"],
+            },
+        )
+
         pdf_bytes = build_section63_certificate_pdf(
             case_number=case["case_number"],
             case_title=case["title"],
@@ -1034,6 +1048,7 @@ class CaseVaultService:
             expert_qualification=expert["expert_qualification"],
             place=expert["place"],
             audit_events=doc_events,
+            signature=signature,
         )
 
         await self.gateway.append_audit_service(
@@ -1041,7 +1056,10 @@ class CaseVaultService:
             case_id=case_id,
             document_id=document_id,
             action="CERTIFICATE_GENERATED",
-            metadata={"version_id": version_id, "expert_name": expert["expert_name"]},
+            metadata={
+                "version_id": version_id, "expert_name": expert["expert_name"],
+                "signature_fingerprint": signature["fingerprint"], "signature_algorithm": signature["algorithm"],
+            },
         )
         return pdf_bytes
 
@@ -1051,6 +1069,18 @@ class CaseVaultService:
             "GET", "cases", params={"id": f"eq.{case_id}", "select": "case_number,title", "limit": "1"},
         )
         case_row = case_rows[0] if case_rows else {"case_number": "Unknown", "title": "Unknown"}
+
+        signature = await self.signing.sign_for_user(
+            user,
+            purpose="LEGAL_NOTICE",
+            payload={
+                "case_id": case_id,
+                "case_number": case_row["case_number"],
+                "notice_type": notice["notice_type"],
+                "recipient_name": notice["recipient_name"],
+                "body_sha256": hashlib.sha256(notice["body"].encode("utf-8")).hexdigest(),
+            },
+        )
 
         pdf_bytes = build_legal_notice_pdf(
             notice_type=notice["notice_type"],
@@ -1064,6 +1094,7 @@ class CaseVaultService:
             fields=notice.get("fields", {}),
             body=notice["body"],
             place=notice["place"],
+            signature=signature,
         )
 
         await self.gateway.append_audit_service(
@@ -1071,6 +1102,12 @@ class CaseVaultService:
             case_id=case_id,
             document_id=None,
             action="LEGAL_NOTICE_GENERATED",
-            metadata={"notice_type": notice["notice_type"], "recipient_name": notice["recipient_name"]},
+            metadata={
+                "notice_type": notice["notice_type"], "recipient_name": notice["recipient_name"],
+                "signature_fingerprint": signature["fingerprint"], "signature_algorithm": signature["algorithm"],
+            },
         )
         return pdf_bytes
+
+    async def get_my_signing_key(self, user: CurrentUser) -> dict[str, Any]:
+        return await self.signing.public_key_info(user)

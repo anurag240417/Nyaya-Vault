@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_blockchain_anchor_service, get_casevault_service
 from app.core.models import CurrentUser
+from app.schemas.signing import SignatureVerifyRequest
 from app.security.auth import get_current_user
 from app.services.blockchain_anchor import BlockchainAnchorService
 from app.services.casevault import CaseVaultService
+from app.services.signing import verify_signature
 
 router = APIRouter(tags=["search", "audit", "integrity"])
 
@@ -37,6 +39,18 @@ async def verify_integrity(
     service: CaseVaultService = Depends(get_casevault_service),
 ) -> dict:
     return await service.verify_integrity(user)
+
+
+@router.post("/signatures/verify")
+async def verify_document_signature(
+    body: SignatureVerifyRequest, user: CurrentUser = Depends(get_current_user),
+) -> dict:
+    # Pure cryptographic check - no database involved, and anyone can run
+    # the same check offline from what's printed on the PDF itself.
+    return {"valid": verify_signature(
+        public_key_pem=body.public_key_pem, canonical_payload=body.canonical_payload,
+        signature_b64=body.signature_b64,
+    )}
 
 
 @router.get("/integrity/anchors")

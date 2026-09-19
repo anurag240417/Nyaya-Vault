@@ -18,7 +18,7 @@ The browser uses Supabase only to create/sign into an account and obtain an acce
 ## Fresh setup
 
 1. Create a Supabase project.
-2. In SQL Editor, run every file in `supabase/migrations/` **in numeric order** (currently `001_casevault_core.sql` through `019_semantic_search_fallback.sql`). Every file is written to be safe to re-run (`if not exists` / `create or replace` throughout), so re-running the whole set on an already-migrated database is harmless.
+2. In SQL Editor, run every file in `supabase/migrations/` **in numeric order** (currently `001_casevault_core.sql` through `019_semantic_search_fallback.sql` (`018_signing_keys.sql` adds per-user signing keys)). Every file is written to be safe to re-run (`if not exists` / `create or replace` throughout), so re-running the whole set on an already-migrated database is harmless.
 3. Optional indexed semantic search: run `supabase/optional/pgvector.sql` and install `requirements-ml.txt` — see "Semantic search" below. Without it, semantic search still works via a pure-Python fallback once `ENABLE_SEMANTIC_EMBEDDINGS=true`, just not index-accelerated.
 4. Optional blockchain anchoring of the audit chain: see "Blockchain-anchored audit integrity" below — off by default, no setup required unless you want it.
 5. Copy `.env.example` to `.env` and set `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and the server-only `SUPABASE_SECRET_KEY`. Legacy anon/service-role keys are also supported.
@@ -96,6 +96,14 @@ See `app/services/blockchain_anchor.py` for the implementation and its documente
 5. Restart the backend. On the frontend's Integrity page, an ADMIN will now see an "Anchor now" button instead of a "not configured" notice; anyone can list anchors and verify one against the live chain.
 
 Migration `017_blockchain_anchor_support.sql` adds the columns/RPC this needs on top of the `integrity_anchors` table that already existed. `web3` and `eth-account` (installed transitively) are the only new dependencies, both in `requirements.txt`.
+
+## Digital signatures
+
+Section 63 certificates and legal notices carry a real **ECDSA P-256 digital signature**, not just a typed-name stamp. Each user gets a keypair on first use (`user_signing_keys`, migration `018`); the private key is encrypted at rest (Fernet, keyed from `SIGNING_KEY_ENCRYPTION_SECRET`, or derived from the Supabase secret key if unset) and never returned by any endpoint. Generating a document signs a canonical JSON record — document/version IDs, the evidence SHA-256, signer identity, and timestamp for certificates; case, notice type, recipient, and a body hash for notices — and prints the signature, public key, key fingerprint, and the exact signed record on the PDF.
+
+Verification needs nothing from this system: recompute the check with any ECDSA implementation from what's printed on the page, or use `POST /api/v1/signatures/verify`. `GET /api/v1/auth/signing-key` returns your own public key (shown on the Profile page).
+
+**Honest limits.** The backend generates and holds the keys because PDFs are built server-side, so a signature proves "this backend, acting for this authenticated account, attested to exactly this record" — real and independently checkable, and any change to a signed field breaks it. It does not prove that only the human holds the key, and it is not a Digital Signature Certificate from a licensed Certifying Authority under the IT Act, 2000. Stronger custody would need client-side signing, a hardware token, or an HSM. Rotating `SIGNING_KEY_ENCRYPTION_SECRET` makes existing keys undecryptable.
 
 ## Semantic search
 

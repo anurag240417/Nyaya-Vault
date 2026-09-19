@@ -8,5 +8,12 @@
   "disabled": "Disabled",
   "department": "Department",
   "unassigned": "Unassigned",
-  "created": "Created"
+  "created": "Created",
+  "signingKey": {
+    "label": "Signing key",
+    "description": "Used to cryptographically sign certificates and notices you generate. Only this public half is ever shown.",
+    "show": "Show public key",
+    "hide": "Hide public key",
+    "loading": "Loading…"
+  }
 }
