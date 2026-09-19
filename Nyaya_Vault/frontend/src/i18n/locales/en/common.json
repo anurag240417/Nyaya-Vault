@@ -27,5 +27,11 @@
     "timeline": "Timeline & Conflicts",
     "assistant": "Case Assistant",
     "audit": "Audit Ledger"
+  },
+  "documentKinds": {
+    "video": "Video evidence",
+    "image": "Image evidence",
+    "notice": "Notice",
+    "document": "Document"
   }
 }

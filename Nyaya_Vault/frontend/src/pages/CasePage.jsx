@@ -1,3 +1,4 @@
+import DocumentKindIcon from "../components/DocumentKindIcon";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Routes, useNavigate, useParams, Link } from "react-router-dom";
@@ -428,7 +429,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
           {documents.map((doc) => (
             <Link className="data-row" to={`/documents/${doc.id}`} key={doc.id}>
               <span className="doc-name">
-                <FileText size={17} />
+                <DocumentKindIcon doc={doc} />
                 <span>
                   <strong>{doc.title}</strong>
                   <small>{doc.document_type || t("documents.unclassifiedType")}</small>
