@@ -57,8 +57,11 @@ Create the first account from the frontend. Then run `supabase/BOOTSTRAP_ADMIN.s
 ## Tests
 
 ```bash
+pip install -r requirements-dev.txt   # requirements.txt + opencv for the video tests
 pytest -q
 ```
+
+The tests never read your `.env` (see `tests/conftest.py`), so they can't touch a real database or blockchain. GitHub Actions (`.github/workflows/ci.yml` at the repo root) runs this suite plus the frontend lint and build on every push and pull request.
 
 The supplied end-to-end suite uses an in-memory Supabase gateway and exercises auth context, case ACLs, collaborator authorization, document clearance, immutable uploads/versions/downloads, native PDF extraction, deterministic NER, human confirmation, redaction generation/approval/export, admin controls, audit, and integrity.
 
