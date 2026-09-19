@@ -79,15 +79,20 @@ def sample_video_frames(video_bytes: bytes, *, max_frames: int, interval_seconds
     (jpeg_bytes, timestamp_seconds) pairs. Deferred cv2 import for the same
     reason as YOLO above - must not be required when vision is disabled.
     """
-    import cv2
-    import numpy as np
+    import os
     import tempfile
 
+    import cv2
+
     frames: list[tuple[bytes, float]] = []
-    with tempfile.NamedTemporaryFile(suffix=".mp4") as tmp:
+    # Closed before cv2 opens it and deleted by hand: on Windows a still-open
+    # NamedTemporaryFile can't be reopened by name, so cv2 silently read zero
+    # frames there (worked on Linux only).
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
         tmp.write(video_bytes)
-        tmp.flush()
-        capture = cv2.VideoCapture(tmp.name)
+        path = tmp.name
+    try:
+        capture = cv2.VideoCapture(path)
         fps = capture.get(cv2.CAP_PROP_FPS) or 25.0
         frame_interval = max(int(fps * interval_seconds), 1)
         frame_index = 0
@@ -104,6 +109,8 @@ def sample_video_frames(video_bytes: bytes, *, max_frames: int, interval_seconds
                 frame_index += 1
         finally:
             capture.release()
+    finally:
+        os.unlink(path)
     return frames
 
 

@@ -1,0 +1,4 @@
+# Everything needed to run the full test suite (used by CI too).
+-r requirements.txt
+# Real-video tests in tests/test_vision.py; headless = no GUI libraries.
+opencv-python-headless>=4.10

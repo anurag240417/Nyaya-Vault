@@ -1,5 +1,7 @@
 # CaseVault Full Stack
 
+[![CI](https://github.com/anurag240417/Nyaya-Vault/actions/workflows/ci.yml/badge.svg)](https://github.com/anurag240417/Nyaya-Vault/actions/workflows/ci.yml)
+
 Two replacement-ready folders:
 
 - `frontend/` — React + JavaScript + Vite, GitHub-inspired UI
