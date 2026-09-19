@@ -28,7 +28,7 @@ class FakeGateway:
             "profiles": [], "cases": [], "case_assignments": [], "documents": [],
             "document_versions": [], "document_entities": [], "document_chunks": [],
             "document_embeddings": [], "redaction_suggestions": [], "audit_logs": [],
-            "integrity_anchors": [], "document_processing_jobs": [],
+            "integrity_anchors": [], "document_processing_jobs": [], "user_signing_keys": [],
             "case_timeline_statements": [], "case_location_travel_minutes": [], "case_timeline_conflicts": [],
         }
         self.storage: dict[str, bytes] = {}
@@ -310,6 +310,23 @@ class FakeGateway:
                 if not matched and (q in doc["title"].lower() or q in case["case_number"].lower() or q in case["title"].lower()):
                     out.append({"document_id": doc["id"], "case_id": doc["case_id"], "case_number": case["case_number"], "title": doc["title"], "page_number": None, "snippet": "Document title or case metadata match", "rank": 0.2})
             return out[:int(p.get("p_limit", 50))]
+        if function == "backend_store_signing_key":
+            actor = next((r for r in self.tables["profiles"] if r["id"] == p["p_user_id"]), None)
+            if not actor or not actor["is_active"]:
+                return {"ok": False, "error": "Actor profile is missing or inactive."}
+            existing = next((r for r in self.tables["user_signing_keys"] if r["user_id"] == p["p_user_id"]), None)
+            if existing is None:
+                existing = {
+                    "user_id": p["p_user_id"], "public_key_pem": p["p_public_key_pem"],
+                    "private_key_encrypted": p["p_private_key_encrypted"],
+                    "algorithm": p.get("p_algorithm") or "ECDSA-P256-SHA256", "created_at": now_iso(),
+                }
+                self.tables["user_signing_keys"].append(existing)
+                await self.append_audit_service(
+                    actor_user_id=p["p_user_id"], case_id=None, document_id=None,
+                    action="SIGNING_KEY_GENERATED", metadata={"algorithm": existing["algorithm"]},
+                )
+            return {"ok": True, **existing}
         if function == "backend_list_chunk_embeddings":
             out = [
                 {

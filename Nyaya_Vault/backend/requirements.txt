@@ -14,5 +14,6 @@ spacy==3.8.16
 ortools==9.15.6755
 reportlab==4.2.5
 web3==7.6.0
+cryptography==50.0.1
 pytest==8.3.3
 pypdf==6.19.0

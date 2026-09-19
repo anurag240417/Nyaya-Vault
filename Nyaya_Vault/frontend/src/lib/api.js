@@ -51,6 +51,7 @@ async function apiJson(path, options = {}) {
 }
 
 export async function getMyProfile() { return apiJson('/api/v1/auth/me'); }
+export async function getMySigningKey() { return apiJson('/api/v1/auth/signing-key'); }
 export async function recordLoginEvent() { return apiJson('/api/v1/auth/login-event', { method: 'POST' }); }
 
 export async function listCases() { return apiJson('/api/v1/cases'); }
