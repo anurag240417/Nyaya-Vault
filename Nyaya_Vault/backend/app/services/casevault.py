@@ -166,6 +166,8 @@ class CaseVaultService:
                 "title": payload["title"].strip(),
                 "description": (payload.get("description") or "").strip() or None,
                 "created_by": user.id,
+                # An IO who opens a case leads it; admins assign a lead via Case Management.
+                "primary_investigator_id": user.id if user.role == UserRole.INVESTIGATING_OFFICER else None,
             },
             prefer="return=representation",
         )
@@ -405,7 +407,9 @@ class CaseVaultService:
 
     async def remove_collaborator(self, user: CurrentUser, case_id: str, target_user_id: str) -> dict[str, Any]:
         try:
-            await self.authz.require_manage_collaborators(user, case_id)
+            await self.authz.require_case_access(user, case_id)
+            target = await self.authz.get_profile(target_user_id)
+            await self.authz.require_remove_collaborator(user, case_id, target)
         except AuthorizationError as exc:
             await self._audit_denied(
                 user,

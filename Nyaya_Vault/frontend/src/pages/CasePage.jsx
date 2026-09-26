@@ -100,6 +100,15 @@ export default function CasePage() {
     profile?.role === "ADMIN" ||
     (profile?.role === "INVESTIGATING_OFFICER" &&
       collaborators.some((c) => c.user_id === profile.id));
+  // Mirrors backend require_remove_collaborator: only an admin or the lead IO
+  // may remove access, and judges may only be removed by an admin.
+  const leadId = caseItem.primary_investigator_id || caseItem.created_by;
+  const canRemove = (c) =>
+    profile?.role === "ADMIN" ||
+    (profile?.role === "INVESTIGATING_OFFICER" &&
+      profile.id === leadId &&
+      c.role !== "JUDGE" &&
+      c.user_id !== leadId);
   return (
     <div>
       <header className="dossier-header">
@@ -163,6 +172,7 @@ export default function CasePage() {
                 documents={documents}
                 collaborators={collaborators}
                 canManage={canManage}
+                canRemove={canRemove}
                 reload={reload}
                 setToast={setToast}
               />
@@ -569,6 +579,7 @@ function CollaboratorsTab({
   documents,
   collaborators,
   canManage,
+  canRemove,
   reload,
   setToast,
 }) {
@@ -660,7 +671,7 @@ function CollaboratorsTab({
               <br />
               {formatDate(x.assigned_at)}
             </span>
-            {canManage ? (
+            {canRemove(x) ? (
               <button
                 className="icon-button danger-icon" aria-label={t("collaborators.removeAccessAria", { name: x.username })}
                 onClick={() => remove(x.user_id)}
