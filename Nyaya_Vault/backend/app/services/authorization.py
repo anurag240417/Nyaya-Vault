@@ -91,6 +91,30 @@ class AuthorizationService:
             return case
         raise AuthorizationError("Only an admin or assigned investigating officer may manage collaborators.")
 
+    @staticmethod
+    def lead_investigator_id(case: dict[str, Any]) -> str:
+        # Cases created before an IO was recorded as primary fall back to
+        # their creator, who is the lead by default.
+        return str(case.get("primary_investigator_id") or case.get("created_by") or "")
+
+    async def require_remove_collaborator(
+        self, user: CurrentUser, case_id: str, target: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Removing access is stricter than granting it: only an admin or the
+        case's lead investigating officer may remove a collaborator, and a
+        judge may only ever be removed by an admin."""
+        case = await self.require_case_access(user, case_id)
+        if user.role == UserRole.ADMIN:
+            return case
+        lead_id = self.lead_investigator_id(case)
+        if user.role != UserRole.INVESTIGATING_OFFICER or user.id != lead_id:
+            raise AuthorizationError("Only an admin or the lead investigating officer may remove collaborators.")
+        if str(target.get("role")) == UserRole.JUDGE.value:
+            raise AuthorizationError("Only an admin may remove a judge from a case.")
+        if str(target.get("id")) == lead_id:
+            raise AuthorizationError("The lead investigating officer can only be changed by an admin.")
+        return case
+
     async def require_document_access(self, user: CurrentUser, document_id: str) -> DocumentAccess:
         document = await self._one(
             "documents",

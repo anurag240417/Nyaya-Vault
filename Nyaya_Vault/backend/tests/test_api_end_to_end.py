@@ -63,6 +63,30 @@ def test_case_collaborator_authorization_and_denied_audit(client, gateway):
     assert {c["username"] for c in collabs.json()} >= {"admin", "io", "clerk"}
 
 
+def test_only_admin_or_lead_io_may_remove_collaborators_and_judges_only_by_admin(client, gateway):
+    judge = gateway.add_user(email="judge@example.com", username="judge", role="JUDGE", clearance="SECRET", token="judge-token")
+    case = create_case(client, token="io-token")  # io opens the case, so io is the lead
+    other = profile(gateway, "otherio"); clerk = profile(gateway, "clerk"); io = profile(gateway, "io")
+    judge_id = judge["id"]
+    for uid_ in (other["id"], clerk["id"], judge_id):
+        assert client.post(f"/api/v1/cases/{case['id']}/collaborators", headers=auth("io-token"), json={"user_id": uid_}).status_code == 200
+
+    url = f"/api/v1/cases/{case['id']}/collaborators"
+    # A fellow collaborator (even an IO) cannot remove anyone.
+    assert client.delete(f"{url}/{clerk['id']}", headers=auth("otherio-token")).status_code == 403
+    assert client.delete(f"{url}/{io['id']}", headers=auth("otherio-token")).status_code == 403
+    # The lead IO cannot remove a judge, or themselves.
+    assert client.delete(f"{url}/{judge_id}", headers=auth("io-token")).status_code == 403
+    assert client.delete(f"{url}/{io['id']}", headers=auth("io-token")).status_code == 403
+    # The lead IO can remove other collaborators.
+    assert client.delete(f"{url}/{clerk['id']}", headers=auth("io-token")).status_code == 200
+    assert client.delete(f"{url}/{other['id']}", headers=auth("io-token")).status_code == 200
+    # Only an admin can remove the judge.
+    assert client.delete(f"{url}/{judge_id}", headers=auth("admin-token")).status_code == 200
+    remaining = {c["user_id"] for c in client.get(url, headers=auth("io-token")).json()}
+    assert remaining == {io["id"]}
+
+
 def test_video_evidence_uploads_downloads_and_versions_like_any_document(client, gateway):
     case = create_case(client)
     video1 = make_mp4()
