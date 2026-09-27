@@ -98,7 +98,7 @@ export default function LoginPage() {
         </label>
         {error ? <div role="alert" className="form-error">{error}</div> : null}
         {message ? <div role="status" className="form-success">{message}</div> : null}
-        <button className="button button-primary button-block" disabled={busy}>
+        <button className="button button-primary button-block" data-guide="login-submit" disabled={busy}>
           {busy
             ? t("pleaseWait")
             : mode === "signin"
@@ -108,6 +108,7 @@ export default function LoginPage() {
         <button
           type="button"
           className="button button-link button-block"
+          data-guide={mode === "signin" ? "login-toggle" : undefined}
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
           {mode === "signin"

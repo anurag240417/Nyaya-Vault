@@ -69,7 +69,7 @@ export default function NoticeModal({ caseId, onClose, setToast }) {
         <p className="muted small">{t("loadingTypes")}</p>
       ) : (
         <form id="notice-form" className="form-stack" onSubmit={submit}>
-          <label className="field">
+          <label className="field" data-guide="notice-type">
             <span>{t("noticeType")}</span>
             <select value={selectedKey} onChange={(e) => { setSelectedKey(e.target.value); setFieldValues({}); }}>
               {types.map((nt) => <option key={nt.key} value={nt.key}>{nt.title}</option>)}

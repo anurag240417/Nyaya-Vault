@@ -112,7 +112,7 @@ export default function DocumentPage() {
   }
   return (
     <div className="page document-page">
-      <Link className="back-link" to={`/cases/${doc.case_id}/documents`}>
+      <Link className="back-link" to={`/cases/${doc.case_id}/documents`} data-guide="doc-back">
         <ArrowLeft size={15} /> {t("backToRegister")}
       </Link>
       <div className="document-title-row">
@@ -123,7 +123,7 @@ export default function DocumentPage() {
           <p className="eyebrow">{t("eyebrow")}</p>
           <div className="title-with-badges">
             <h1>{doc.title}</h1>
-            <Badge tone={clearanceTone(doc.clearance_level)}>
+            <Badge tone={clearanceTone(doc.clearance_level)} data-guide="clearance-badge">
               {doc.clearance_level}
             </Badge>
           </div>
@@ -134,12 +134,13 @@ export default function DocumentPage() {
             })}
           </p>
         </div>
-        <button className="button" onClick={() => setVersionModal(true)}>
+        <button className="button" data-guide="doc-new-version" onClick={() => setVersionModal(true)}>
           <Plus size={16} /> {t("actions.newVersion")}
         </button>
         {latest ? (
           <button
             className="button"
+            data-guide="doc-download"
             onClick={() =>
               downloadDocumentVersion(documentId, latest).catch((e) =>
                 setToast({ type: "error", message: e.message }),
@@ -150,7 +151,7 @@ export default function DocumentPage() {
           </button>
         ) : null}
         {latest ? (
-          <button className="button button-official" onClick={() => setCertModal(true)}>
+          <button className="button button-official" data-guide="doc-certificate" onClick={() => setCertModal(true)}>
             <FileOutput size={16} /> {t("actions.certificate")}
           </button>
         ) : null}
@@ -159,6 +160,7 @@ export default function DocumentPage() {
         {["overview", "entities", "redactions", "versions"].map((v) => (
           <button
             key={v}
+            data-guide={`doc-tab-${v}`}
             aria-pressed={tab === v} className={tab === v ? "active" : ""}
             onClick={() => setTab(v)}
           >
@@ -310,7 +312,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
   return (
     <div className="two-column evidence-layout">
       <section className="panel">
-        <div className="panel-header">
+        <div className="panel-header" data-guide="doc-preview">
           <div>
             <h2>{t("overview.sourceEvidence")}</h2>
             <p>{t("overview.sha256Note")}</p>
@@ -365,7 +367,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           {latest ? (
             <>
               <dt>{t("overview.sha256")}</dt>
-              <dd>
+              <dd data-guide="doc-hash">
                 <code className="wrap-code">{latest.sha256}</code>
               </dd>
               <dt>{t("overview.size")}</dt>
@@ -376,7 +378,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           ) : null}
         </dl>
         </section>
-        <section className="panel compact-panel">
+        <section className="panel compact-panel" data-guide="doc-provenance">
           <h3>{t("overview.processingProvenance")}</h3>
           <ol className="provenance-sequence">
             <li><span>{t("overview.registration")}</span><strong>{t("overview.versionLabel", { number: doc.current_version_number })}</strong><small>{formatDate(latest?.created_at || doc.created_at)}</small></li>
@@ -415,6 +417,7 @@ function Overview({ documentId, doc, latest, runProcessor, busy }) {
           ) : (
             <button
               className="button button-block"
+              data-guide="doc-run-processing"
               disabled={!configured || busy}
               onClick={runProcessor}
             >
@@ -478,6 +481,7 @@ function Entities({ documentId, entities, reload, setToast }) {
         </div>
         <button
           className="button button-primary"
+          data-guide="entity-save"
           disabled={!dirty}
           onClick={save}
         >
@@ -501,7 +505,7 @@ function Entities({ documentId, entities, reload, setToast }) {
                 </span>
               </div>
               <p className="review-state">{choices[e.id] === "confirm" ? (e.confirmed ? t("entities.stateConfirmed") : t("entities.stateConfirmUnsaved")) : choices[e.id] === "reject" ? t("entities.stateRejectUnsaved") : t("entities.statePending")}</p>
-              <div className="review-toggle">
+              <div className="review-toggle" data-guide="entity-decision">
                 <button
                   aria-pressed={choices[e.id] === "confirm"} className={choices[e.id] === "confirm" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [e.id]: "confirm" })}
@@ -587,6 +591,7 @@ function Redactions({
         <div className="button-row">
           <button
             className="button"
+            data-guide="redaction-generate"
             disabled={!isProcessorConfigured() || busy}
             onClick={runProcessor}
           >
@@ -594,6 +599,7 @@ function Redactions({
           </button>
           <button
             className="button"
+            data-guide="redaction-export"
             disabled={!isProcessorConfigured() || !hasApproved || busy}
             onClick={exportCopy}
           >
@@ -601,6 +607,7 @@ function Redactions({
           </button>
           <button
             className="button button-primary"
+            data-guide="redaction-save"
             disabled={!redactions.length}
             onClick={save}
           >
@@ -620,7 +627,7 @@ function Redactions({
                 </code>
               </div>
               <p className="review-state">{choices[r.id] === "approve" ? (r.approved ? t("redactions.stateApproved") : t("redactions.stateApproveUnsaved")) : choices[r.id] === "reject" ? t("redactions.stateRejectUnsaved") : t("redactions.statePending")}</p>
-              <div className="review-toggle">
+              <div className="review-toggle" data-guide="redaction-decision">
                 <button
                   aria-pressed={choices[r.id] === "approve"} className={choices[r.id] === "approve" ? "selected good" : ""}
                   onClick={() => setChoices({ ...choices, [r.id]: "approve" })}
@@ -682,6 +689,7 @@ function Versions({ documentId, versions, setToast }) {
             </Badge>
             <button
               className="button button-sm"
+              data-guide="version-download"
               onClick={() =>
                 downloadDocumentVersion(documentId, v).catch((e) =>
                   setToast({ type: "error", message: e.message }),

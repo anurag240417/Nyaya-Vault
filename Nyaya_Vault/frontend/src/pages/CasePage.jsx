@@ -121,8 +121,8 @@ export default function CasePage() {
             </div>
             <p>{caseItem.description || t("common.noDescription")}</p>
           </div>
-          <span className="visibility-pill">{t("common.private")}</span>
-          <Badge tone={statusTone(caseItem.status)}>
+          <span className="visibility-pill" data-guide="visibility-pill">{t("common.private")}</span>
+          <Badge tone={statusTone(caseItem.status)} data-guide="case-status">
             {(caseItem.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
           </Badge>
         </div>
@@ -249,7 +249,7 @@ function Overview({
         </div>
       </section>
       <aside className="stack">
-        <section className="panel compact-panel">
+        <section className="panel compact-panel" data-guide="case-control">
           <h3>{t("overview.caseControl")}</h3>
           <div className="about-row">
             <LockKeyhole size={16} />
@@ -268,7 +268,7 @@ function Overview({
             {t("overview.auditEventsCount", { count: audit.length })}
           </div>
           {canManage ? (
-            <label className="field section-spacer">
+            <label className="field section-spacer" data-guide="case-status-select">
               <span>{t("overview.caseStatus")}</span>
               <select
                 value={c.status || "UNDER_INVESTIGATION"}
@@ -287,12 +287,13 @@ function Overview({
           ) : null}
           <button
             className="button button-official button-block section-spacer"
+            data-guide="legal-notice"
             onClick={() => setNoticeModal(true)}
           >
             <FileOutput size={16} /> {t("overview.generateLegalNotice")}
           </button>
         </section>
-        <section className="panel compact-panel">
+        <section className="panel compact-panel" data-guide="assigned-personnel">
           <h3>{t("overview.assignedPersonnel")}</h3>
           <div className="avatar-row">
             {collaborators.slice(0, 8).map((x) => (
@@ -423,7 +424,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
             {t("documents.description")}
           </p>
         </div>
-        <button className="button button-primary" onClick={() => setOpen(true)}>
+        <button className="button button-primary" data-guide="register-evidence" onClick={() => setOpen(true)}>
           <FilePlus2 size={16} /> {t("documents.registerEvidence")}
         </button>
       </div>
@@ -437,7 +438,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
             <span>{t("documents.colCreated")}</span>
           </div>
           {documents.map((doc) => (
-            <Link className="data-row" to={`/documents/${doc.id}`} key={doc.id}>
+            <Link className="data-row" to={`/documents/${doc.id}`} key={doc.id} data-guide="evidence-row">
               <span className="doc-name">
                 <DocumentKindIcon doc={doc} />
                 <span>
@@ -446,13 +447,13 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                   <code className="evidence-id">{doc.id}</code>
                 </span>
               </span>
-              <Badge tone={clearanceTone(doc.clearance_level)}>
+              <Badge tone={clearanceTone(doc.clearance_level)} data-guide="clearance-badge">
                 {doc.clearance_level}
               </Badge>
-              <Badge tone={departmentTone(doc.department)}>
+              <Badge tone={departmentTone(doc.department)} data-guide="department-badge">
                 {doc.department || "GENERAL"}
               </Badge>
-              <span>v{doc.current_version_number}</span>
+              <span data-guide="doc-version">v{doc.current_version_number}</span>
               <span className="small muted">{formatDate(doc.created_at)}</span>
             </Link>
           ))}
@@ -496,7 +497,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </label>
-            <label className="field">
+            <label className="field" data-guide="upload-doc-type">
               <span>{t("documents.fieldDocType")}</span>
               <input
                 value={form.documentType}
@@ -524,7 +525,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 </label>
               </div>
             ) : null}
-            <label className="field">
+            <label className="field" data-guide="upload-classification">
               <span>{t("documents.fieldClassification")}</span>
               <select
                 value={form.clearanceLevel}
@@ -537,7 +538,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 ))}
               </select>
             </label>
-            <label className="field">
+            <label className="field" data-guide="upload-department">
               <span>{t("documents.fieldDepartment")}</span>
               <select
                 value={form.department}
@@ -556,7 +557,7 @@ function DocumentsTab({ caseId, documents, reload, setToast }) {
                 ))}
               </select>
             </label>
-            <label className="field">
+            <label className="field" data-guide="upload-file">
               <span>{t("documents.fieldFile")}</span>
               <input
                 required
@@ -651,14 +652,14 @@ function CollaboratorsTab({
           </p>
         </div>
         {canManage ? (
-          <button className="button button-primary" onClick={picker}>
+          <button className="button button-primary" data-guide="add-collaborator" onClick={picker}>
             <UserPlus size={16} /> {t("collaborators.addCollaborator")}
           </button>
         ) : null}
       </div>
       <div className="collaborator-list">
         {collaborators.map((x) => (
-          <div className="collaborator-row" key={x.user_id}>
+          <div className="collaborator-row" key={x.user_id} data-guide="collaborator-row">
             <Avatar name={x.username} />
             <div className="collab-main">
               <strong>{x.username}</strong>
@@ -673,7 +674,7 @@ function CollaboratorsTab({
             </span>
             {canRemove(x) ? (
               <button
-                className="icon-button danger-icon" aria-label={t("collaborators.removeAccessAria", { name: x.username })}
+                className="icon-button danger-icon" data-guide="remove-collaborator" aria-label={t("collaborators.removeAccessAria", { name: x.username })}
                 onClick={() => remove(x.user_id)}
               >
                 <Trash2 size={17} />
@@ -851,13 +852,14 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
           </p>
         </div>
         <div className="button-row">
-          <button className="button" onClick={generate} disabled={generating}>
+          <button className="button" data-guide="timeline-scan" onClick={generate} disabled={generating}>
             {generating
               ? t("timeline.scanning")
               : t("timeline.scanButton")}
           </button>
           <button
             className="button button-primary"
+            data-guide="timeline-add"
             onClick={() => setOpen(true)}
           >
             <UserPlus size={16} /> {t("timeline.addManually")}
@@ -871,6 +873,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
             <div
               key={c.id}
               className="contradiction-sheet"
+              data-guide="contradiction-card"
             >
               <div>
                 <Badge tone="danger">{t("timeline.contradiction")}</Badge>
@@ -934,6 +937,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
                 <div className="button-row">
                   <button
                     className="button button-quiet"
+                    data-guide="suggestion-dismiss"
                     disabled={actingOn === s.id}
                     onClick={() => reject(s.id)}
                   >
@@ -941,6 +945,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
                   </button>
                   <button
                     className="button button-primary"
+                    data-guide="suggestion-confirm"
                     disabled={actingOn === s.id}
                     onClick={() => accept(s.id)}
                   >
@@ -955,7 +960,7 @@ function ConflictsTab({ caseId, statements, conflicts, reload, setToast }) {
 
       {confirmed.length ? (
         <>
-          <h3 className="review-heading">
+          <h3 className="review-heading" data-guide="confirmed-statements">
             {t("timeline.confirmedStatements")}
           </h3>
           <div className="data-list confirmed-register">
@@ -1163,7 +1168,7 @@ function AssistantTab({ caseId }) {
           ))}
           {asking ? <div className="muted small">{t("assistant.thinking")}</div> : null}
         </div>
-        <form onSubmit={ask} className="research-form">
+        <form onSubmit={ask} className="research-form" data-guide="assistant-ask">
           <div className="field grow">
             <input
               aria-label={t("assistant.researchQuestionAria")}
@@ -1187,7 +1192,7 @@ function AssistantTab({ caseId }) {
         ) : null}
       </section>
       <aside className="stack">
-        <section className="panel compact-panel">
+        <section className="panel compact-panel" data-guide="gap-check">
           <h3>{t("assistant.gapCheckTitle")}</h3>
           <p className="muted small">
             {t("assistant.gapCheckDescription")}
@@ -1215,6 +1220,7 @@ function AssistantTab({ caseId }) {
           <h3>{t("assistant.briefingTitle")}</h3>
           <button
             className="button button-block"
+            data-guide="case-summary-btn"
             disabled={summarizing}
             onClick={generateSummary}
           >
@@ -1235,6 +1241,7 @@ function AssistantTab({ caseId }) {
           </p>
           <button
             className="button button-block"
+            data-guide="legal-sections-btn"
             disabled={suggestingLegal}
             onClick={generateLegal}
           >
@@ -1272,7 +1279,7 @@ function AuditTab({ audit }) {
           <h2>{t("audit.title")}</h2>
           <p>{t("audit.description")}</p>
         </div>
-        <div className="button-row">
+        <div className="button-row" data-guide="audit-filters">
           <label className="field">
             <span className="small muted">{t("audit.actorDept")}</span>
             <select
@@ -1330,6 +1337,7 @@ function AuditTab({ audit }) {
               {e.actor_department ? <small>{e.actor_department}</small> : null}
             </span>
             <Badge
+              data-guide="audit-result"
               tone={
                 e.result === "SUCCESS"
                   ? "success"
@@ -1340,7 +1348,7 @@ function AuditTab({ audit }) {
             >
               {e.result}
             </Badge>
-            <details className="hash-disclosure"><summary><code>{shortHash(e.entry_hash)}</code></summary><code className="wrap-code">{e.entry_hash}</code></details>
+            <details className="hash-disclosure" data-guide="audit-hash"><summary><code>{shortHash(e.entry_hash)}</code></summary><code className="wrap-code">{e.entry_hash}</code></details>
             <span className="small muted">{formatDate(e.timestamp)}</span>
           </div>
         ))}

@@ -28,6 +28,7 @@ export default function Sidebar() {
             <NavLink
               key={to}
               to={to}
+              data-guide={`nav${to.replace("/", "-")}`}
               className={({ isActive }) =>
                 `side-link ${isActive ? "active" : ""}`
               }
@@ -42,6 +43,7 @@ export default function Sidebar() {
         {profile?.role === "ADMIN" ? (
           <NavLink
             to="/admin"
+            data-guide="nav-admin"
             className={({ isActive }) =>
               `side-link ${isActive ? "active" : ""}`
             }

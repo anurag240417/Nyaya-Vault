@@ -1,0 +1,57 @@
+{"kind":"deck","id":"pr/j87now","name":"Deck"}
+{"kind":"layout","layoutId":"9cab8381-1ef8-4738-bc21-c4c8f387c5ec","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"90b61f47-b9e3-407f-996f-2cba552eaf2b","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/6nndin","slide":1,"title":"NYAYA VAULT","textShapes":28}
+{"kind":"textbox","id":"sh/50zalo3u","slide":1,"text":"NYAYA VAULT","textPreview":"NYAYA VAULT","textChars":11,"textLines":1,"bbox":[55,38,300,45]}
+{"kind":"textbox","id":"sh/ix8bq943","slide":1,"text":"IMPACT AND BENEFITS","textPreview":"IMPACT AND BENEFITS","textChars":19,"textLines":1,"bbox":[450,30,1000,75]}
+{"kind":"textbox","id":"sh/jyhsjelo","slide":1,"text":"IMPACT","textPreview":"IMPACT","textChars":6,"textLines":1,"bbox":[56,138,400,40]}
+{"kind":"textbox","id":"sh/wbqtozmd","slide":1,"text":"BENEFITS","textPreview":"BENEFITS","textChars":8,"textLines":1,"bbox":[56,499,400,40]}
+{"kind":"shape","id":"sh/xczah43i","slide":1,"bbox":[59,197,354,280]}
+{"kind":"shape","id":"sh/a98bmp47","slide":1,"bbox":[56,192,354,280]}
+{"kind":"shape","id":"sh/vahsfuls","slide":1,"bbox":[64,200,338,264]}
+{"kind":"textbox","id":"sh/876tkzm1","slide":1,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[77,212,96,92]}
+{"kind":"textbox","id":"sh/98fad43m","slide":1,"text":"Faster\nInvestigations","textPreview":"Faster | Investigations","textChars":21,"textLines":2,"bbox":[171,220,220,83]}
+{"kind":"textbox","id":"sh/9cnidsza","slide":1,"text":"OCR and semantic search find case evidence in seconds instead of hours.","textPreview":"OCR and semantic search find case evidence in seconds instead of hours.","textChars":71,"textLines":1,"bbox":[80,317,307,133]}
+{"kind":"shape","id":"sh/8be14nyp","slide":1,"bbox":[437,197,354,280]}
+{"kind":"shape","id":"sh/7a50bih4","slide":1,"bbox":[434,192,354,280]}
+{"kind":"shape","id":"sh/m9wzidgj","slide":1,"bbox":[442,200,338,264]}
+{"kind":"textbox","id":"sh/l8ni9szy","slide":1,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[455,212,96,92]}
+{"kind":"textbox","id":"sh/k7uhgnyd","slide":1,"text":"Court-Ready\nEvidence","textPreview":"Court-Ready | Evidence","textChars":20,"textLines":2,"bbox":[549,220,220,83]}
+{"kind":"textbox","id":"sh/z6l07ih8","slide":1,"text":"Auto-generated Section 63 BSA certificates and hash checks make evidence admissible.","textPreview":"Auto-generated Section 63 BSA certificates and hash checks make evidence admissible.","textChars":84,"textLines":1,"bbox":[458,317,307,133]}
+{"kind":"shape","id":"sh/y5czedgn","slide":1,"bbox":[815,197,354,280]}
+{"kind":"shape","id":"sh/x43i58z2","slide":1,"bbox":[812,192,354,280]}
+{"kind":"shape","id":"sh/c3uhc3yh","slide":1,"bbox":[820,200,338,264]}
+{"kind":"textbox","id":"sh/ozi987ap","slide":1,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[833,212,96,92]}
+{"kind":"textbox","id":"sh/p0rahcbu","slide":1,"text":"Tamper-Proof\nRecords","textPreview":"Tamper-Proof | Records","textChars":20,"textLines":2,"bbox":[927,220,220,83]}
+{"kind":"textbox","id":"sh/2xgr6xsj","slide":1,"text":"A blockchain-anchored audit trail proves no record was altered.","textPreview":"A blockchain-anchored audit trail proves no record was altered.","textChars":63,"textLines":1,"bbox":[836,317,307,133]}
+{"kind":"shape","id":"sh/nypsf2t4","slide":1,"bbox":[1193,197,354,280]}
+{"kind":"shape","id":"sh/0vy94nad","slide":1,"bbox":[1190,192,354,280]}
+{"kind":"shape","id":"sh/1w7adsby","slide":1,"bbox":[1198,200,338,264]}
+{"kind":"textbox","id":"sh/etgr2xs7","slide":1,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1211,212,96,92]}
+{"kind":"textbox","id":"sh/fup8b2ts","slide":1,"text":"Victim Privacy\nProtected","textPreview":"Victim Privacy | Protected","textChars":24,"textLines":2,"bbox":[1305,220,220,83]}
+{"kind":"textbox","id":"sh/kr29grah","slide":1,"text":"Redaction, approved by an officer, hides the identities of victims and witnesses.","textPreview":"Redaction, approved by an officer, hides the identities of victims and witnesses.","textChars":81,"textLines":1,"bbox":[1214,317,307,133]}
+{"kind":"shape","id":"sh/lsbapwb2","slide":1,"bbox":[59,558,354,280]}
+{"kind":"shape","id":"sh/vmdcfqdk","slide":1,"bbox":[56,553,354,280]}
+{"kind":"shape","id":"sh/ul4v6lcz","slide":1,"bbox":[64,561,338,264]}
+{"kind":"textbox","id":"sh/hovuh0va","slide":1,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[77,573,96,92]}
+{"kind":"textbox","id":"sh/gnmd8vup","slide":1,"text":"Secure Access\nControl","textPreview":"Secure Access | Control","textChars":21,"textLines":2,"bbox":[171,581,220,83]}
+{"kind":"textbox","id":"sh/3qxcjqdg","slide":1,"text":"Role, case-assignment and clearance checks keep evidence limited to authorised officers.","textPreview":"Role, case-assignment and clearance checks keep evidence limited to authorised officers.","textChars":88,"textLines":1,"bbox":[80,678,307,133]}
+{"kind":"shape","id":"sh/ip4va5cv","slide":1,"bbox":[437,558,354,280]}
+{"kind":"shape","id":"sh/5sful0vm","slide":1,"bbox":[434,553,354,280]}
+{"kind":"shape","id":"sh/4r6dcvu1","slide":1,"bbox":[442,561,338,264]}
+{"kind":"textbox","id":"sh/zutc76dc","slide":1,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[455,573,96,92]}
+{"kind":"textbox","id":"sh/ytkby1cr","slide":1,"text":"AI-Assisted\nWork","textPreview":"AI-Assisted | Work","textChars":16,"textLines":2,"bbox":[549,581,220,83]}
+{"kind":"textbox","id":"sh/qdove1kn","slide":1,"text":"An AI assistant and entity extraction cut manual reading and paperwork.","textPreview":"An AI assistant and entity extraction cut manual reading and paperwork.","textChars":71,"textLines":1,"bbox":[458,678,307,133]}
+{"kind":"shape","id":"sh/byxcn6l8","slide":1,"bbox":[815,558,354,280]}
+{"kind":"shape","id":"sh/cz6dgb2d","slide":1,"bbox":[812,553,354,280]}
+{"kind":"shape","id":"sh/d0fupg3y","slide":1,"bbox":[820,561,338,264]}
+{"kind":"textbox","id":"sh/y1ovilkj","slide":1,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[833,573,96,92]}
+{"kind":"textbox","id":"sh/z2xcrql4","slide":1,"text":"Inclusive &\nMultilingual","textPreview":"Inclusive & | Multilingual","textChars":24,"textLines":2,"bbox":[927,581,220,83]}
+{"kind":"textbox","id":"sh/k3qdkv2p","slide":1,"text":"Works in 6 Indian languages on both desktop and mobile.","textPreview":"Works in 6 Indian languages on both desktop and mobile.","textChars":55,"textLines":1,"bbox":[836,678,307,133]}
+{"kind":"shape","id":"sh/l4zutg3a","slide":1,"bbox":[1193,558,354,280]}
+{"kind":"shape","id":"sh/m58vmlkv","slide":1,"bbox":[1190,553,354,280]}
+{"kind":"shape","id":"sh/76hcvql0","slide":1,"bbox":[1198,561,338,264]}
+{"kind":"textbox","id":"sh/h0jylkni","slide":1,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1211,573,96,92]}
+{"kind":"textbox","id":"sh/wzaxsfmx","slide":1,"text":"Low Cost,\nEasy to Scale","textPreview":"Low Cost, | Easy to Scale","textChars":23,"textLines":2,"bbox":[1305,581,220,83]}
+{"kind":"textbox","id":"sh/vy1gju5c","slide":1,"text":"Mostly open-source and deployable one department at a time.","textPreview":"Mostly open-source and deployable one department at a time.","textChars":59,"textLines":1,"bbox":[1214,678,307,133]}
+{"kind":"notes","id":"nt/6nndin","slide":1,"text":"Text supplied by the user, reproduced as requested. Visual design inspired by the attached reference image."}

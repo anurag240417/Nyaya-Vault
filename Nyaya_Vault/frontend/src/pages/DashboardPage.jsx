@@ -42,18 +42,18 @@ export default function DashboardPage() {
           </h1>
           <p>{t("accessNote")}</p>
         </div>
-        <Link className="button button-primary" to="/cases">
+        <Link className="button button-primary" to="/cases" data-guide="dash-open-cases">
           {t("actions.openCases")} <ArrowRight size={16} />
         </Link>
       </section>
       <div className="desk-context">
         <SecurityCredential profile={profile} />
-        <div className="register-total"><strong>{cases.length}</strong><span>{t("stats.accessibleCaseRecords")}</span></div>
-        <Link className="desk-search" to="/search"><Search size={22} /><div><strong>{t("search.title")}</strong><span>{t("search.description")}</span></div><ArrowRight size={18} /></Link>
+        <div className="register-total" data-guide="dash-case-count"><strong>{cases.length}</strong><span>{t("stats.accessibleCaseRecords")}</span></div>
+        <Link className="desk-search" to="/search" data-guide="dash-search"><Search size={22} /><div><strong>{t("search.title")}</strong><span>{t("search.description")}</span></div><ArrowRight size={18} /></Link>
       </div>
       <div className="desk-registers">
         <section className="panel">
-          <div className="panel-header">
+          <div className="panel-header" data-guide="dash-case-register">
             <div>
               <h2>{t("caseRegister.title")}</h2>
               <p>{t("caseRegister.subtitle")}</p>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
                   <strong>{item.case_number}</strong>
                   <span>{item.title}</span>
                 </div>
-                <Badge tone={statusTone(item.status)}>{(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}</Badge>
+                <Badge tone={statusTone(item.status)} data-guide="case-status">{(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}</Badge>
                 <span className="muted small">
                   {formatDate(item.created_at)}
                 </span>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
           </div>
         </section>
         <section className="panel">
-          <div className="panel-header">
+          <div className="panel-header" data-guide="dash-activity">
             <div>
               <h2>{t("activity.title")}</h2>
               <p>{t("activity.subtitle")}</p>

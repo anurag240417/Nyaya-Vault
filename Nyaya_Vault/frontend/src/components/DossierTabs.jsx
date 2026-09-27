@@ -17,6 +17,7 @@ export default function DossierTabs({ caseId, counts = {} }) {
           key={label}
           end={path === ""}
           to={`/cases/${caseId}/${path}`}
+          data-guide={`tab-${path || "summary"}`}
           className={({ isActive }) => `dossier-tab ${isActive ? "active" : ""}`}
         >
           <span>{label}</span>

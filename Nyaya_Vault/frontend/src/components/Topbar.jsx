@@ -14,7 +14,7 @@ export default function Topbar() {
   }
   return (
     <header className="topbar">
-      <Link className="brand" to="/dashboard">
+      <Link className="brand" to="/dashboard" data-guide="brand">
         <span className="brand-mark">
           <ShieldCheck size={22} />
         </span>
@@ -22,12 +22,13 @@ export default function Topbar() {
       </Link>
       <div className="topbar-actions">
         <LanguageSwitcher />
-        <Link className="profile-chip" to="/profile">
+        <Link className="profile-chip" to="/profile" data-guide="profile-chip">
           <Avatar name={profile?.username} size="sm" />
           <span className="identity-name">{profile?.username || t("account")}<small>{profile?.role?.replaceAll("_", " ")}</small></span>
         </Link>
         <button
           className="icon-button topbar-icon logout-button"
+          data-guide="logout"
           onClick={out}
           title={t("signOut")} aria-label={t("signOut")}
         >

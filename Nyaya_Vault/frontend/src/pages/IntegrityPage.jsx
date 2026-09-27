@@ -108,6 +108,7 @@ export default function IntegrityPage() {
         </p>
         <button
           className="button button-primary"
+          data-guide="integrity-verify"
           disabled={loading}
           onClick={verify}
         >
@@ -119,6 +120,7 @@ export default function IntegrityPage() {
       {result ? (
         <section
           role="status" className={`verification-card ${result.valid ? "valid" : "invalid"}`}
+          data-guide="integrity-result"
         >
           {result.valid ? (
             <CheckCircle2 size={34} />
@@ -149,7 +151,7 @@ export default function IntegrityPage() {
         <div className="panel-header">
           <h2><Link2 size={17} /> {t("anchors.title")}</h2>
           {isAdmin ? (
-            <button className="button button-official" disabled={anchoring} onClick={anchorNow}>
+            <button className="button button-official" data-guide="anchor-now" disabled={anchoring} onClick={anchorNow}>
               <Link2 size={15} /> {anchoring ? t("anchors.anchoring") : t("anchors.anchorNow")}
             </button>
           ) : null}
@@ -190,7 +192,7 @@ export default function IntegrityPage() {
                   <code>#{anchor.audit_sequence}</code>
                   <span className={`badge ${statusBadgeClass(anchor.tx_status)}`}>{anchor.tx_status}</span>
                   {anchor.explorer_url ? (
-                    <a href={anchor.explorer_url} target="_blank" rel="noreferrer">
+                    <a href={anchor.explorer_url} target="_blank" rel="noreferrer" data-guide="anchor-tx">
                       {shortHash(anchor.anchor_reference, 14)}
                     </a>
                   ) : (
@@ -201,6 +203,7 @@ export default function IntegrityPage() {
                   <span>
                     <button
                       className="button button-sm"
+                      data-guide="anchor-verify"
                       disabled={verifyingId === anchor.id}
                       onClick={() => verifyAnchor(anchor.id)}
                     >

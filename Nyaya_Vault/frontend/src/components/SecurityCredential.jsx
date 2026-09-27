@@ -5,7 +5,7 @@ import Badge, { clearanceTone, departmentTone } from "./Badge";
 export default function SecurityCredential({ profile }) {
   const { t } = useTranslation(["securityCredential", "common"]);
   return (
-    <section className="security-credential" aria-label={t("authorizationCredential")}>
+    <section className="security-credential" aria-label={t("authorizationCredential")} data-guide="credential">
       <div className="eyebrow"><ShieldCheck size={15} /> {t("authorizationCredential")}</div>
       <strong>{profile?.role?.replaceAll("_", " ") || t("defaultRole", { ns: "common" })}</strong>
       <div className="credential-labels">
