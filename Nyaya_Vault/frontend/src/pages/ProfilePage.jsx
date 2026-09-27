@@ -57,10 +57,10 @@ export default function ProfilePage() {
           <dd>
             {signingKey ? (
               <>
-                <code>{signingKey.fingerprint}</code>{" "}
+                <code data-guide="profile-signing-key">{signingKey.fingerprint}</code>{" "}
                 <span className="muted small">({signingKey.algorithm})</span>
                 <p className="muted small">{t("signingKey.description")}</p>
-                <button className="button button-sm" onClick={() => setShowKey((v) => !v)}>
+                <button className="button button-sm" data-guide="profile-show-key" onClick={() => setShowKey((v) => !v)}>
                   {showKey ? t("signingKey.hide") : t("signingKey.show")}
                 </button>
                 {showKey ? <pre className="wrap-code small">{signingKey.public_key_pem}</pre> : null}

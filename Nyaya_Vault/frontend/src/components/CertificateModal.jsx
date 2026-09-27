@@ -45,7 +45,7 @@ export default function CertificateModal({ documentId, versionId, onClose }) {
         {t("description")}
       </p>
       <form id="cert-form" className="form-stack" onSubmit={submit}>
-        <label className="field">
+        <label className="field" data-guide="cert-expert">
           <span>{t("expertName")}</span>
           <input
             required

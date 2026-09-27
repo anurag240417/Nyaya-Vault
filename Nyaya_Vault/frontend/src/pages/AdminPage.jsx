@@ -258,10 +258,10 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-tabs" role="group" aria-label={t('tabs.ariaLabel')}>
-        <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>
+        <button className={tab === 'users' ? 'active' : ''} data-guide="admin-tab-users" onClick={() => setTab('users')}>
           <UserCog size={16} /> {t('tabs.users')}
         </button>
-        <button className={tab === 'cases' ? 'active' : ''} onClick={() => setTab('cases')}>
+        <button className={tab === 'cases' ? 'active' : ''} data-guide="admin-tab-cases" onClick={() => setTab('cases')}>
           <BriefcaseBusiness size={16} /> {t('tabs.cases')}
         </button>
       </div>
@@ -285,6 +285,7 @@ export default function AdminPage() {
                     <span>{user.email}</span>
                   </div>
                   <select
+                    data-guide="admin-role"
                     aria-label={t('users.roleAriaLabel', { username: user.username })}
                     value={draft.role || user.role}
                     onChange={(event) => setDrafts({
@@ -295,6 +296,7 @@ export default function AdminPage() {
                     {ROLES.map((role) => <option key={role} value={role}>{roleLabel(t, role)}</option>)}
                   </select>
                   <select
+                    data-guide="admin-clearance"
                     aria-label={t('users.clearanceAriaLabel', { username: user.username })}
                     value={draft.clearance_level || user.clearance_level}
                     onChange={(event) => setDrafts({
@@ -305,6 +307,7 @@ export default function AdminPage() {
                     {CLEARANCES.map((clearance) => <option key={clearance} value={clearance}>{clearanceLabel(t, clearance)}</option>)}
                   </select>
                   <select
+                    data-guide="admin-department"
                     aria-label={t('users.departmentAriaLabel', { username: user.username })}
                     value={draft.department ?? (user.department || '')}
                     onChange={(event) => setDrafts({
@@ -315,7 +318,7 @@ export default function AdminPage() {
                   >
                     {DEPARTMENTS.map((d) => <option key={d || 'unassigned'} value={d}>{departmentLabel(t, d)}</option>)}
                   </select>
-                  <label className="switch-label">
+                  <label className="switch-label" data-guide="admin-active">
                     <input
                       type="checkbox"
                       checked={Boolean(draft.is_active)}
@@ -328,7 +331,7 @@ export default function AdminPage() {
                   </label>
                   <Badge tone={clearanceTone(draft.clearance_level)}>{clearanceLabel(t, draft.clearance_level)}</Badge>
                   <Badge tone={departmentTone(draft.department)}>{departmentLabel(t, draft.department)}</Badge>
-                  <button className="button button-sm" onClick={() => saveUser(user.id)}>
+                  <button className="button button-sm" data-guide="admin-save-user" onClick={() => saveUser(user.id)}>
                     <Save size={14} /> {t('actions.save')}
                   </button>
                 </div>
@@ -361,6 +364,7 @@ export default function AdminPage() {
               </div>
               <button
                 className="button button-primary"
+                data-guide="admin-create-case"
                 onClick={() => setCreateOpen(true)}
                 disabled={!investigators.length}
                 title={!investigators.length ? t('caseAssignment.createDisabledTitle', { role: t('roles.INVESTIGATING_OFFICER') }) : undefined}
@@ -420,6 +424,7 @@ export default function AdminPage() {
                               {collaborator.username}
                               <button
                                 type="button"
+                                data-guide="admin-remove-chip"
                                 disabled={busy}
                                 title={t('caseAssignment.removeCollaboratorTitle', { username: collaborator.username })}
                                 onClick={() => removeAdditionalCollaborator(item, collaborator.user_id)}
@@ -435,7 +440,7 @@ export default function AdminPage() {
                       </div>
 
                       <div className="admin-case-actions">
-                        <button className="button button-sm" onClick={() => openManage(item)}>
+                        <button className="button button-sm" data-guide="admin-manage" onClick={() => openManage(item)}>
                           <Users size={14} /> {t('caseAssignment.manageButton')}
                         </button>
                         <Link className="button button-sm" to={`/cases/${item.id}`}>

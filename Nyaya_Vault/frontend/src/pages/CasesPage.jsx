@@ -64,6 +64,7 @@ export default function CasesPage() {
         {canCreate ? (
           <button
             className="button button-primary"
+            data-guide="cases-new"
             onClick={() => setOpen(true)}
           >
             <Plus size={16} /> {t("actions.newCase")}
@@ -71,7 +72,7 @@ export default function CasesPage() {
         ) : null}
       </div>
       <div className="toolbar">
-        <div className="search-input">
+        <div className="search-input" data-guide="cases-filter">
           <Search size={16} />
           <input
             value={query}
@@ -82,6 +83,7 @@ export default function CasesPage() {
         <button
           className="button button-sm"
           type="button"
+          data-guide="cases-refresh"
           onClick={() =>
             reload().catch((err) =>
               setToast({ type: "error", message: err.message }),
@@ -96,12 +98,12 @@ export default function CasesPage() {
       ) : filtered.length ? (
         <div className="case-registry">
           {filtered.map((item) => (
-            <article className="registry-entry" key={item.id}>
+            <article className="registry-entry" key={item.id} data-guide="case-card">
               <div className="registry-locator">
                 <BriefcaseBusiness size={18} />
                 <strong><Link to={`/cases/${item.id}`}>{item.case_number}</Link></strong>
-                <span className="visibility-pill">{t("visibilityPrivate")}</span>
-                <Badge tone={statusTone(item.status)}>
+                <span className="visibility-pill" data-guide="visibility-pill">{t("visibilityPrivate")}</span>
+                <Badge tone={statusTone(item.status)} data-guide="case-status">
                   {(item.status || "UNDER_INVESTIGATION").replaceAll("_", " ")}
                 </Badge>
               </div>

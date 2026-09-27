@@ -50,13 +50,14 @@ export default function SearchPage() {
       >
         <Search size={20} />
         <input
+          data-guide="search-input"
           aria-label={t("inputAria")}
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("inputPlaceholder")}
         />
-        <button className="button button-primary">{t("actions.search")}</button>
+        <button className="button button-primary" data-guide="search-submit">{t("actions.search")}</button>
       </form>
       {error ? <div className="form-error">{error}</div> : null}
       <section className="panel">
@@ -80,6 +81,7 @@ export default function SearchPage() {
               <Link
                 to={`/documents/${r.document_id}`}
                 className="search-result"
+                data-guide="search-result"
                 key={`${r.document_id}-${r.page_number}-${i}`}
               >
                 <FileSearch size={18} />
@@ -98,7 +100,7 @@ export default function SearchPage() {
                   </div>
                   <p>{r.snippet || t("metadataMatchFallback")}</p>
                 </div>
-                <span className="rank-label" title={t("relevanceScoreTitle")}>
+                <span className="rank-label" title={t("relevanceScoreTitle")} data-guide="search-score">
                   {r.rank != null
                     ? t("relevanceLabel", { score: Number(r.rank).toFixed(2) })
                     : t("similarityLabel", { score: Math.round((r.similarity || 0) * 100) })}

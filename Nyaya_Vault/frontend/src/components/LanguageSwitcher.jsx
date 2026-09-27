@@ -37,6 +37,7 @@ export default function LanguageSwitcher() {
       <button
         type="button"
         className="language-trigger"
+        data-guide="language"
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="listbox"
         aria-expanded={open}
