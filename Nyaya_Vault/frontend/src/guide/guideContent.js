@@ -144,7 +144,8 @@ export const TIPS = {
   "profile-show-key": { title: "Show public key", body: "Displays the full public key (PEM). It is safe to share; the private half never leaves the server." },
 
   // Sign-in
-  "login-submit": { title: "Sign in", body: "Use the demo account details the Nyaya Vault team gave you." },
+  "login-submit": { title: "Sign in", body: "Signs in with the email and password above. Judges can skip typing and use a demo account below." },
+  "demo-accounts": { title: "Demo accounts", body: "One click signs you in. Administrator sees everything, including user and case management; Investigating Officer sees the day-to-day investigation workflow. Try both to compare." },
   "login-toggle": { title: "Create an account", body: "Switches to sign-up. New accounts start with minimal access until an administrator assigns a role and cases." },
 
   // The guide itself
@@ -156,10 +157,11 @@ export const PAGES = {
     title: "Sign in",
     summary: "Nyaya Vault is a secure, tamper-evident evidence locker for Indian criminal cases.",
     steps: [
-      "Sign in with the demo account details the team gave you.",
+      "Under Demo access, click Sign in next to Administrator or Investigating Officer.",
       "Once in, open the Guide again: it follows you page by page.",
+      "Sign out and try the other account to see how access changes by role.",
     ],
-    highlights: ["login-submit", "login-toggle"],
+    highlights: ["demo-accounts", "login-submit", "login-toggle"],
   },
   dashboard: {
     title: "Dashboard",
@@ -338,6 +340,13 @@ export const FAQ = [
     tab: "path",
   },
   {
+    q: "How do I log in?",
+    keywords: ["log in", "login", "sign in", "signin", "login credential", "password", "account", "demo account"],
+    a: "On the sign-in page, under Demo access for SIH judges, click Sign in next to Administrator or Investigating Officer. The Administrator can manage users and assign cases; the Investigating Officer works on assigned cases. Sign out from the top bar to switch accounts.",
+    show: "demo-accounts",
+    pages: ["login"],
+  },
+  {
     q: "How do I upload evidence?",
     keywords: ["upload", "add evidence", "register evidence", "add document", "new document", "add file", "attach"],
     a: "Open a case, go to the Documents tab and click Register evidence. Give it a title, type, classification and department, then choose a PDF, image or video (up to 200 MB). It is hashed and stored as version 1.",
@@ -479,7 +488,7 @@ export const FAQ = [
 ];
 
 export const SUGGESTED_BY_PAGE = {
-  login: ["What is Nyaya Vault?", "Where should I start?"],
+  login: ["How do I log in?", "What is Nyaya Vault?", "Where should I start?"],
   dashboard: ["Where should I start?", "What do clearance levels mean?", "What is the audit trail?"],
   cases: ["What can each role do?", "Why can't I see a button?"],
   "case-summary": ["How do I generate a legal notice?", "What can each role do?"],

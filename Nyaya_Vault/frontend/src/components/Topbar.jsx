@@ -1,4 +1,4 @@
-import { LogOut, ShieldCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
@@ -15,9 +15,7 @@ export default function Topbar() {
   return (
     <header className="topbar">
       <Link className="brand" to="/dashboard" data-guide="brand">
-        <span className="brand-mark">
-          <ShieldCheck size={22} />
-        </span>
+        <img className="brand-logo" src="/nyaya-vault-emblem.png" alt="" />
         <span className="brand-name"><strong>Nyaya Vault</strong><small>{t("brandTagline")}</small></span>
       </Link>
       <div className="topbar-actions">
