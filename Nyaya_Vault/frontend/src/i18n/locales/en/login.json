@@ -17,5 +17,15 @@
   "signIn": "Sign in",
   "createAccount": "Create account",
   "needAccount": "Need an account? Sign up",
-  "haveAccount": "Already have an account? Sign in"
+  "haveAccount": "Already have an account? Sign in",
+  "demo": {
+    "title": "Demo access for SIH judges",
+    "note": "Use either account to explore the prototype. Each role sees different controls.",
+    "signInAs": "Sign in",
+    "orEmail": "or sign in with email",
+    "roles": {
+      "admin": "Administrator",
+      "officer": "Investigating Officer"
+    }
+  }
 }

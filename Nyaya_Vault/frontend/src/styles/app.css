@@ -31,7 +31,7 @@ svg { flex-shrink: 0; vertical-align: middle; }
 .topbar { position: sticky; top: 0; z-index: 30; min-height: 78px; background: var(--nv-navy); color: var(--nv-paper); display: flex; align-items: center; gap: 32px; padding: 12px 40px 12px 26px; border-bottom: 3px solid var(--nv-brass); }
 .brand { display: flex; align-items: center; gap: 12px; color: inherit; flex-shrink: 0; }
 .brand:hover, .profile-chip:hover { text-decoration: none; }
-.brand-mark { border: 1px solid #7d8795; width: 38px; height: 43px; display: grid; place-items: center; border-radius: 4px 4px 12px 12px; }
+.brand-logo { display: block; width: 44px; height: auto; filter: drop-shadow(0 0 1px #d8c9a3); }
 .brand-name strong { display: block; font: 500 23px Georgia, serif; letter-spacing: .01em; }
 .brand-name small { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #c5c9cc; margin-top: 5px; }
 .topbar-actions { margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: 22px; }
@@ -425,7 +425,20 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
 /* Secure entrance */
 .auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 440px); align-items: center; gap: 8vw; padding: 8vh 9vw; background: var(--nv-canvas); border-top: 10px solid var(--nv-navy); }
 .auth-hero { max-width: 540px; border-left: 2px solid var(--nv-brass); padding: 26px 0 26px 34px; }
-.auth-logo { width: 52px; height: 60px; border: 1px solid var(--nv-ink); border-radius: 4px 4px 16px 16px; display: grid; place-items: center; margin-bottom: 28px; }
+.auth-logo { display: block; width: 96px; height: auto; margin-bottom: 24px; }
+.demo-access { margin-top: -8px; }
+.demo-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 0; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.demo-divider::before, .demo-divider::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+.demo-access .eyebrow { margin-bottom: 4px; color: var(--accent); }
+.demo-access-note { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.demo-account { padding: 11px 12px; margin-top: 8px; background: var(--nv-inset); border: 1px solid var(--border); border-left: 3px solid var(--nv-brass); border-radius: var(--radius-sm); }
+.demo-account-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.demo-account-head strong { font-size: 13px; }
+.auth-card .demo-account .button { margin-top: 0; min-height: 30px; }
+.demo-account dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; margin: 0; font-size: 12px; }
+.demo-account dt { color: var(--muted); }
+.demo-account dd { margin: 0; min-width: 0; }
+.demo-account code { user-select: all; }
 .auth-hero h1 { font-size: 44px; margin-bottom: 20px; }
 .auth-hero > p:not(.eyebrow) { font: 23px/1.6 Georgia, serif; color: var(--muted); max-width: 360px; }
 .auth-feature { border-top: 1px solid var(--border); margin-top: 32px; padding-top: 22px; display: flex; align-items: flex-start; gap: 12px; color: var(--muted); font-size: 12px; line-height: 1.8; }
@@ -468,7 +481,7 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
   .topbar { padding: 14px 16px; }
   .brand-name strong { font-size: 21px; }
   .brand-name small { font-size: 10px; letter-spacing: .04em; }
-  .brand-mark { width: 30px; height: 36px; }
+  .brand-logo { width: 36px; }
   .identity-name { max-width: 105px; font-size: 11px; }
   .identity-name small { font-size: 10px; }
   .hide-mobile, .profile-chip .avatar { display: none; }
@@ -531,7 +544,7 @@ input[type="file"]::file-selector-button { border: 1px solid var(--border); padd
   .modal-header, .modal-footer { padding: 14px 18px; }
   .auth-page { grid-template-columns: 1fr; padding: 28px 20px; gap: 24px; }
   .auth-hero { padding: 0 0 0 18px; }
-  .auth-logo { float: right; margin: 0; width: 40px; height: 46px; }
+  .auth-logo { float: right; margin: 0; width: 56px; }
   .auth-hero h1 { margin-bottom: 8px; }
   .auth-hero > p:not(.eyebrow) { font-size: 17px; margin-bottom: 0; }
   .auth-feature { margin-top: 18px; padding-top: 12px; font-size: 11px; }
