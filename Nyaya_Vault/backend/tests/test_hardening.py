@@ -113,3 +113,12 @@ def test_limits_are_per_client_ip_only_when_proxy_headers_trusted():
 def test_rate_limiting_can_be_disabled():
     with _client(rate_limit_enabled=False, rate_limit_per_minute=1) as c:
         assert all(c.get("/api/v1/auth/me", headers=auth("admin-token")).status_code == 200 for _ in range(5))
+
+
+def test_health_supports_uptime_monitor_probes():
+    with _client() as c:
+        for path in ("/", "/health"):
+            assert c.get(path).json()["status"] == "ok"
+            head = c.head(path)
+            assert head.status_code == 200 and head.content == b""
+            assert head.headers["cache-control"] == "no-store"
