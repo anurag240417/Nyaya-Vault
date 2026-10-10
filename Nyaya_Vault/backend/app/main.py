@@ -64,9 +64,15 @@ def create_app(*, settings: Settings | None = None, gateway: SupabaseGateway | N
             content={"detail": exc.message, "code": exc.code, **({"details": exc.details} if exc.details is not None else {})},
         )
 
-    @app.get("/health", tags=["system"])
-    async def health() -> dict[str, str]:
-        return {"status": "ok", "service": settings.app_name}
+    # Uptime monitors (UptimeRobot, Better Stack, ...) often probe with HEAD
+    # and/or hit the bare root URL, so both answer GET and HEAD with a 200.
+    @app.api_route("/health", methods=["GET", "HEAD"], tags=["system"])
+    @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+    async def health() -> JSONResponse:
+        return JSONResponse(
+            {"status": "ok", "service": settings.app_name},
+            headers={"Cache-Control": "no-store"},
+        )
 
     prefix = settings.api_prefix
     app.include_router(auth.router, prefix=prefix)

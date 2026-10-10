@@ -12,7 +12,7 @@ from starlette.responses import JSONResponse, Response
 from app.core.config import Settings
 
 _WINDOW_SECONDS = 60.0
-_EXEMPT_PATHS = {"/health"}
+_EXEMPT_PATHS = {"/", "/health"}
 _DOC_PATHS = {"/docs", "/redoc", "/openapi.json"}
 
 # Method + path patterns that are expensive (OCR/embeddings/LLM/PDF/chain
